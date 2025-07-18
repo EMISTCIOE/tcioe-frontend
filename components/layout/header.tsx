@@ -19,6 +19,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 export const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
   const { data, loading } = useCollegeData();
+  
 
   useEffect(() => {
     const handleScroll = () => setIsSticky(window.scrollY > 0);
@@ -129,21 +130,25 @@ export const Header = () => {
       <div className="bg-header-top-bg text-white text-sm py-2 px-4">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex space-x-6">
-            <Link href="#" className="hover:underline">
+            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Students
             </Link>
-            <Link href="#" className="hover:underline">
+            <span className="border-l border-white h-5"></span>
+            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Faculty & Staff
             </Link>
-            <Link href="#" className="hover:underline">
+            <span className="border-l border-white h-5"></span>
+            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Alumni
             </Link>
+
           </div>
           <div className="flex space-x-6 items-center">
-            <Link href="#" className="hover:underline">
+            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Library
             </Link>
-            <Link href="#" className="hover:underline">
+            <span className="border-l border-white h-5"></span>
+            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Journal
             </Link>
             <Button
