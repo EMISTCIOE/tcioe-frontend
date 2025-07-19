@@ -127,27 +127,27 @@ export const Header = () => {
   return (
     <header className="w-full">
       {/* Top Bar */}
-      <div className="bg-header-top-bg text-white text-sm py-2 px-4">
+      <div className="bg-header-top-bg text-white text-[10px] md:text-sm py-2 px-4">
         <div className="container mx-auto flex justify-between items-center">
-          <div className="flex space-x-6">
+          <div className="flex space-x-2 md:space-x-6">
             <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Students
             </Link>
-            <span className="border-l border-white h-5"></span>
+            <span className="border-l border-white h-3 md:h-5"></span>
             <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Faculty & Staff
             </Link>
-            <span className="border-l border-white h-5"></span>
+            <span className="border-l border-white h-3 md:h-5"></span>
             <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Alumni
             </Link>
 
           </div>
-          <div className="flex space-x-6 items-center">
+          <div className="flex space-x-2 md:space-x-6 items-center">
             <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Library
             </Link>
-            <span className="border-l border-white h-5"></span>
+            <span className="border-l border-white h-3 md:h-5"></span>
             <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Journal
             </Link>
@@ -256,7 +256,7 @@ export const Header = () => {
       {/* Navigation Bar (Desktop) */}
       <nav className="bg-white border-t border-gray-200 hidden md:block">
         <div className="container mx-auto flex justify-center">
-          <ul className="flex space-x-6 lg:space-x-8">
+          <ul className="flex md:space-x-8">
             {navItems.map((item) => (
               <li key={item.name}>
                 {item.dropdown && item.dropdown.length > 0 ? (
@@ -264,7 +264,7 @@ export const Header = () => {
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="text-text-dark hover:bg-background-light hover:text-primary-blue px-4 py-3 text-base font-medium transition-colors duration-200"
+                        className="text-text-dark hover:bg-background-light hover:text-primary-blue px-4 py-3 font-medium md:text-base text-sm transition-colors duration-200"
                       >
                         {item.name}
                         <ChevronDown className="ml-1 h-4 w-4" />

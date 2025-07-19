@@ -1,4 +1,4 @@
-import Link from "next/link"
+ import Link from "next/link"
 import * as LucideIcons from "lucide-react"
 import type { QuickLinksSectionProps } from "@/types"
 import { Card, CardContent } from "@/components/ui/card"

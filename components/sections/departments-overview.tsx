@@ -45,7 +45,7 @@ export const DepartmentsOverview = ({ departments }: DepartmentsOverviewProps) =
         <AnimatedSection delay={0.4} className="text-center mt-10">
           <Link
             href="/departments"
-            className="inline-flex h-10 items-center justify-center rounded-full bg-secondary text-secondary-foreground px-8 text-base font-semibold shadow-lg transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 transform hover:-translate-y-0.5"
+            className="inline-flex h-10 items-center justify-center bg-accent-orange hover:bg-accent-orange/90 rounded-full text-white px-8 text-base font-semibold shadow-lg transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 transform hover:-translate-y-0.5"
           >
             View All Departments
           </Link>

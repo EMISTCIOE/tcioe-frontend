@@ -167,3 +167,11 @@ export interface QuickLinksSectionProps {
     icon: string // Lucide icon name
   }>
 }
+
+export interface InaugurationGalleryProps {
+  items: Array<{
+    src: string
+    alt: string
+    caption: string
+  }>
+}
