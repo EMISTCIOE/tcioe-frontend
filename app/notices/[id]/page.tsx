@@ -7,8 +7,23 @@ import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { twMerge } from 'tailwind-merge';
 import NoticesSidebar from '@/components/NoticesSidebar';
 
+// Define types for our data
+interface Notice {
+  id: number;
+  title: string;
+  description: string;
+  published_date: string;
+  download_file?: string;
+  notice_category?: {
+    notice_type: string;
+  };
+  department?: {
+    department_name: string;
+  };
+}
+
 // Helper function to get the complete classes for a category badge
-const getCategoryClasses = (category) => {
+const getCategoryClasses = (category: string) => {
   const baseClasses = "text-sm px-2 py-1 rounded";
   
   switch(category) {
@@ -32,19 +47,25 @@ const getCategoryClasses = (category) => {
 };
 
 // In Next.js App Router, page components receive params directly as a prop
-export default function NoticeDetail({ params }) {
+interface PageParams {
+  params: {
+    id: string;
+  };
+}
+
+export default function NoticeDetail({ params }: PageParams) {
   // Access the ID directly from params
   const noticeId = params.id;
   
-  const [file, setFile] = useState("");
-  const [notice, setNotice] = useState(null);
-  const [latestNotices, setLatestNotices] = useState([]);
-  const [showAllNotices, setShowAllNotices] = useState(false);
-  const [allNotices, setAllNotices] = useState([]);
-  const [showViewMoreButton, setShowViewMoreButton] = useState(true);
-  const [checkButton, setCheckButton] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const scrollableRef = useRef(null);
+  const [file, setFile] = useState<string>("");
+  const [notice, setNotice] = useState<Notice | null>(null);
+  const [latestNotices, setLatestNotices] = useState<Notice[]>([]);
+  const [showAllNotices, setShowAllNotices] = useState<boolean>(false);
+  const [allNotices, setAllNotices] = useState<Notice[]>([]);
+  const [showViewMoreButton, setShowViewMoreButton] = useState<boolean>(true);
+  const [checkButton, setCheckButton] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const scrollableRef = useRef<HTMLDivElement>(null);
   
   // Function to load all notices
   const loadAllNotices = async () => {
@@ -168,10 +189,11 @@ export default function NoticeDetail({ params }) {
   
   // Format published date for API response
   const formattedDate = notice?.published_date 
-    ? new Date(notice.published_date).toLocaleDateString("en-US", {
+    ? new Date(notice.published_date).toLocaleString("en-US", {
         month: "long",
         day: "numeric",
         year: "numeric",
+        timeZone: "Asia/Kathmandu", // Nepal's timezone
       })
     : null;
   
@@ -180,78 +202,80 @@ export default function NoticeDetail({ params }) {
   
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-10">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-10">
+      <div className="max-w-7xl mx-auto">
+        {/* Title heading at the top, outside the flex layout */}
+        <h1 className="text-3xl font-bold text-gray-800 border-b-4 border-orange-500 inline-block pb-1 mb-6">
+          Notices and Announcements
+        </h1>
         
-        {/* Main Notice Detail Section */}
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-800 border-b-4 border-orange-500 inline-block pb-1 mb-6">
-            Notices and Announcements
-          </h1>
+        <div className="flex flex-col md:flex-row gap-10 mt-6">
+          {/* Main Notice Detail Section */}
+          <div className="flex-1">
+            <div>
+              <h2 className="text-2xl font-semibold text-blue-900 flex items-start justify-between flex-wrap">
+                <span className="mr-2">{notice.title}</span>
+                {(notice.notice_category?.notice_type) && (
+                  <span className={getCategoryClasses(notice.notice_category.notice_type)}>
+                    {notice.notice_category.notice_type}
+                  </span>
+                )}
+              </h2>
+              <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
+                <Calendar className="inline h-4 w-4" />
+                <span>Published on {formattedDate}</span>
+                {notice.department?.department_name && ` | ${notice.department.department_name}`}
+              </p>
+            </div>
 
-          <div>
-            <h2 className="text-2xl font-semibold text-blue-900 flex items-start justify-between flex-wrap">
-              <span className="mr-2">{notice.title}</span>
-              {(notice.notice_category?.notice_type) && (
-                <span className={getCategoryClasses(notice.notice_category.notice_type)}>
-                  {notice.notice_category.notice_type}
-                </span>
-              )}
-            </h2>
-            <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
-              <Calendar className="inline h-4 w-4" />
-              {formattedDate}
-              {notice.department?.department_name && ` | ${notice.department.department_name}`}
-            </p>
-          </div>
+            {/* Notice Description */}
+            <div className="mt-6 bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="text-lg font-semibold mb-3">Description</h3>
+              <p className="text-gray-800">{notice.description}</p>
+            </div>
 
-          {/* Notice Description */}
-          <div className="mt-6 bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold mb-3">Description</h3>
-            <p className="text-gray-800">{notice.description}</p>
-          </div>
-
-          {/* PDF Viewer */}
-          <div className="mt-6 rounded overflow-hidden border border-gray-300">
-            <div className="bg-gray-100 p-3 border-b">
-              <div className="flex justify-between items-center">
-                <span className="font-medium text-gray-700">Attached Document</span>
+            {/* PDF Viewer */}
+            <div className="mt-6 rounded overflow-hidden border border-gray-300">
+              <div className="bg-gray-100 p-3 border-b">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-gray-700">Attached Document</span>
+                  {file && (
+                    <a 
+                      href={`https://notices.tcioe.edu.np/media/files/${file}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                    >
+                      <span>Open in New Tab</span>
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  )}
+                </div>
+              </div>
+              <div className="w-full h-[600px] md:h-[700px] bg-gray-50">
                 {file && (
-                  <a 
-                    href={`https://notices.tcioe.edu.np/media/files/${file}`}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
-                  >
-                    <span>Open in New Tab</span>
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
+                  <iframe
+                    src={`https://notices.tcioe.edu.np/media/files/${file}`}
+                    className="w-full h-full border-0"
+                    title={`PDF for ${notice.title}`}
+                  />
                 )}
               </div>
             </div>
-            <div className="w-full h-[600px] md:h-[700px] bg-gray-50">
-              {file && (
-                <iframe
-                  src={`https://notices.tcioe.edu.np/media/files/${file}`}
-                  className="w-full h-full border-0"
-                  title={`PDF for ${notice.title}`}
-                />
-              )}
-            </div>
           </div>
+          
+          {/* Sidebar Section with Latest Notices */}
+          <NoticesSidebar 
+            displayNotices={displayNotices}
+            activeId={activeId}
+            showViewMoreButton={showViewMoreButton}
+            showAllNotices={showAllNotices}
+            checkButton={checkButton}
+            loadAllNotices={loadAllNotices}
+            hidePartialNotices={hidePartialNotices}
+            scrollableRef={scrollableRef}
+            getCategoryClasses={getCategoryClasses}
+          />
         </div>
-
-        {/* Sidebar Section with Latest Notices */}
-        <NoticesSidebar 
-          displayNotices={displayNotices}
-          activeId={activeId}
-          showViewMoreButton={showViewMoreButton}
-          showAllNotices={showAllNotices}
-          checkButton={checkButton}
-          loadAllNotices={loadAllNotices}
-          hidePartialNotices={hidePartialNotices}
-          scrollableRef={scrollableRef}
-          getCategoryClasses={getCategoryClasses}
-        />
       </div>
     </div>
   );

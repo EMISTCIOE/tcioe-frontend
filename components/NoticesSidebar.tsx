@@ -1,8 +1,33 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 
-const NoticesSidebar = ({ 
+// Define interface for Notice data structure
+interface Notice {
+  id: number;
+  title: string;
+  published_date: string;
+  notice_category?: {
+    notice_type: string;
+  };
+}
+
+// Define component props interface
+interface NoticesSidebarProps {
+  displayNotices: Notice[];
+  activeId?: number;
+  showViewMoreButton: boolean;
+  showAllNotices: boolean;
+  checkButton: boolean;
+  loadAllNotices: () => void;
+  hidePartialNotices: () => void;
+  scrollableRef: React.RefObject<HTMLDivElement | null> | null;
+  getCategoryClasses: (category: string) => string;
+}
+
+const NoticesSidebar: React.FC<NoticesSidebarProps> = ({ 
   displayNotices, 
   activeId, 
   showViewMoreButton,
@@ -31,7 +56,9 @@ const NoticesSidebar = ({
                 )}
                 <span className="text-xs text-gray-500">
                   {latestNotice.published_date 
-                    ? new Date(latestNotice.published_date).toLocaleDateString()
+                    ? new Date(latestNotice.published_date).toLocaleDateString('en-US', {
+                        timeZone: 'Asia/Kathmandu' // Nepal's timezone
+                      })
                     : ''}
                 </span>
               </div>

@@ -4,8 +4,33 @@ import { useState, useEffect } from 'react';
 import { AnimatedSection } from "@/components/animated-section";
 import { Search, Calendar, Download, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import React from 'react';
 
-const typedata = [
+interface NoticeType {
+  id: number;
+  notice_type: string;
+}
+
+interface DepartmentType {
+  id: number;
+  department_name: string;
+}
+
+interface NoticeCategory {
+  notice_type: string;
+}
+
+interface Notice {
+  id: number;
+  title: string;
+  description?: string;
+  published_date: string;
+  department?: string;
+  notice_category?: NoticeCategory;
+  download_file?: string;
+}
+
+const typedata: NoticeType[] = [
   {
     id: 1,
     notice_type: "Administration",
@@ -36,7 +61,7 @@ const typedata = [
   },
 ];
 
-const departmentdata = [
+const departmentdata: DepartmentType[] = [
   {
     id: 1,
     department_name: "Applied Science",
@@ -64,28 +89,28 @@ const departmentdata = [
 ];
 
 export default function NoticesPage() {
-  const [notices, setNotices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [noticesPerPage] = useState(5);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [activeFilters, setActiveFilters] = useState([]);
-  const [noticesNotFound, setNoticesNotFound] = useState(false);
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [noticesPerPage] = useState<number>(5);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [noticesNotFound, setNoticesNotFound] = useState<boolean>(false);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>('');
   
   // Helper functions
-  const getNoticeCategory = (notice) => {
+  const getNoticeCategory = (notice: Notice): string => {
     return notice.notice_category?.notice_type || "General";
   };
 
-  const getDepartmentName = (department) => {
+  const getDepartmentName = (department?: string): string => {
     return department || "All Departments";
   };
 
   // Calculate the tag color based on category
-  const getTagColor = (category) => {
+  const getTagColor = (category: string): string => {
     switch(category) {
       case 'Exam': return 'bg-green-200 text-green-800';
       case 'Administration': return 'bg-red-200 text-red-800';
@@ -99,7 +124,7 @@ export default function NoticesPage() {
   };
 
   // Fetch notices from API
-  const fetchNotices = async () => {
+  const fetchNotices = async (): Promise<void> => {
     setLoading(true);
     try {
       const response = await fetch(
@@ -165,7 +190,7 @@ export default function NoticesPage() {
   useEffect(() => {
     // Only update active filters if we have any active filters
     if (selectedCategory || selectedDepartment || searchTerm) {
-      const newFilters = [];
+      const newFilters: string[] = [];
       if (selectedCategory) newFilters.push(selectedCategory);
       if (selectedDepartment) newFilters.push(selectedDepartment);
       if (searchTerm) newFilters.push(`Search: ${searchTerm}`);
@@ -175,7 +200,7 @@ export default function NoticesPage() {
   }, []);
 
   // Search and filter functionality
-  const handleSearch = async () => {
+  const handleSearch = async (): Promise<void> => {
     setLoading(true);
     setCurrentPage(1);
     
@@ -210,7 +235,7 @@ export default function NoticesPage() {
       
       // Apply client-side filtering
       if (selectedCategory || selectedDepartment) {
-        data = data.filter(notice => {
+        data = data.filter((notice: Notice) => {
           // Check category filter
           const categoryMatch = !selectedCategory || 
             getNoticeCategory(notice) === selectedCategory;
@@ -228,7 +253,7 @@ export default function NoticesPage() {
       setNoticesNotFound(data.length === 0);
       
       // Update active filters
-      const newFilters = [];
+      const newFilters: string[] = [];
       if (selectedCategory) newFilters.push(selectedCategory);
       if (selectedDepartment) newFilters.push(selectedDepartment);
       if (searchTerm) newFilters.push(`Search: ${searchTerm}`);
@@ -245,7 +270,7 @@ export default function NoticesPage() {
   };
 
   // Reset all filters
-  const resetFilters = () => {
+  const resetFilters = (): void => {
     // Reset to empty strings (All Departments/Categories) instead of null
     setSelectedCategory('');
     setSelectedDepartment('');
@@ -255,7 +280,7 @@ export default function NoticesPage() {
   };
   
   // Remove individual filter
-  const removeFilter = (filter) => {
+  const removeFilter = (filter: string): void => {
     // Reset corresponding state based on filter
     if (filter === selectedCategory || filter === null) {
       setSelectedCategory('');
@@ -266,7 +291,7 @@ export default function NoticesPage() {
     }
     
     // Remove from active filters
-    const updatedFilters = activeFilters.filter(f => f !== filter);
+    const updatedFilters = activeFilters.filter((f: string) => f !== filter);
     setActiveFilters(updatedFilters);
     
     // Trigger search only after state update
@@ -280,8 +305,8 @@ export default function NoticesPage() {
   const totalPages = Math.ceil(notices.length / noticesPerPage);
 
   // Generate pagination numbers with ellipsis for long ranges
-  const getPaginationNumbers = () => {
-    const pages = [];
+  const getPaginationNumbers = (): (number | string)[] => {
+    const pages: (number | string)[] = [];
     const maxVisiblePages = 5;
     
     if (totalPages <= maxVisiblePages) {
@@ -333,8 +358,8 @@ export default function NoticesPage() {
             className="border border-gray-300 rounded-md px-4 py-2 w-full pl-10"
             placeholder="Search notices..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+            onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSearch()}
             aria-label="Search notices"
           />
           {searchTerm && (
@@ -358,7 +383,7 @@ export default function NoticesPage() {
         <select 
           className="border border-gray-300 rounded-md px-4 py-2"
           value={selectedDepartment}
-          onChange={(e) => setSelectedDepartment(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedDepartment(e.target.value)}
         >
           <option value="">All Departments</option>
           {departmentdata.map((dept) => (
@@ -371,7 +396,7 @@ export default function NoticesPage() {
         <select 
           className="border border-gray-300 rounded-md px-4 py-2"
           value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(e.target.value)}
         >
           <option value="">All Categories</option>
           {typedata.map((type) => (
@@ -445,7 +470,12 @@ export default function NoticesPage() {
         currentNotices.map((notice) => (
           <div key={notice.id} className="border rounded-lg p-4 mb-4 bg-white shadow-sm">
             <div className="text-gray-600 text-sm mb-1">
-              {notice.published_date} {notice.department && `| ${notice.department}`}
+              {notice.published_date ? new Date(notice.published_date).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+                timeZone: 'Asia/Kathmandu' // Nepal's timezone
+              }) : ''} {notice.department && `| ${notice.department}`}
             </div>
             <div className="flex flex-col md:flex-row md:justify-between md:items-center">
               <div>
@@ -457,7 +487,7 @@ export default function NoticesPage() {
                 )}
                 <p className="text-gray-700 mt-2 text-sm">
                   {notice.description?.substring(0, 150)}
-                  {notice.description?.length > 150 ? '...' : ''}
+                  {notice.description && notice.description.length > 150 ? '...' : ''}
                 </p>
               </div>
               <div className="mt-4 md:mt-0 flex space-x-2">

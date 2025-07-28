@@ -3,9 +3,49 @@ import Link from 'next/link';
 import { twMerge } from 'tailwind-merge';
 import { Calendar } from 'lucide-react';
 
-const LatestNotices = ({ activeId, limit = 5 }) => {
-  const [notices, setNotices] = useState([]);
-  const [loading, setLoading] = useState(true);
+// Define interface for Notice data structure
+interface Notice {
+  id: number;
+  title: string;
+  published_date: string;
+  notice_category?: {
+    notice_type: string;
+  };
+}
+
+// Define component props interface
+interface LatestNoticesProps {
+  activeId?: number;
+  limit?: number;
+}
+
+// Helper function to get the complete classes for a category badge
+const getCategoryClasses = (category: string): string => {
+  const baseClasses = "text-xs px-2 py-1 rounded";
+  
+  switch(category) {
+    case 'Exam':
+      return twMerge(baseClasses, "bg-green-100 text-green-800");
+    case 'Administration':
+      return twMerge(baseClasses, "bg-red-100 text-red-800");
+    case 'Scholarship':
+      return twMerge(baseClasses, "bg-purple-100 text-purple-800");
+    case 'Event':
+      return twMerge(baseClasses, "bg-teal-100 text-teal-800");
+    case 'Admission':
+      return twMerge(baseClasses, "bg-blue-100 text-blue-800");
+    case 'Department':
+      return twMerge(baseClasses, "bg-cyan-100 text-cyan-800");
+    case 'General':
+      return twMerge(baseClasses, "bg-gray-100 text-gray-800");
+    default:
+      return twMerge(baseClasses, "bg-gray-100 text-gray-800");
+  }
+};
+
+const LatestNotices: React.FC<LatestNoticesProps> = ({ activeId, limit = 5 }) => {
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchNotices = async () => {
@@ -60,7 +100,9 @@ const LatestNotices = ({ activeId, limit = 5 }) => {
                   )}
                   <span className="text-xs text-gray-500 flex items-center gap-1">
                     <Calendar size={12} />
-                    {notice.published_date ? new Date(notice.published_date).toLocaleDateString() : ''}
+                    {notice.published_date ? new Date(notice.published_date).toLocaleDateString('en-US', {
+                      timeZone: 'Asia/Kathmandu' // Nepal's timezone
+                    }) : ''}
                   </span>
                 </div>
                 <Link 
@@ -76,30 +118,6 @@ const LatestNotices = ({ activeId, limit = 5 }) => {
       </div>
     </aside>
   );
-};
-
-// Helper function to get the complete classes for a category badge
-const getCategoryClasses = (category) => {
-  const baseClasses = "text-xs px-2 py-1 rounded";
-  
-  switch(category) {
-    case 'Exam':
-      return twMerge(baseClasses, "bg-green-100 text-green-800");
-    case 'Administration':
-      return twMerge(baseClasses, "bg-red-100 text-red-800");
-    case 'Scholarship':
-      return twMerge(baseClasses, "bg-purple-100 text-purple-800");
-    case 'Event':
-      return twMerge(baseClasses, "bg-teal-100 text-teal-800");
-    case 'Admission':
-      return twMerge(baseClasses, "bg-blue-100 text-blue-800");
-    case 'Department':
-      return twMerge(baseClasses, "bg-cyan-100 text-cyan-800");
-    case 'General':
-      return twMerge(baseClasses, "bg-gray-100 text-gray-800");
-    default:
-      return twMerge(baseClasses, "bg-gray-100 text-gray-800");
-  }
 };
 
 export default LatestNotices;
