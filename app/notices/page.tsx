@@ -109,7 +109,7 @@ export default function NoticesPage() {
     return department || "All Departments";
   };
 
-  // Calculate the tag color based on category
+  // tag color based on category
   const getTagColor = (category: string): string => {
     switch(category) {
       case 'Exam': return 'bg-green-200 text-green-800';
@@ -130,7 +130,7 @@ export default function NoticesPage() {
       const response = await fetch(
         'https://notices.tcioe.edu.np/api/notice/notices/',
         { 
-          cache: 'default', // Use browser's default caching strategy
+          cache: 'default', 
           headers: {
             'Accept': 'application/json'
           }
@@ -156,7 +156,7 @@ export default function NoticesPage() {
     }
   };
 
-  // Initial fetch on component mount
+  
   useEffect(() => {
     // Set null values to empty strings
     if (selectedDepartment === null) {
@@ -179,7 +179,7 @@ export default function NoticesPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Effect to trigger search when debounced search term changes
+  
   useEffect(() => {
     if (debouncedSearchTerm !== '') {
       handleSearch();
@@ -298,7 +298,7 @@ export default function NoticesPage() {
     handleSearch();
   };
 
-  // Pagination logic
+  
   const indexOfLastNotice = currentPage * noticesPerPage;
   const indexOfFirstNotice = indexOfLastNotice - noticesPerPage;
   const currentNotices = notices.slice(indexOfFirstNotice, indexOfLastNotice);
