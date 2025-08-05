@@ -5,17 +5,18 @@ const API_BASE_URL =
 
 // Helper function to check if string is UUID format
 function isUUID(str: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(str);
 }
 
 // Helper function to convert slug to club name search
 function slugToSearchTerm(slug: string): string {
   return slug
-    .replace(/-/g, ' ')
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .replace(/-/g, " ")
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 export async function GET(
@@ -43,17 +44,24 @@ export async function GET(
       if (clubsResponse.ok) {
         const clubsData = await clubsResponse.json();
         const searchTerm = slugToSearchTerm(identifier);
-        
+
         // Find club by name match (case insensitive)
-        const club = clubsData.results?.find((c: any) => 
-          c.name.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-') === identifier.toLowerCase() ||
-          c.name.toLowerCase().includes(searchTerm.toLowerCase())
+        const club = clubsData.results?.find(
+          (c: any) =>
+            c.name
+              .toLowerCase()
+              .replace(/[^a-z0-9\s]/g, "")
+              .replace(/\s+/g, "-") === identifier.toLowerCase() ||
+            c.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
         if (club) {
           clubUuid = club.uuid;
         } else {
-          return NextResponse.json({ error: "Club not found" }, { status: 404 });
+          return NextResponse.json(
+            { error: "Club not found" },
+            { status: 404 }
+          );
         }
       }
     }

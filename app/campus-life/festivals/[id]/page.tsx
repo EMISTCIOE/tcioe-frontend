@@ -19,16 +19,17 @@ import { useEvent, formatEventDateRange } from "@/hooks/use-events";
 import type { CampusEvent } from "@/types";
 
 interface CampusEventDetailPageProps {
-  params: {
-    id: string;
-  };
+  params: Promise<{
+    id: string; // Can be either event slug or UUID
+  }>;
 }
 
 export default function CampusEventDetailPage({
   params,
 }: CampusEventDetailPageProps) {
+  const resolvedParams = React.use(params);
   const { event, loading, error, refetch } = useEvent({
-    id: params.id,
+    id: resolvedParams.id,
     type: "campus",
   });
 

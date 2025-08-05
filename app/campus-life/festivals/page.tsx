@@ -21,6 +21,7 @@ import {
   formatEventDateRange,
   isUpcomingEvent,
   isPastEvent,
+  generateEventSlug,
   type EventType,
   type CampusEventType,
 } from "@/hooks/use-events";
@@ -324,7 +325,11 @@ export default function CampusFestivalsPage() {
 
                     {/* Read More Button */}
                     <Link
-                      href={`/campus-life/festivals/${event.uuid}`}
+                      href={`/campus-life/festivals/${generateEventSlug(
+                        event.title,
+                        (event as CampusEvent).eventStartDate ||
+                          (event as ClubEvent).date
+                      )}`}
                       className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
                     >
                       Read More

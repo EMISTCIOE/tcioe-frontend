@@ -314,3 +314,38 @@ export interface ClubsResponse {
   previous: string | null;
   results: Club[];
 }
+
+// Campus Info API Types
+export interface SocialLink {
+  uuid: string;
+  platform:
+    | "FACEBOOK"
+    | "INSTAGRAM"
+    | "TWITTER"
+    | "LINKEDIN"
+    | "YOUTUBE"
+    | "WEBSITE";
+  url: string;
+}
+
+export interface CampusInfo {
+  name: string;
+  phoneNumber: string;
+  email: string;
+  organizationChart: string;
+  location: string;
+  socialLinks: SocialLink[];
+}
+
+// Feedback API Types
+export interface FeedbackSubmission {
+  fullName: string;
+  rollNumber: string;
+  email: string;
+  feedbackOrSuggestion: string;
+}
+
+export interface FeedbackResponse {
+  success: boolean;
+  message?: string;
+}

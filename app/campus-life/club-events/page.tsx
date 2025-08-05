@@ -10,6 +10,7 @@ import {
   formatEventDate,
   isUpcomingEvent,
   isPastEvent,
+  generateEventSlug,
   type EventType,
 } from "@/hooks/use-events";
 import type { CampusEvent, ClubEvent } from "@/types";
@@ -258,7 +259,10 @@ export default function StudentClubsPage() {
 
                     {/* Read More Button */}
                     <Link
-                      href={`/campus-life/clubs/${event.uuid}`}
+                      href={`/campus-life/club-events/${generateEventSlug(
+                        event.title,
+                        (event as ClubEvent).date
+                      )}`}
                       className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
                     >
                       Read More

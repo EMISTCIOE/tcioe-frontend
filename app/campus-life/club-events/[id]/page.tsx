@@ -16,16 +16,17 @@ import { useEvent, formatEventDate } from "@/hooks/use-events";
 import type { ClubEvent } from "@/types";
 
 interface ClubEventDetailPageProps {
-  params: {
-    id: string;
-  };
+  params: Promise<{
+    id: string; // Can be either event slug or UUID
+  }>;
 }
 
 export default function ClubEventDetailPage({
   params,
 }: ClubEventDetailPageProps) {
+  const resolvedParams = React.use(params);
   const { event, loading, error, refetch } = useEvent({
-    id: params.id,
+    id: resolvedParams.id,
     type: "club",
   });
 

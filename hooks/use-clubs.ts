@@ -99,11 +99,11 @@ interface UseClubReturn {
 export function generateClubSlug(clubName: string): string {
   return clubName
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .replace(/[^a-z0-9\s-]/g, "") // Remove special chars
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/-+/g, "-") // Replace multiple hyphens with single
     .trim()
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
 }
 
 // Helper function to generate subdomain URL
@@ -123,24 +123,27 @@ export function useClub(params: UseClubParams): UseClubReturn {
       setError(null);
 
       // Check if the id is a slug (not a UUID format)
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.id);
-      
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          params.id
+        );
+
       if (!isUUID) {
         // It's a slug, we need to find the club first
-        const clubsResponse = await fetch('/api/clubs?limit=100'); // Get clubs to find the matching slug
+        const clubsResponse = await fetch("/api/clubs?limit=100"); // Get clubs to find the matching slug
         if (!clubsResponse.ok) {
-          throw new Error('Failed to fetch clubs list');
+          throw new Error("Failed to fetch clubs list");
         }
-        
+
         const clubsData: ClubsResponse = await clubsResponse.json();
-        const targetClub = clubsData.results.find(club => 
-          generateClubSlug(club.name) === params.id
+        const targetClub = clubsData.results.find(
+          (club) => generateClubSlug(club.name) === params.id
         );
-        
+
         if (!targetClub) {
-          throw new Error('Club not found');
+          throw new Error("Club not found");
         }
-        
+
         // Now fetch the full club details using UUID
         const response = await fetch(`/api/clubs/${targetClub.uuid}`, {
           method: "GET",

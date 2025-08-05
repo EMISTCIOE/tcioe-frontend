@@ -35,12 +35,12 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
   // Handle contact button click
   const handleGetInTouch = () => {
     if (club?.website) {
-      window.open(club.website, '_blank');
+      window.open(club.website, "_blank");
     } else if (clubSubdomain) {
-      window.open(`https://${clubSubdomain}`, '_blank');
+      window.open(`https://${clubSubdomain}`, "_blank");
     } else {
       // Fallback to email or contact form
-      window.location.href = 'mailto:info@tcioe.edu.np';
+      window.location.href = "mailto:info@tcioe.edu.np";
     }
   };
 
@@ -266,11 +266,11 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button 
+                  <button
                     onClick={handleGetInTouch}
                     className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center"
                   >
-                    {club.website ? 'Visit Website' : `Visit ${clubSubdomain}`}
+                    {club.website ? "Visit Website" : `Visit ${clubSubdomain}`}
                     <ExternalLink className="ml-2 h-4 w-4" />
                   </button>
                   <Link

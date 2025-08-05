@@ -9,6 +9,34 @@ export type CampusEventType =
   | "TECHNICAL"
   | "OTHER";
 
+// Helper function to generate event URL-friendly slug from title and date
+export function generateEventSlug(title: string, date?: string): string {
+  let slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/-+/g, "-") // Replace multiple hyphens with single
+    .trim()
+    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+
+  // Add date to slug if provided
+  if (date) {
+    const eventDate = new Date(date);
+    const year = eventDate.getFullYear();
+    const month = String(eventDate.getMonth() + 1).padStart(2, "0");
+    const day = String(eventDate.getDate()).padStart(2, "0");
+    slug = `${year}-${month}-${day}-${slug}`;
+  }
+
+  return slug;
+}
+
+interface UseEventsParams extends SearchableQueryParams {
+  type?: EventType;
+  eventType?: CampusEventType;
+  ordering?: string;
+}
+
 interface UseEventsParams extends SearchableQueryParams {
   type?: EventType;
   eventType?: CampusEventType;
@@ -129,25 +157,78 @@ export function useEvent(params: UseEventParams): UseEventReturn {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(
-        `/api/events/${params.id}?type=${params.type}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // Check if the id is a slug (not a UUID format)
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          params.id
+        );
 
-      if (!response.ok) {
-        if (response.status === 404) {
+      if (!isUUID) {
+        // It's a slug, we need to find the event first
+        const eventsResponse = await fetch(
+          `/api/events?type=${params.type}&limit=100`
+        );
+        if (!eventsResponse.ok) {
+          throw new Error("Failed to fetch events list");
+        }
+
+        const eventsData = await eventsResponse.json();
+        const targetEvent = eventsData.results.find(
+          (event: CampusEvent | ClubEvent) => {
+            // For campus events, use eventStartDate; for club events, use date
+            const eventDate =
+              (event as CampusEvent).eventStartDate ||
+              (event as ClubEvent).date;
+            return generateEventSlug(event.title, eventDate) === params.id;
+          }
+        );
+
+        if (!targetEvent) {
           throw new Error("Event not found");
         }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
-      const data = await response.json();
-      setEvent(data);
+        // Now fetch the full event details using UUID
+        const response = await fetch(
+          `/api/events/${targetEvent.uuid}?type=${params.type}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Event not found");
+          }
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setEvent(data);
+      } else {
+        // Direct UUID lookup
+        const response = await fetch(
+          `/api/events/${params.id}?type=${params.type}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Event not found");
+          }
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setEvent(data);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       console.error("Error fetching event:", err);

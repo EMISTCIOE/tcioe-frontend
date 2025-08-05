@@ -5,7 +5,11 @@ import { Search, Users, X, ChevronRight, MapPin, Mail } from "lucide-react";
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useClubs, generateClubSlug, generateClubSubdomain } from "@/hooks/use-clubs";
+import {
+  useClubs,
+  generateClubSlug,
+  generateClubSubdomain,
+} from "@/hooks/use-clubs";
 import type { Club } from "@/types";
 
 export default function StudentClubsPage() {
@@ -187,9 +191,17 @@ export default function StudentClubsPage() {
                   </h3>
 
                   {/* Club Description */}
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-3 leading-relaxed">
                     {extractTextFromHtml(club.shortDescription)}
                   </p>
+
+                  {/* Club Subdomain */}
+                  <div className="flex items-center text-xs text-blue-600 mb-4 bg-blue-50 px-2 py-1 rounded">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    <span className="font-mono">
+                      {generateClubSubdomain(club.name)}
+                    </span>
+                  </div>
 
                   {/* Members Count (if available) */}
                   <div className="flex items-center justify-between mb-4">
@@ -207,7 +219,9 @@ export default function StudentClubsPage() {
 
                   {/* Learn More Button */}
                   <Link
-                    href={`/campus-life/clubs/${club.slug || generateClubSlug(club.name)}`}
+                    href={`/campus-life/clubs/${
+                      club.slug || generateClubSlug(club.name)
+                    }`}
                     className="inline-flex items-center w-full justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                   >
                     Learn More

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { Search, MenuIcon, ChevronDown } from "lucide-react";
+import { Search, MenuIcon, ChevronDown, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -141,6 +141,14 @@ export const Header = () => {
             <Link href="#" className="hover:underline">
               Journal
             </Link>
+            <Link
+              href="/suggestion-box"
+              className="inline-flex items-center hover:underline text-orange-200 hover:text-white transition-colors"
+              title="Share your feedback and suggestions"
+            >
+              <MessageSquare className="h-4 w-4 mr-1" />
+              Suggestions
+            </Link>
             <Button
               variant="ghost"
               size="icon"
@@ -206,6 +214,35 @@ export const Header = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px] p-6">
                 <div className="flex flex-col gap-4 pt-8">
+                  {/* Top Navigation Items */}
+                  <div className="border-b border-gray-200 pb-4 mb-4">
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                      Quick Links
+                    </h3>
+                    <div className="flex flex-col gap-2">
+                      <Link
+                        href="#"
+                        className="block py-2 text-base text-text-dark hover:text-primary-blue transition-colors"
+                      >
+                        Library
+                      </Link>
+                      <Link
+                        href="#"
+                        className="block py-2 text-base text-text-dark hover:text-primary-blue transition-colors"
+                      >
+                        Journal
+                      </Link>
+                      <Link
+                        href="/suggestion-box"
+                        className="inline-flex items-center py-2 text-base text-orange-600 hover:text-orange-700 transition-colors font-medium"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Suggestion Box
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Main Navigation */}
                   {navItems.map((item) => (
                     <div key={item.name}>
                       {item.dropdown && item.dropdown.length > 0 ? (
