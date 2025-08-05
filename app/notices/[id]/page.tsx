@@ -51,10 +51,10 @@ interface PageParams {
 export default function NoticeDetail({ params }: PageParams) {
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
-  const noticeId = resolvedParams.id;
+  const noticeIdentifier = resolvedParams.id; // Can be either slug or UUID
 
   // Use the new hooks for API calls
-  const { notice, loading, error } = useNotice(noticeId);
+  const { notice, loading, error } = useNotice(noticeIdentifier);
   const { notices: latestNotices, loading: latestLoading } = useNotices({
     limit: 10,
     ordering: "-publishedAt",

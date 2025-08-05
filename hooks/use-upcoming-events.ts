@@ -44,22 +44,23 @@ export function useUpcomingEvents(limit: number = 6): UseUpcomingEventsReturn {
         }
 
         const data = await response.json();
-        
+
         // Transform events to unified format
         const unifiedEvents: UnifiedEvent[] = data.results.map((event: any) => {
           const isCampusEvent = event.source === "campus";
-          
+
           return {
             ...event,
             displayDate: isCampusEvent ? event.eventStartDate : event.date,
             displayLocation: isCampusEvent ? "Campus" : event.clubName,
-            displayDescription: event.descriptionShort || event.descriptionDetailed || "",
+            displayDescription:
+              event.descriptionShort || event.descriptionDetailed || "",
           };
         });
 
         // Filter for upcoming events only
         const now = new Date();
-        const upcomingEvents = unifiedEvents.filter(event => {
+        const upcomingEvents = unifiedEvents.filter((event) => {
           const eventDate = new Date(event.displayDate);
           return eventDate >= now;
         });
@@ -73,7 +74,8 @@ export function useUpcomingEvents(limit: number = 6): UseUpcomingEventsReturn {
 
         setEvents(upcomingEvents.slice(0, limit));
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to fetch events";
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch events";
         setError(errorMessage);
         console.error("Error fetching upcoming events:", err);
       } finally {

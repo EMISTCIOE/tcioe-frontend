@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       fullName: trimmedFullName,
       rollNumber: trimmedRollNumber,
       email: trimmedEmail,
-      feedbackOrSuggestion: trimmedFeedback,
+      message: trimmedFeedback,
     };
 
     console.log("Submitting to external API:", requestPayload);

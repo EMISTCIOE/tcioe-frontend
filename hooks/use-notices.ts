@@ -77,15 +77,15 @@ export function useNotices(initialParams?: NoticesQueryParams) {
 }
 
 /**
- * Hook for fetching a single notice
+ * Hook for fetching a single notice by slug or UUID
  */
-export function useNotice(uuid?: string) {
+export function useNotice(identifier?: string) {
   const [notice, setNotice] = useState<Notice | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!uuid) {
+    if (!identifier) {
       setLoading(false);
       return;
     }
@@ -94,7 +94,7 @@ export function useNotice(uuid?: string) {
       try {
         setLoading(true);
         setError(null);
-        const response = await NoticesService.getNoticeById(uuid);
+        const response = await NoticesService.getNoticeBySlugOrId(identifier);
         setNotice(response);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch notice");
@@ -105,25 +105,25 @@ export function useNotice(uuid?: string) {
     };
 
     fetchNotice();
-  }, [uuid]);
+  }, [identifier]);
 
   const incrementViews = useCallback(async () => {
-    if (!uuid) return;
+    if (!notice?.uuid) return;
     try {
-      await NoticesService.incrementNoticeViews(uuid);
+      await NoticesService.incrementNoticeViews(notice.uuid);
     } catch (err) {
       console.error("Failed to increment views:", err);
     }
-  }, [uuid]);
+  }, [notice?.uuid]);
 
   const incrementShares = useCallback(async () => {
-    if (!uuid) return;
+    if (!notice?.uuid) return;
     try {
-      await NoticesService.incrementNoticeShares(uuid);
+      await NoticesService.incrementNoticeShares(notice.uuid);
     } catch (err) {
       console.error("Failed to increment shares:", err);
     }
-  }, [uuid]);
+  }, [notice?.uuid]);
 
   return {
     notice,

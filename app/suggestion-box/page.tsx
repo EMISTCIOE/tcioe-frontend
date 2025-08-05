@@ -5,7 +5,7 @@ import { Send, MessageSquare, CheckCircle, AlertTriangle } from "lucide-react";
 import { useFeedback } from "@/hooks/use-feedback";
 
 export default function SuggestionBoxPage() {
-  const { submitFeedback, loading, error, success } = useFeedback();
+  const { submitFeedback, loading, error, success, reset } = useFeedback();
   const [formData, setFormData] = useState({
     fullName: "",
     rollNumber: "",
@@ -54,6 +54,11 @@ export default function SuggestionBoxPage() {
           email: "",
           feedbackOrSuggestion: "",
         });
+
+        // Auto-hide success message after 5 seconds
+        setTimeout(() => {
+          reset();
+        }, 5000);
       }
     } catch (error) {
       // Error is handled by the hook

@@ -395,7 +395,7 @@ export default function NoticesPage() {
 
                   {/* Title */}
                   <Link
-                    href={`/notices/${notice.uuid}`}
+                    href={`/notices/${notice.slug}`}
                     className="block hover:text-blue-600 transition-colors"
                   >
                     <h3 className="text-lg font-semibold text-gray-900 mb-3 hover:text-blue-600 line-clamp-2">
@@ -413,7 +413,7 @@ export default function NoticesPage() {
                   {/* Bottom row - Read More button and Media icons */}
                   <div className="flex justify-between items-center">
                     <Link
-                      href={`/notices/${notice.uuid}`}
+                      href={`/notices/${notice.slug}`}
                       className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                     >
                       Read More

@@ -8,15 +8,21 @@ import { NewsEvents } from "@/components/sections/news-events";
 import { DepartmentsOverview } from "@/components/sections/departments-overview";
 import { GallerySection } from "@/components/sections/gallery-section";
 import { QuickLinksSection } from "@/components/sections/quick-links-section";
-import { EventsHighlightsSection } from "@/components/sections/events-highlights-section"; // New import
+import { UpcomingEventsSection } from "@/components/sections/upcoming-events-section"; // Updated import
 import { useCollegeData } from "@/hooks/use-college-data";
+import { useNotices } from "@/hooks/use-notices";
 import { campusChiefData } from "@/data/mock-data";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function HomePage() {
   const { data, loading, error } = useCollegeData();
+  const { notices, loading: noticesLoading } = useNotices({
+    page: 1,
+    limit: 6,
+    ordering: "-publishedAt",
+  });
 
-  if (loading) {
+  if (loading || noticesLoading) {
     return (
       <div className="flex flex-col min-h-screen">
         <div className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden">
@@ -162,7 +168,7 @@ export default function HomePage() {
           { label: "Research Projects", value: "100+", icon: "FlaskConical" },
         ]}
       />
-      <NewsEvents news={data?.news || []} />
+      <NewsEvents notices={notices || []} />
       <DepartmentsOverview
         departments={
           data?.departments.map((dept) => ({
@@ -173,8 +179,8 @@ export default function HomePage() {
           })) || []
         }
       />
-      <EventsHighlightsSection events={data?.events || []} />{" "}
-      {/* New Events Section */}
+      <UpcomingEventsSection limit={6} />{" "}
+      {/* New Events Section with campus and club events */}
       <GallerySection images={data?.gallery || []} />
       <QuickLinksSection links={quickLinks} />
     </>
