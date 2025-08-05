@@ -86,11 +86,6 @@ export const Header = () => {
     {
       name: "Notices",
       href: "/notices",
-      dropdown: [
-        { name: "Latest Notices", href: "/notices" },
-        { name: "Exam Notices", href: "/notices/exams" },
-        { name: "Admission Notices", href: "/notices/admissions" },
-      ],
     },
     {
       name: "Resources",

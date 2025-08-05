@@ -1,550 +1,496 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { AnimatedSection } from "@/components/animated-section";
-import { Search, Calendar, Download, ExternalLink } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import {
+  Search,
+  Calendar,
+  Download,
+  ExternalLink,
+  Filter,
+  X,
+  Eye,
+  Share2,
+  FileText,
+  Image,
+  Video,
+} from "lucide-react";
 import Link from "next/link";
-import React from 'react';
-
-interface NoticeType {
-  id: number;
-  notice_type: string;
-}
-
-interface DepartmentType {
-  id: number;
-  department_name: string;
-}
-
-interface NoticeCategory {
-  notice_type: string;
-}
-
-interface Notice {
-  id: number;
-  title: string;
-  description?: string;
-  published_date: string;
-  department?: string;
-  notice_category?: NoticeCategory;
-  download_file?: string;
-}
-
-const typedata: NoticeType[] = [
-  {
-    id: 1,
-    notice_type: "Administration",
-  },
-  {
-    id: 2,
-    notice_type: "Admission",
-  },
-  {
-    id: 3,
-    notice_type: "Exam",
-  },
-  {
-    id: 4,
-    notice_type: "Scholarship",
-  },
-  {
-    id: 5,
-    notice_type: "Department",
-  },
-  {
-    id: 6,
-    notice_type: "Event",
-  },
-  {
-    id: 7,
-    notice_type: "General",
-  },
-];
-
-const departmentdata: DepartmentType[] = [
-  {
-    id: 1,
-    department_name: "Applied Science",
-  },
-  {
-    id: 2,
-    department_name: "Automobile & Mechanical",
-  },
-  {
-    id: 3,
-    department_name: "Architecture",
-  },
-  {
-    id: 4,
-    department_name: "Civil Engineering",
-  },
-  {
-    id: 5,
-    department_name: "Electronics & Computer Engineering",
-  },
-  {
-    id: 6,
-    department_name: "Industrial Engineering",
-  },
-];
+import React from "react";
+import {
+  useNotices,
+  useNoticeCategories,
+  useNoticeDepartments,
+} from "@/hooks/use-notices";
+import {
+  getCategoryColor,
+  formatNoticeDate,
+  formatRelativeDate,
+  extractTextFromHtml,
+  isDownloadableDocument,
+  getMediaTypeIcon,
+} from "@/lib/notices-utils";
+import type { Notice } from "@/types";
 
 export default function NoticesPage() {
-  const [notices, setNotices] = useState<Notice[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  // State for filters and pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [noticesPerPage] = useState<number>(5);
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [noticesNotFound, setNoticesNotFound] = useState<boolean>(false);
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>('');
-  
-  // Helper functions
-  const getNoticeCategory = (notice: Notice): string => {
-    return notice.notice_category?.notice_type || "General";
-  };
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("");
 
-  const getDepartmentName = (department?: string): string => {
-    return department || "All Departments";
-  };
+  const noticesPerPage = 10;
 
-  // tag color based on category
-  const getTagColor = (category: string): string => {
-    switch(category) {
-      case 'Exam': return 'bg-green-200 text-green-800';
-      case 'Administration': return 'bg-red-200 text-red-800';
-      case 'Scholarship': return 'bg-purple-200 text-purple-800';
-      case 'Event': return 'bg-emerald-200 text-emerald-800';
-      case 'Admission': return 'bg-blue-200 text-blue-800';
-      case 'Department': return 'bg-yellow-200 text-yellow-800';
-      case 'General': return 'bg-indigo-200 text-indigo-800';
-      default: return 'bg-gray-200 text-gray-800';
-    }
-  };
+  // Memoize the API parameters to prevent unnecessary re-renders
+  const apiParams = useMemo(
+    () => ({
+      page: currentPage,
+      limit: noticesPerPage,
+      search: debouncedSearchTerm || undefined,
+      category: selectedCategory || undefined,
+      department: selectedDepartment || undefined,
+      ordering: "-published_at",
+    }),
+    [currentPage, debouncedSearchTerm, selectedCategory, selectedDepartment]
+  );
 
-  // Fetch notices from API
-  const fetchNotices = async (): Promise<void> => {
-    setLoading(true);
-    try {
-      const response = await fetch(
-        'https://notices.tcioe.edu.np/api/notice/notices/',
-        { 
-          cache: 'default', 
-          headers: {
-            'Accept': 'application/json'
-          }
-        }
-      );
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch notices: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setNotices(data);
-      setNoticesNotFound(data.length === 0);
-      
-      // Reset active filters
-      setActiveFilters([]);
-    } catch (error) {
-      console.error('Error fetching notices:', error);
-      setNotices([]);
-      setNoticesNotFound(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // API hooks
+  const {
+    notices,
+    loading: noticesLoading,
+    error: noticesError,
+    pagination,
+    refetch: refetchNotices,
+  } = useNotices(apiParams);
 
-  
-  useEffect(() => {
-    // Set null values to empty strings
-    if (selectedDepartment === null) {
-      setSelectedDepartment('');
-    }
-    
-    if (selectedCategory === null) {
-      setSelectedCategory('');
-    }
-    
-    fetchNotices();
-  }, []);
+  const { categories, loading: categoriesLoading } = useNoticeCategories();
 
-  // Effect to debounce search term
+  const { departments, loading: departmentsLoading } = useNoticeDepartments();
+
+  // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 1000); // 1000ms (1 second) delay
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  
-  useEffect(() => {
-    if (debouncedSearchTerm !== '') {
-      handleSearch();
+  // Memoize active filters to prevent infinite loops
+  const activeFilters = useMemo(() => {
+    const filters: string[] = [];
+    if (selectedCategory && categories.length > 0) {
+      const category = categories.find((cat) => cat.uuid === selectedCategory);
+      if (category) filters.push(category.name);
     }
-  }, [debouncedSearchTerm]);
-
-  // Effect to handle initial load of active filters
-  useEffect(() => {
-    // Only update active filters if we have any active filters
-    if (selectedCategory || selectedDepartment || searchTerm) {
-      const newFilters: string[] = [];
-      if (selectedCategory) newFilters.push(selectedCategory);
-      if (selectedDepartment) newFilters.push(selectedDepartment);
-      if (searchTerm) newFilters.push(`Search: ${searchTerm}`);
-      
-      setActiveFilters(newFilters);
+    if (selectedDepartment && departments.length > 0) {
+      const department = departments.find(
+        (dept) => dept.uuid === selectedDepartment
+      );
+      if (department) filters.push(department.name);
     }
-  }, []);
+    if (searchTerm) filters.push(`Search: ${searchTerm}`);
+    return filters;
+  }, [
+    selectedCategory,
+    selectedDepartment,
+    searchTerm,
+    categories,
+    departments,
+  ]);
 
-  // Search and filter functionality
-  const handleSearch = async (): Promise<void> => {
-    setLoading(true);
+  // Reset to first page when filters change (only when not already on page 1)
+  useEffect(() => {
+    const shouldReset =
+      (debouncedSearchTerm || selectedCategory || selectedDepartment) &&
+      currentPage !== 1;
+    if (shouldReset) {
+      setCurrentPage(1);
+    }
+  }, [debouncedSearchTerm, selectedCategory, selectedDepartment]);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(pagination.count / noticesPerPage);
+
+  // Loading state
+  const isLoading = noticesLoading || categoriesLoading || departmentsLoading;
+
+  // Handle filter changes
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSelectedDepartment("");
+    setSelectedCategory("");
     setCurrentPage(1);
-    
-    // If both department and category are null, set them to empty strings (All Departments/Categories)
-    if (selectedDepartment === null) {
-      setSelectedDepartment('');
-    }
-    
-    if (selectedCategory === null) {
-      setSelectedCategory('');
-    }
-    
-    try {
-      // API call based on whether search term exists
-      const searchTermToUse = searchTerm.trim();
-      const endpoint = searchTermToUse 
-        ? `https://notices.tcioe.edu.np/api/notice/search/?keyword=${encodeURIComponent(searchTermToUse)}`
-        : 'https://notices.tcioe.edu.np/api/notice/notices/';
-      
-      const response = await fetch(endpoint, { 
-        cache: 'no-store',
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch notices: ${response.status}`);
-      }
-      
-      let data = await response.json();
-      
-      // Apply client-side filtering
-      if (selectedCategory || selectedDepartment) {
-        data = data.filter((notice: Notice) => {
-          // Check category filter
-          const categoryMatch = !selectedCategory || 
-            getNoticeCategory(notice) === selectedCategory;
-          
-          // Check department filter
-          const departmentMatch = !selectedDepartment || 
-            getDepartmentName(notice.department) === selectedDepartment;
-          
-          // Return true only if both conditions are met
-          return categoryMatch && departmentMatch;
-        });
-      }
-      
-      setNotices(data);
-      setNoticesNotFound(data.length === 0);
-      
-      // Update active filters
-      const newFilters: string[] = [];
-      if (selectedCategory) newFilters.push(selectedCategory);
-      if (selectedDepartment) newFilters.push(selectedDepartment);
-      if (searchTerm) newFilters.push(`Search: ${searchTerm}`);
-      
-      setActiveFilters(newFilters);
-    } catch (error) {
-      console.error('Error searching notices:', error);
-      // Set empty notices on error
-      setNotices([]);
-      setNoticesNotFound(true);
-    } finally {
-      setLoading(false);
-    }
   };
 
-  // Reset all filters
-  const resetFilters = (): void => {
-    // Reset to empty strings (All Departments/Categories) instead of null
-    setSelectedCategory('');
-    setSelectedDepartment('');
-    setSearchTerm('');
-    setActiveFilters([]);
-    fetchNotices();
-  };
-  
-  // Remove individual filter
-  const removeFilter = (filter: string): void => {
-    // Reset corresponding state based on filter
-    if (filter === selectedCategory || filter === null) {
-      setSelectedCategory('');
-    } else if (filter === selectedDepartment || filter === null) {
-      setSelectedDepartment('');
-    } else if (filter.startsWith('Search:')) {
-      setSearchTerm('');
-    }
-    
-    // Remove from active filters
-    const updatedFilters = activeFilters.filter((f: string) => f !== filter);
-    setActiveFilters(updatedFilters);
-    
-    // Trigger search only after state update
-    handleSearch();
-  };
-
-  
-  const indexOfLastNotice = currentPage * noticesPerPage;
-  const indexOfFirstNotice = indexOfLastNotice - noticesPerPage;
-  const currentNotices = notices.slice(indexOfFirstNotice, indexOfLastNotice);
-  const totalPages = Math.ceil(notices.length / noticesPerPage);
-
-  // Generate pagination numbers with ellipsis for long ranges
-  const getPaginationNumbers = (): (number | string)[] => {
-    const pages: (number | string)[] = [];
-    const maxVisiblePages = 5;
-    
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+  const removeFilter = (filterToRemove: string) => {
+    if (filterToRemove.startsWith("Search:")) {
+      setSearchTerm("");
     } else {
-      // Always show first and last page
-      if (currentPage <= 3) {
-        // Near the start
-        for (let i = 1; i <= 4; i++) {
-          pages.push(i);
-        }
-        pages.push('...');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        // Near the end
-        pages.push(1);
-        pages.push('...');
-        for (let i = totalPages - 3; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        // In the middle
-        pages.push(1);
-        pages.push('...');
-        pages.push(currentPage - 1);
-        pages.push(currentPage);
-        pages.push(currentPage + 1);
-        pages.push('...');
-        pages.push(totalPages);
+      const category = categories.find((cat) => cat.name === filterToRemove);
+      const department = departments.find(
+        (dept) => dept.name === filterToRemove
+      );
+
+      if (category) {
+        setSelectedCategory("");
+      } else if (department) {
+        setSelectedDepartment("");
       }
     }
-    
-    return pages;
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleNoticeClick = async (notice: Notice) => {
+    // You can implement view tracking here
+    console.log("Notice clicked:", notice.title);
+  };
+
+  const renderMediaIcons = (notice: Notice) => {
+    const downloadableMedia = notice.medias.filter((media) =>
+      isDownloadableDocument(media.mediaType, media.file)
+    );
+
+    if (downloadableMedia.length === 0) return null;
+
+    return (
+      <div className="flex items-center gap-2 mt-2">
+        {downloadableMedia.map((media, index) => {
+          const iconName = getMediaTypeIcon(media.mediaType, media.file);
+          return (
+            <a
+              key={media.uuid}
+              href={media.file}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+              title={media.caption}
+            >
+              {media.mediaType === "DOCUMENT" && (
+                <FileText className="h-4 w-4" />
+              )}
+              {media.mediaType === "IMAGE" && <Image className="h-4 w-4" />}
+              {media.mediaType === "VIDEO" && <Video className="h-4 w-4" />}
+              <Download className="h-3 w-3" />
+            </a>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Category badge colors matching the UI
+  const getCategoryBadgeColor = (categoryName: string) => {
+    switch (categoryName?.toLowerCase()) {
+      case "academic":
+        return "bg-green-100 text-green-800";
+      case "maintenance":
+        return "bg-red-100 text-red-800";
+      case "financial":
+        return "bg-purple-100 text-purple-800";
+      case "events":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
 
   return (
-    <AnimatedSection className="py-20 px-4 max-w-6xl mx-auto">
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold text-primary-blue mb-4">Notices</h1>
-        <p className="text-lg text-text-dark">All official announcements and circulars.</p>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="mb-6 flex flex-wrap gap-4">
-        <div className="relative w-full md:w-1/3">
-          <input
-            className="border border-gray-300 rounded-md px-4 py-2 w-full pl-10"
-            placeholder="Search notices..."
-            value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-            onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSearch()}
-            aria-label="Search notices"
-          />
-          {searchTerm && (
-            <button
-              className="absolute right-10 top-2.5 text-gray-400 hover:text-gray-600"
-              onClick={() => {
-                setSearchTerm('');
-                fetchNotices();
-              }}
-              aria-label="Clear search"
-            >
-              ×
-            </button>
-          )}
-          <Search 
-            className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 cursor-pointer" 
-            onClick={handleSearch}
-          />
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Header matching the image design exactly */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            Notices and Announcements
+          </h1>
+          <div className="w-24 h-1 bg-orange-500"></div>
         </div>
-        
-        <select 
-          className="border border-gray-300 rounded-md px-4 py-2"
-          value={selectedDepartment}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedDepartment(e.target.value)}
-        >
-          <option value="">All Departments</option>
-          {departmentdata.map((dept) => (
-            <option key={dept.id} value={dept.department_name}>
-              {dept.department_name}
-            </option>
-          ))}
-        </select>
-        
-        <select 
-          className="border border-gray-300 rounded-md px-4 py-2"
-          value={selectedCategory}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(e.target.value)}
-        >
-          <option value="">All Categories</option>
-          {typedata.map((type) => (
-            <option key={type.id} value={type.notice_type}>
-              {type.notice_type}
-            </option>
-          ))}
-        </select>
-        
-        <button 
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-          onClick={handleSearch}
-        >
-          Apply Filter
-        </button>
-      </div>
 
-      {/* Active Filters */}
-      {activeFilters.length > 0 && (
-        <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex items-center flex-wrap">
-            <span className="font-medium text-gray-800 mr-3">Active Filters:</span>
-            <div className="flex flex-wrap gap-2">
-              {activeFilters.map((filter, index) => (
-                <span key={index} className="inline-flex items-center bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md text-sm">
-                  {filter}
-                  <button 
-                    onClick={() => removeFilter(filter)} 
-                    className="ml-2 text-blue-700 font-bold hover:bg-blue-200 rounded-full h-5 w-5 flex items-center justify-center"
+        {/* Search and Filters Section - matching the UI exactly */}
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="p-6">
+            <div className="flex flex-col lg:flex-row gap-4 items-center">
+              {/* Search Bar */}
+              <div className="relative flex-1 max-w-md">
+                <input
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="Search notices..."
+                  value={searchTerm}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSearchTerm(e.target.value)
+                  }
+                  aria-label="Search notices"
+                />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                {searchTerm && (
+                  <button
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    onClick={() => setSearchTerm("")}
+                    aria-label="Clear search"
                   >
-                    ×
+                    <X className="h-4 w-4" />
                   </button>
-                </span>
-              ))}
-              <button 
-                onClick={resetFilters}
-                className="text-sm text-red-500 hover:text-red-700 ml-2 underline"
-              >
-                Clear All
+                )}
+              </div>
+
+              {/* Department Filter */}
+              <div className="flex-shrink-0">
+                <select
+                  className="px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-48 text-sm"
+                  value={selectedDepartment}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    setSelectedDepartment(e.target.value)
+                  }
+                  disabled={departmentsLoading}
+                >
+                  <option value="">All Departments</option>
+                  {departments.map((dept) => (
+                    <option key={dept.uuid} value={dept.uuid}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Category Filter */}
+              <div className="flex-shrink-0">
+                <select
+                  className="px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-48 text-sm"
+                  value={selectedCategory}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    setSelectedCategory(e.target.value)
+                  }
+                  disabled={categoriesLoading}
+                >
+                  <option value="">All Categories</option>
+                  {categories.map((category) => (
+                    <option key={category.uuid} value={category.uuid}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Filter Button - Matching the blue color from UI */}
+              <button className="px-6 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm font-medium">
+                <Filter className="h-4 w-4" />
+                Filter
               </button>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Loading State */}
-      {loading && (
-        <div className="py-10">
-          <div className="flex justify-center items-center">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-          <p className="text-center mt-4 text-gray-600">Loading notices...</p>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!loading && noticesNotFound && (
-        <div className="text-center py-10 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-gray-600">No notices found matching your criteria.</p>
-          <button 
-            onClick={resetFilters}
-            className="mt-4 text-blue-600 hover:text-blue-800"
-          >
-            Clear filters and try again
-          </button>
-        </div>
-      )}
-
-      {/* Notice List */}
-      {!loading && !noticesNotFound && (
-        currentNotices.map((notice) => (
-          <div key={notice.id} className="border rounded-lg p-4 mb-4 bg-white shadow-sm">
-            <div className="text-gray-600 text-sm mb-1">
-              {notice.published_date ? new Date(notice.published_date).toLocaleDateString('en-US', {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-                timeZone: 'Asia/Kathmandu' // Nepal's timezone
-              }) : ''} {notice.department && `| ${notice.department}`}
-            </div>
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">{notice.title}</h3>
-                {notice.notice_category && (
-                  <span className={`inline-block text-xs font-medium px-2 py-1 rounded mt-1 ${getTagColor(getNoticeCategory(notice))}`}>
-                    {getNoticeCategory(notice)}
-                  </span>
-                )}
-                <p className="text-gray-700 mt-2 text-sm">
-                  {notice.description?.substring(0, 150)}
-                  {notice.description && notice.description.length > 150 ? '...' : ''}
-                </p>
-              </div>
-              <div className="mt-4 md:mt-0 flex space-x-2">
-                {notice.download_file && (
-                  <a 
-                    href={notice.download_file}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200"
+        {/* Active Filters */}
+        {activeFilters.length > 0 && (
+          <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center flex-wrap gap-2">
+              <span className="text-sm text-gray-600 font-medium">
+                Active Filters:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {activeFilters.map((filter, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center bg-blue-100 text-blue-800px-3 py-1 rounded-full text-sm"
                   >
-                    <Download className="h-4 w-4 mr-1" />
-                    Download
-                  </a>
-                )}
-                <Link 
-                  href={`/notices/${notice.id}`}
-                  className="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                    {filter}
+                    <button
+                      onClick={() => removeFilter(filter)}
+                      className="ml-2 text-blue-600 hover:text-blue-800"
+                      aria-label={`Remove ${filter} filter`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+                <button
+                  onClick={handleClearFilters}
+                  className="text-sm text-red-600 hover:text-red-800 ml-2 underline"
                 >
-                  <ExternalLink className="h-4 w-4 mr-1" />
-                  View
-                </Link>
+                  Clear All
+                </button>
               </div>
             </div>
           </div>
-        ))
-      )}
+        )}
 
-      {/* Pagination */}
-      {!loading && notices.length > 0 && (
-        <div className="flex justify-center mt-10 space-x-2">
-          <button 
-            className="border px-3 py-1 rounded-md bg-gray-100 disabled:opacity-50"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(currentPage - 1)}
-          >
-            &lt;
-          </button>
-          
-          {getPaginationNumbers().map((p, i) => (
+        {/* Results Count */}
+        {!isLoading && (
+          <div className="mb-4 text-right text-sm text-gray-600">
+            Showing {notices.length} of {pagination.count} notices
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {noticesError && (
+          <div className="text-center py-20">
+            <div className="text-red-600 text-lg mb-4">
+              Error loading notices
+            </div>
+            <p className="text-gray-600 mb-4">{noticesError}</p>
             <button
-              key={i}
-              className={`px-3 py-1 rounded-md ${p === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-100'}`}
-              onClick={() => typeof p === 'number' && setCurrentPage(p)}
+              onClick={() => refetchNotices()}
+              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
             >
-              {p}
+              Try Again
             </button>
-          ))}
-          
-          <button 
-            className="border px-3 py-1 rounded-md bg-gray-100 disabled:opacity-50"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(currentPage + 1)}
-          >
-            &gt;
-          </button>
-        </div>
-      )}
-    </AnimatedSection>
+          </div>
+        )}
+
+        {/* No Notices Found */}
+        {!isLoading && !noticesError && notices.length === 0 && (
+          <div className="text-center py-20">
+            <div className="text-gray-600 text-lg mb-4">No notices found</div>
+            <p className="text-gray-500 mb-4">
+              {activeFilters.length > 0
+                ? "Try adjusting your filters to see more results."
+                : "There are currently no notices available."}
+            </p>
+            {activeFilters.length > 0 && (
+              <button
+                onClick={handleClearFilters}
+                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Notices List - Matching the exact card design from UI */}
+        {!isLoading && !noticesError && notices.length > 0 && (
+          <div className="space-y-4">
+            {notices.map((notice) => (
+              <div
+                key={notice.uuid}
+                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200"
+              >
+                <div className="p-6">
+                  {/* Date, Department, and Category - Top row */}
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span>{formatNoticeDate(notice.publishedAt)}</span>
+                      <span>|</span>
+                      <span>{notice.department.name}</span>
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryBadgeColor(
+                        notice.category.name
+                      )}`}
+                    >
+                      {notice.category.name}
+                    </span>
+                  </div>
+
+                  {/* Title */}
+                  <Link
+                    href={`/notices/${notice.uuid}`}
+                    className="block hover:text-blue-600 transition-colors"
+                  >
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3 hover:text-blue-600 line-clamp-2">
+                      {notice.title}
+                    </h3>
+                  </Link>
+
+                  {/* Description */}
+                  {notice.description && (
+                    <div className="text-gray-600 text-sm mb-4 line-clamp-2">
+                      {extractTextFromHtml(notice.description, 150)}
+                    </div>
+                  )}
+
+                  {/* Bottom row - Read More button and Media icons */}
+                  <div className="flex justify-between items-center">
+                    <Link
+                      href={`/notices/${notice.uuid}`}
+                      className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                    >
+                      Read More
+                    </Link>
+
+                    {renderMediaIcons(notice)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination - Matching the UI design */}
+        {!isLoading && !noticesError && totalPages > 1 && (
+          <div className="mt-8 flex justify-center">
+            <div className="flex items-center">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300 rounded-l-md bg-white"
+              >
+                ‹
+              </button>
+
+              {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
+                let page;
+                if (totalPages <= 10) {
+                  page = i + 1;
+                } else if (currentPage <= 5) {
+                  page = i + 1;
+                } else if (currentPage > totalPages - 5) {
+                  page = totalPages - 9 + i;
+                } else {
+                  page = currentPage - 4 + i;
+                }
+
+                return (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-3 py-2 text-sm font-medium border-t border-b ${
+                      currentPage === page
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "text-gray-700 hover:text-blue-600 border-gray-300 hover:bg-gray-50 bg-white"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+
+              {totalPages > 10 && currentPage < totalPages - 5 && (
+                <>
+                  <span className="px-2 py-2 text-gray-500 border-t border-b border-gray-300 bg-white">
+                    ...
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(totalPages)}
+                    className="px-3 py-2 text-sm text-gray-700 hover:text-blue-600 border-t border-b border-gray-300 hover:bg-gray-50 bg-white"
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300 rounded-r-md bg-white"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

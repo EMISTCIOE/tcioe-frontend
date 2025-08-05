@@ -1,45 +1,40 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { Calendar, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect, useRef, use } from "react";
+import Link from "next/link";
+import {
+  Calendar,
+  ExternalLink,
+  FileText,
+  Download,
+  Share2,
+} from "lucide-react";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
-import { twMerge } from 'tailwind-merge';
-import NoticesSidebar from '@/components/NoticesSidebar';
-
-// Define types for our data
-interface Notice {
-  id: number;
-  title: string;
-  description: string;
-  published_date: string;
-  download_file?: string;
-  notice_category?: {
-    notice_type: string;
-  };
-  department?: {
-    department_name: string;
-  };
-}
+import { twMerge } from "tailwind-merge";
+import NoticesSidebar from "@/components/NoticesSidebar";
+import { useNotice, useNotices } from "@/hooks/use-notices";
+import { getCategoryColor, formatNoticeDate } from "@/lib/notices-utils";
+import type { Notice } from "@/types";
+import { API_CONFIG } from "@/lib/api";
 
 // Helper function to get the complete classes for a category badge
 const getCategoryClasses = (category: string) => {
   const baseClasses = "text-sm px-2 py-1 rounded";
-  
-  switch(category) {
-    case 'Exam':
+
+  switch (category) {
+    case "Exam":
       return twMerge(baseClasses, "bg-green-100 text-green-800");
-    case 'Administration':
+    case "Administration":
       return twMerge(baseClasses, "bg-red-100 text-red-800");
-    case 'Scholarship':
+    case "Scholarship":
       return twMerge(baseClasses, "bg-purple-100 text-purple-800");
-    case 'Event':
+    case "Event":
       return twMerge(baseClasses, "bg-teal-100 text-teal-800");
-    case 'Admission':
+    case "Admission":
       return twMerge(baseClasses, "bg-blue-100 text-blue-800");
-    case 'Department':
+    case "Department":
       return twMerge(baseClasses, "bg-cyan-100 text-cyan-800");
-    case 'General':
+    case "General":
       return twMerge(baseClasses, "bg-gray-100 text-gray-800");
     default:
       return twMerge(baseClasses, "bg-gray-100 text-gray-800");
@@ -48,37 +43,42 @@ const getCategoryClasses = (category: string) => {
 
 // In Next.js App Router, page components receive params directly as a prop
 interface PageParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function NoticeDetail({ params }: PageParams) {
-  // Access the ID directly from params
-  const noticeId = params.id;
-  
-  const [file, setFile] = useState<string>("");
-  const [notice, setNotice] = useState<Notice | null>(null);
-  const [latestNotices, setLatestNotices] = useState<Notice[]>([]);
+  // Unwrap the params Promise using React.use()
+  const resolvedParams = use(params);
+  const noticeId = resolvedParams.id;
+
+  // Use the new hooks for API calls
+  const { notice, loading, error } = useNotice(noticeId);
+  const { notices: latestNotices, loading: latestLoading } = useNotices({
+    limit: 10,
+    ordering: "-publishedAt",
+  });
+
   const [showAllNotices, setShowAllNotices] = useState<boolean>(false);
   const [allNotices, setAllNotices] = useState<Notice[]>([]);
   const [showViewMoreButton, setShowViewMoreButton] = useState<boolean>(true);
   const [checkButton, setCheckButton] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
   const scrollableRef = useRef<HTMLDivElement>(null);
-  
+
   // Function to load all notices
   const loadAllNotices = async () => {
     try {
-      const query = await fetch("https://notices.tcioe.edu.np/api/notice/notices");
-      const response = await query.json();
-      setAllNotices(response);
+      const { notices: allNoticesData } = useNotices({
+        limit: 100,
+        ordering: "-publishedAt",
+      });
+      setAllNotices(allNoticesData || []);
       setShowAllNotices(true);
       setShowViewMoreButton(false);
       setCheckButton(true);
     } catch (error) {
       console.error("Error loading all notices:", error);
-      // Show error state
       setAllNotices([]);
       setShowAllNotices(true);
       setShowViewMoreButton(false);
@@ -99,7 +99,7 @@ export default function NoticeDetail({ params }: PageParams) {
         behavior: "smooth",
       });
     }
-    
+
     setShowAllNotices(false);
     setShowViewMoreButton(true);
     setCheckButton(false);
@@ -108,53 +108,8 @@ export default function NoticeDetail({ params }: PageParams) {
   // Determine which notices to display
   const displayNotices = showAllNotices
     ? allNotices
-    : latestNotices.slice(0, 10);
-  
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        // API call to fetch notice details
-        const query = await fetch(
-          `https://notices.tcioe.edu.np/api/notice/notices/${noticeId}`
-        );
-        const response = await query.json();
-        
-        if (response) {
-          const file_ = response.download_file?.split("/")[5];
-          setNotice(response);
-          if (file_) {
-            setFile(decodeURI(file_));
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching notice:", error);
-        setNotice(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+    : (latestNotices || []).slice(0, 10);
 
-    const getLatestNotices = async () => {
-      try {
-        // API call to fetch latest notices
-        const latestNoticesQuery = await fetch(
-          "https://notices.tcioe.edu.np/api/notice/notices"
-        );
-        const latestNoticesResponse = await latestNoticesQuery.json();
-
-        if (latestNoticesResponse && latestNoticesResponse.length > 0) {
-          setLatestNotices(latestNoticesResponse);
-        }
-      } catch (error) {
-        console.error("Error fetching latest notices:", error);
-        setLatestNotices([]);
-      }
-    };
-
-    getData();
-    getLatestNotices();
-  }, [noticeId]);
-  
   // Loading state
   if (loading) {
     return (
@@ -167,9 +122,9 @@ export default function NoticeDetail({ params }: PageParams) {
       </div>
     );
   }
-  
-  // Notice not found
-  if (!notice) {
+
+  // Notice not found or error
+  if (error || !notice) {
     return (
       <div className="min-h-screen bg-gray-50 px-6 py-10">
         <div className="max-w-7xl mx-auto">
@@ -177,29 +132,36 @@ export default function NoticeDetail({ params }: PageParams) {
             Notice Not Found
           </h1>
           <p className="mt-6">
-            The notice you are looking for could not be found. Please check the URL or go back to the 
-            <Link href="/notices" className="text-blue-600 hover:underline ml-1">
+            The notice you are looking for could not be found. Please check the
+            URL or go back to the
+            <Link
+              href="/notices"
+              className="text-blue-600 hover:underline ml-1"
+            >
               notices page
-            </Link>.
+            </Link>
+            .
           </p>
         </div>
       </div>
     );
   }
-  
+
   // Format published date for API response
-  const formattedDate = notice?.published_date 
-    ? new Date(notice.published_date).toLocaleString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-        timeZone: "Asia/Kathmandu", // Nepal's timezone
-      })
+  const formattedDate = notice?.publishedAt
+    ? formatNoticeDate(notice.publishedAt)
     : null;
-  
+
+  // Get the first downloadable media file
+  const downloadableMedia = notice.medias?.find(
+    (media) =>
+      media.mediaType === "DOCUMENT" ||
+      media.file.toLowerCase().includes(".pdf")
+  );
+
   // Parse the active ID for highlighting in the sidebar
-  const activeId = parseInt(noticeId, 10);
-  
+  const activeId = notice.uuid;
+
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-10">
       <div className="max-w-7xl mx-auto">
@@ -207,74 +169,258 @@ export default function NoticeDetail({ params }: PageParams) {
         <h1 className="text-3xl font-bold text-gray-800 border-b-4 border-orange-500 inline-block pb-1 mb-6">
           Notices and Announcements
         </h1>
-        
+
         <div className="flex flex-col md:flex-row gap-10 mt-6">
           {/* Main Notice Detail Section */}
           <div className="flex-1">
             <div>
               <h2 className="text-2xl font-semibold text-blue-900 flex items-start justify-between flex-wrap">
                 <span className="mr-2">{notice.title}</span>
-                {(notice.notice_category?.notice_type) && (
-                  <span className={getCategoryClasses(notice.notice_category.notice_type)}>
-                    {notice.notice_category.notice_type}
+                {notice.category?.name && (
+                  <span className={getCategoryColor(notice.category.name)}>
+                    {notice.category.name}
                   </span>
                 )}
               </h2>
               <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
                 <Calendar className="inline h-4 w-4" />
                 <span>Published on {formattedDate}</span>
-                {notice.department?.department_name && ` | ${notice.department.department_name}`}
+                {notice.department?.name && ` | ${notice.department.name}`}
               </p>
             </div>
 
             {/* Notice Description */}
             <div className="mt-6 bg-white p-6 rounded-lg shadow-sm">
               <h3 className="text-lg font-semibold mb-3">Description</h3>
-              <p className="text-gray-800">{notice.description}</p>
+              <div
+                className="text-gray-800 prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: notice.description }}
+              />
             </div>
 
-            {/* PDF Viewer */}
-            <div className="mt-6 rounded overflow-hidden border border-gray-300">
-              <div className="bg-gray-100 p-3 border-b">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-gray-700">Attached Document</span>
-                  {file && (
-                    <a 
-                      href={`https://notices.tcioe.edu.np/media/files/${file}`}
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
-                    >
-                      <span>Open in New Tab</span>
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
+            {/* Enhanced Media Viewer with Super Cool UI */}
+            {downloadableMedia && (
+              <div className="mt-8 bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                {/* Media Header */}
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-white/20 p-3 rounded-lg">
+                        <FileText className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold">
+                          {downloadableMedia.caption || "Document Viewer"}
+                        </h4>
+                        <p className="text-blue-100 text-sm">{notice.title}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() =>
+                          window.open(downloadableMedia.file, "_blank")
+                        }
+                        className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Open in New Tab
+                      </button>
+                      <a
+                        href={downloadableMedia.file}
+                        download
+                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        <Download className="h-4 w-4" />
+                        Download
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Media Viewer Container */}
+                <div className="relative bg-gray-50">
+                  {/* Loading overlay */}
+                  <div
+                    className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10"
+                    id="media-loading"
+                  >
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading media...</p>
+                    </div>
+                  </div>
+
+                  {/* Check if it's an image or PDF */}
+                  {downloadableMedia.file.toLowerCase().includes(".pdf") ||
+                  downloadableMedia.mediaType === "DOCUMENT" ? (
+                    /* PDF Iframe */
+                    <iframe
+                      src={`${downloadableMedia.file}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`}
+                      className="w-full h-[800px] border-0"
+                      title={`Document for ${notice.title}`}
+                      onLoad={() => {
+                        const loadingElement =
+                          document.getElementById("media-loading");
+                        if (loadingElement) {
+                          loadingElement.style.display = "none";
+                        }
+                      }}
+                      allowFullScreen
+                    />
+                  ) : downloadableMedia.mediaType === "IMAGE" ? (
+                    /* Enhanced Image Viewer */
+                    <div className="relative">
+                      <img
+                        src={downloadableMedia.file}
+                        alt={downloadableMedia.caption || notice.title}
+                        className="w-full h-auto max-h-[800px] object-contain bg-white"
+                        onLoad={() => {
+                          const loadingElement =
+                            document.getElementById("media-loading");
+                          if (loadingElement) {
+                            loadingElement.style.display = "none";
+                          }
+                        }}
+                      />
+                      <div className="absolute top-4 right-4">
+                        <button
+                          onClick={() => {
+                            const img = document.querySelector("img");
+                            if (img) {
+                              if (img.requestFullscreen) {
+                                img.requestFullscreen();
+                              }
+                            }
+                          }}
+                          className="bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg transition-colors"
+                          title="View Fullscreen"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Other media types */
+                    <div className="p-8 text-center">
+                      <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600 mb-4">
+                        This file type cannot be previewed directly.
+                      </p>
+                      <a
+                        href={downloadableMedia.file}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <Download className="h-4 w-4" />
+                        Download File
+                      </a>
+                    </div>
                   )}
                 </div>
+
+                {/* Media Footer */}
+                <div className="bg-gray-50 p-4 border-t border-gray-200">
+                  <div className="flex justify-between items-center text-sm text-gray-600">
+                    <span>
+                      {downloadableMedia.mediaType === "IMAGE"
+                        ? "Image"
+                        : "Document"}
+                      : {downloadableMedia.caption || "Untitled"}
+                    </span>
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() =>
+                          navigator.clipboard.writeText(window.location.href)
+                        }
+                        className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                      >
+                        <Share2 className="h-4 w-4" />
+                        Share
+                      </button>
+                      <span className="text-gray-400">|</span>
+                      <span>Published: {formattedDate}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="w-full h-[600px] md:h-[700px] bg-gray-50">
-                {file && (
-                  <iframe
-                    src={`https://notices.tcioe.edu.np/media/files/${file}`}
-                    className="w-full h-full border-0"
-                    title={`PDF for ${notice.title}`}
-                  />
-                )}
+            )}
+
+            {/* Additional Media */}
+            {notice.medias && notice.medias.length > 1 && (
+              <div className="mt-6 bg-white p-6 rounded-lg shadow-sm">
+                <h3 className="text-lg font-semibold mb-3">Additional Media</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {notice.medias
+                    .filter((media) => media.uuid !== downloadableMedia?.uuid)
+                    .map((media) => (
+                      <div key={media.uuid} className="border rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          {/* Icon placeholder */}
+                          <span className="text-sm">📄</span>
+                          <span className="font-medium">{media.caption}</span>
+                        </div>
+                        <a
+                          href={media.file}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                        >
+                          View {media.mediaType.toLowerCase()}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
-          
-          {/* Sidebar Section with Latest Notices */}
-          <NoticesSidebar 
-            displayNotices={displayNotices}
-            activeId={activeId}
-            showViewMoreButton={showViewMoreButton}
-            showAllNotices={showAllNotices}
-            checkButton={checkButton}
-            loadAllNotices={loadAllNotices}
-            hidePartialNotices={hidePartialNotices}
-            scrollableRef={scrollableRef}
-            getCategoryClasses={getCategoryClasses}
-          />
+
+          {/* Sidebar Section with Latest Notices - TODO: Update NoticesSidebar to work with new API */}
+          <div className="w-full md:w-80 bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold mb-4">Latest Notices</h3>
+            <div className="space-y-3">
+              {(latestNotices || []).slice(0, 5).map((latestNotice) => (
+                <Link
+                  key={latestNotice.uuid}
+                  href={`/notices/${latestNotice.slug}`}
+                  className={`block p-3 rounded-lg border transition-colors ${
+                    latestNotice.uuid === notice.uuid
+                      ? "bg-blue-50 border-blue-200"
+                      : "hover:bg-gray-50 border-gray-200"
+                  }`}
+                >
+                  <h4 className="font-medium text-sm line-clamp-2 mb-1">
+                    {latestNotice.title}
+                  </h4>
+                  <p className="text-xs text-gray-500">
+                    {formatNoticeDate(latestNotice.publishedAt)}
+                  </p>
+                  {latestNotice.category && (
+                    <span
+                      className={`inline-block mt-1 text-xs px-2 py-1 rounded ${getCategoryColor(
+                        latestNotice.category.name
+                      )}`}
+                    >
+                      {latestNotice.category.name}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+
+            {!latestLoading && latestNotices && latestNotices.length > 5 && (
+              <div className="mt-4 pt-4 border-t">
+                <Link
+                  href="/notices"
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  View All Notices →
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
