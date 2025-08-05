@@ -244,3 +244,73 @@ export interface PaginatedQueryParams {
 export interface SearchableQueryParams extends PaginatedQueryParams {
   search?: string;
 }
+
+// Event API Types
+export interface CampusEventGallery {
+  uuid: string;
+  image: string;
+  caption: string;
+}
+
+export interface CampusEvent {
+  uuid: string;
+  title: string;
+  descriptionShort: string;
+  descriptionDetailed?: string;
+  eventType: "CULTURAL" | "ACADEMIC" | "SPORTS" | "TECHNICAL" | "OTHER";
+  eventStartDate: string;
+  eventEndDate: string;
+  thumbnail: string;
+  gallery?: CampusEventGallery[];
+}
+
+export interface CampusEventsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: CampusEvent[];
+}
+
+export interface ClubEvent {
+  uuid: string;
+  title: string;
+  clubName: string;
+  date: string;
+  thumbnail: string;
+  descriptionShort?: string;
+  descriptionDetailed?: string;
+  gallery?: CampusEventGallery[];
+}
+
+export interface ClubEventsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ClubEvent[];
+}
+
+// Club API Types
+export interface ClubMember {
+  uuid: string;
+  name: string;
+  position?: string;
+  image?: string;
+}
+
+export interface Club {
+  uuid: string;
+  name: string;
+  slug?: string; // URL-friendly name like 'ecast', 'robotics-club'
+  shortDescription: string;
+  detailedDescription?: string;
+  thumbnail: string;
+  website?: string; // Optional website URL
+  members?: ClubMember[];
+}
+
+export interface ClubsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Club[];
+}

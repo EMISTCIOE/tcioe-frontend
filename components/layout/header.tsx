@@ -111,9 +111,9 @@ export const Header = () => {
       dropdown: [
         { name: "Unions", href: "/campus-life/unions" },
         { name: "Student Clubs", href: "/campus-life/clubs" },
-        { name: "Sports Activities", href: "/campus-life/sports" },
+
         { name: "Campus Festivals", href: "/campus-life/festivals" },
-        { name: "Technological Fests", href: "/campus-life/tech-fests" },
+        { name: "Club Events", href: "/campus-life/club-events" },
       ],
     },
   ];

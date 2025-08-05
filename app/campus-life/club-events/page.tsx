@@ -1,28 +1,16 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import {
-  Search,
-  Calendar,
-  MapPin,
-  Clock,
-  Filter,
-  X,
-  ExternalLink,
-  Users,
-  Tag,
-  ChevronRight,
-} from "lucide-react";
+import { Search, Calendar, Users, Clock, X, ChevronRight } from "lucide-react";
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
   useEvents,
-  formatEventDateRange,
+  formatEventDate,
   isUpcomingEvent,
   isPastEvent,
   type EventType,
-  type CampusEventType,
 } from "@/hooks/use-events";
 import type { CampusEvent, ClubEvent } from "@/types";
 
@@ -30,13 +18,10 @@ type UnifiedEvent = (CampusEvent | ClubEvent) & {
   source: "campus" | "club";
 };
 
-export default function CampusFestivalsPage() {
+export default function StudentClubsPage() {
   // State for filters and pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedEventType, setSelectedEventType] = useState<
-    CampusEventType | ""
-  >("");
   const [eventFilter, setEventFilter] = useState<"upcoming" | "past" | "all">(
     "all"
   );
@@ -50,11 +35,10 @@ export default function CampusFestivalsPage() {
       page: currentPage,
       limit: eventsPerPage,
       search: debouncedSearchTerm || undefined,
-      type: "campus" as EventType,
-      eventType: selectedEventType || undefined,
-      ordering: "-eventStartDate",
+      type: "club" as EventType,
+      ordering: "-date",
     }),
-    [currentPage, debouncedSearchTerm, selectedEventType]
+    [currentPage, debouncedSearchTerm]
   );
 
   // API hook
@@ -82,7 +66,7 @@ export default function CampusFestivalsPage() {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [debouncedSearchTerm, selectedEventType, eventFilter]);
+  }, [debouncedSearchTerm, eventFilter]);
 
   // Calculate total pages
   const totalPages = Math.ceil(pagination.count / eventsPerPage);
@@ -90,7 +74,6 @@ export default function CampusFestivalsPage() {
   // Handle filter changes
   const handleClearFilters = () => {
     setSearchTerm("");
-    setSelectedEventType("");
     setEventFilter("all");
     setCurrentPage(1);
   };
@@ -100,43 +83,17 @@ export default function CampusFestivalsPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Get event type color
-  const getEventTypeColor = (eventType: string) => {
-    switch (eventType) {
-      case "CULTURAL":
-        return "bg-purple-100 text-purple-800";
-      case "ACADEMIC":
-        return "bg-blue-100 text-blue-800";
-      case "SPORTS":
-        return "bg-green-100 text-green-800";
-      case "TECHNICAL":
-        return "bg-orange-100 text-orange-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  // Extract text from HTML description
-  const extractTextFromHtml = (html: string, maxLength: number = 150) => {
-    const div = document.createElement("div");
-    div.innerHTML = html;
-    const text = div.textContent || div.innerText || "";
-    return text.length > maxLength
-      ? text.substring(0, maxLength) + "..."
-      : text;
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-10">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 border-b-4 border-orange-500 inline-block pb-1 mb-4">
-            Campus Festivals
+            Student Club Events
           </h1>
           <p className="text-lg text-gray-600">
-            Stay updated with the latest campus events, festivals, and cultural
-            programs.
+            Discover events organized by various student clubs and
+            organizations.
           </p>
         </div>
 
@@ -147,12 +104,12 @@ export default function CampusFestivalsPage() {
             <div className="relative flex-1 max-w-md">
               <input
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Search events..."
+                placeholder="Search club events..."
                 value={searchTerm}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setSearchTerm(e.target.value)
                 }
-                aria-label="Search events"
+                aria-label="Search club events"
               />
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               {searchTerm && (
@@ -164,24 +121,6 @@ export default function CampusFestivalsPage() {
                   <X className="h-4 w-4" />
                 </button>
               )}
-            </div>
-
-            {/* Event Type Filter */}
-            <div className="flex-shrink-0">
-              <select
-                className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white min-w-48"
-                value={selectedEventType}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                  setSelectedEventType(e.target.value as CampusEventType | "")
-                }
-              >
-                <option value="">All Event Types</option>
-                <option value="CULTURAL">Cultural</option>
-                <option value="ACADEMIC">Academic</option>
-                <option value="SPORTS">Sports</option>
-                <option value="TECHNICAL">Technical</option>
-                <option value="OTHER">Other</option>
-              </select>
             </div>
 
             {/* Time Filter */}
@@ -227,7 +166,7 @@ export default function CampusFestivalsPage() {
         {error && (
           <div className="text-center py-20">
             <div className="text-red-600 text-lg mb-4">
-              Error loading events
+              Error loading club events
             </div>
             <p className="text-gray-600 mb-4">{error}</p>
             <button
@@ -242,7 +181,9 @@ export default function CampusFestivalsPage() {
         {/* No Events Found */}
         {!loading && !error && filteredEvents.length === 0 && (
           <div className="text-center py-20">
-            <div className="text-gray-600 text-lg mb-4">No events found</div>
+            <div className="text-gray-600 text-lg mb-4">
+              No club events found
+            </div>
             <p className="text-gray-500 mb-4">
               Try adjusting your filters to see more results.
             </p>
@@ -259,7 +200,7 @@ export default function CampusFestivalsPage() {
         {!loading && !error && filteredEvents.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEvents.map((event) => {
-              const campusEvent = event as CampusEvent;
+              const clubEvent = event as ClubEvent;
               const isUpcoming = isUpcomingEvent(event);
 
               return (
@@ -276,16 +217,6 @@ export default function CampusFestivalsPage() {
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
-                    {/* Event Type Badge */}
-                    <div className="absolute top-3 left-3">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getEventTypeColor(
-                          campusEvent.eventType
-                        )}`}
-                      >
-                        {campusEvent.eventType}
-                      </span>
-                    </div>
                     {/* Upcoming/Past Badge */}
                     <div className="absolute top-3 right-3">
                       <span
@@ -301,6 +232,12 @@ export default function CampusFestivalsPage() {
                   </div>
 
                   <div className="p-4">
+                    {/* Club Name */}
+                    <div className="flex items-center text-sm text-blue-600 mb-2">
+                      <Users className="h-4 w-4 mr-1" />
+                      {clubEvent.clubName}
+                    </div>
+
                     {/* Event Title */}
                     <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
                       {event.title}
@@ -309,22 +246,19 @@ export default function CampusFestivalsPage() {
                     {/* Event Date */}
                     <div className="flex items-center text-sm text-gray-500 mb-2">
                       <Calendar className="h-4 w-4 mr-2" />
-                      {formatEventDateRange(
-                        campusEvent.eventStartDate,
-                        campusEvent.eventEndDate
-                      )}
+                      {formatEventDate(clubEvent.date)}
                     </div>
 
-                    {/* Event Description */}
-                    {campusEvent.descriptionShort && (
+                    {/* Event Description (if available) */}
+                    {clubEvent.descriptionShort && (
                       <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                        {campusEvent.descriptionShort}
+                        {clubEvent.descriptionShort}
                       </p>
                     )}
 
                     {/* Read More Button */}
                     <Link
-                      href={`/campus-life/festivals/${event.uuid}`}
+                      href={`/campus-life/clubs/${event.uuid}`}
                       className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
                     >
                       Read More
