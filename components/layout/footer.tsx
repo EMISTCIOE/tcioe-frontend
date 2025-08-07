@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import React from "react";
 import Image from "next/image";
 import { Facebook, Instagram, Linkedin, ArrowUp } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -70,18 +71,22 @@ export const Footer = () => {
   ];
 
   return (
-    <footer className="bg-primary-blue text-footer-text py-8 md:py-12 relative">
+    <footer className="bg-[#1A1A2E] text-footer-text py-8 md:py-12 relative">
       <div className="container mx-auto px-4 lg:px-6 flex flex-col space-y-6">
         {/* Top Links Section */}
-        <div className="flex flex-wrap justify-center md:justify-start gap-x-8 gap-y-4 text-base font-normal">
+        <div className="flex md:flex-row flex-col justify-center md:justify-start gap-x-8 gap-y-4 text-base font-normal">
           {topLinks.map((link) => (
+            <React.Fragment key={link.label}>
             <Link
-              key={link.label}
               href={link.href}
-              className="hover:text-white transition-colors duration-200"
-            >
+              className="hover:text-accent-orange transition-colors duration-200"
+              >
               {link.label}
             </Link>
+            {link !== topLinks[topLinks.length - 1] && (
+              <span className="border-l hidden md:block border-white h-6"></span>
+            )}
+            </React.Fragment>
           ))}
         </div>
 
@@ -92,7 +97,7 @@ export const Footer = () => {
               <Link
                 key={dept.label}
                 href={dept.href}
-                className="hover:text-white transition-colors duration-200 text-center sm:text-left"
+                className="hover:text-accent-orange transition-colors duration-200  sm:text-left"
               >
                 {dept.label}
               </Link>
@@ -101,15 +106,20 @@ export const Footer = () => {
         </div>
 
         <div className="border-t border-footer-border pt-6">
-          <div className="flex flex-wrap justify-center md:justify-start gap-x-8 gap-y-4 text-base font-normal">
+          <div className="flex flex-col md:flex-row justify-center md:justify-start gap-x-8 gap-y-4 text-base font-normal">
             {bottomLinks.map((link) => (
+              <React.Fragment key={link.label}>
               <Link
-                key={link.label}
+                
                 href={link.href}
-                className="hover:text-white transition-colors duration-200"
-              >
+                className="hover:text-accent-orange transition-colors duration-200"
+                >
                 {link.label}
               </Link>
+              {link !== bottomLinks[bottomLinks.length - 1] && (
+                <span className="border-l hidden md:block border-white h-6"></span>
+              )}
+              </React.Fragment>
             ))}
           </div>
         </div>

@@ -18,6 +18,7 @@ export const metadata: Metadata = {
     "Engineering College Nepal",
     "Architecture Nepal",
   ],
+  metadataBase: new URL('http://localhost:3000'), // Replace with actual domain in production
   openGraph: {
     title: "Tribhuvan University Institute of Engineering, Thapathali Campus",
     description:

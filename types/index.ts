@@ -349,3 +349,11 @@ export interface FeedbackResponse {
   success: boolean;
   message?: string;
 }
+
+export interface InaugurationGalleryProps {
+  items: Array<{
+    src: string
+    alt: string
+    caption: string
+  }>
+}

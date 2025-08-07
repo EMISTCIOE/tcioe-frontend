@@ -19,6 +19,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 export const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
   const { data, loading } = useCollegeData();
+  
 
   useEffect(() => {
     const handleScroll = () => setIsSticky(window.scrollY > 0);
@@ -121,29 +122,33 @@ export const Header = () => {
   return (
     <header className="w-full">
       {/* Top Bar */}
-      <div className="bg-header-top-bg text-white text-sm py-2 px-4">
+      <div className="bg-[#F1F1F1] text-black text-[10px] md:text-sm py-2 px-4">
         <div className="container mx-auto flex justify-between items-center">
-          <div className="flex space-x-6">
-            <Link href="#" className="hover:underline">
+          <div className="flex space-x-2 md:space-x-6">
+            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Students
             </Link>
-            <Link href="#" className="hover:underline">
+            <span className="border-l border-black h-3 md:h-5"></span>
+            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Faculty & Staff
             </Link>
-            <Link href="#" className="hover:underline">
+            <span className="border-l border-black h-3 md:h-5"></span>
+            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Alumni
             </Link>
+
           </div>
-          <div className="flex space-x-6 items-center">
-            <Link href="#" className="hover:underline">
+          <div className="flex space-x-2 md:space-x-6 items-center">
+            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Library
             </Link>
-            <Link href="#" className="hover:underline">
+            <span className="border-l border-black h-3 md:h-5"></span>
+            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Journal
             </Link>
             <Link
               href="/suggestion-box"
-              className="inline-flex items-center hover:underline text-orange-200 hover:text-white transition-colors"
+              className="inline-flex items-center hover:underline text-orange-600 hover:text-orange-400 transition-colors"
               title="Share your feedback and suggestions"
             >
               <MessageSquare className="h-4 w-4 mr-1" />
@@ -152,7 +157,7 @@ export const Header = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-white hover:bg-white/20"
+              className="h-6 w-6 text-black hover:bg-black/20"
             >
               <Search className="h-4 w-4" />
               <span className="sr-only">Search</span>
@@ -283,7 +288,7 @@ export const Header = () => {
       {/* Navigation Bar (Desktop) */}
       <nav className="bg-white border-t border-gray-200 hidden md:block">
         <div className="container mx-auto flex justify-center">
-          <ul className="flex space-x-6 lg:space-x-8">
+          <ul className="flex md:space-x-8">
             {navItems.map((item) => (
               <li key={item.name}>
                 {item.dropdown && item.dropdown.length > 0 ? (
@@ -291,7 +296,7 @@ export const Header = () => {
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="text-text-dark hover:bg-background-light hover:text-primary-blue px-4 py-3 text-base font-medium transition-colors duration-200"
+                        className="text-text-dark hover:bg-background-light hover:text-primary-blue px-4 py-3 font-medium md:text-base text-sm transition-colors duration-200"
                       >
                         {item.name}
                         <ChevronDown className="ml-1 h-4 w-4" />
@@ -325,7 +330,7 @@ export const Header = () => {
       </nav>
 
       {/* Announcement Bar */}
-      <div className="bg-primary-blue text-white py-2 px-4 text-sm overflow-hidden relative">
+      <div className="bg-[#F97A00] text-white py-2 px-4 text-sm overflow-hidden relative">
         <div className="container mx-auto flex items-center">
           <div className="flex-shrink-0 font-semibold mr-4">Announcements</div>
           <div className="flex-1 text-center relative h-5 overflow-hidden">

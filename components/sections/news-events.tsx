@@ -52,7 +52,7 @@ export const NewsEvents = ({ notices }: NewsEventsProps) => {
     <section className="py-12 md:py-20 bg-gradient-to-br from-white to-teal-light">
       <div className="container mx-auto px-4 lg:px-6">
         <AnimatedSection>
-          <h2 className="text-xl md:text-3xl font-bold text-center text-primary-blue mb-10">
+          <h2 className="text-xl md:text-3xl font-bold text-center text-[#1A1A2E] mb-10">
             Latest News & Updates
           </h2>
         </AnimatedSection>

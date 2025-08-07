@@ -13,7 +13,7 @@ export const GallerySection = ({ images }: GallerySectionProps) => {
     <section className="py-12 md:py-20 bg-wheat-light">
       <div className="container mx-auto px-4 lg:px-6">
         <AnimatedSection>
-          <h2 className="text-xl md:text-3xl font-bold text-center text-primary-blue mb-10">Our Campus Gallery</h2>
+          <h2 className="text-xl md:text-3xl font-bold text-center text-[#1A1A2E] mb-10">Our Campus Gallery</h2>
         </AnimatedSection>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {images.slice(0, 6).map((item, index) => (

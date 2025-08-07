@@ -66,7 +66,7 @@ export const UpcomingEventsSection = ({
         <div className="container mx-auto px-4 lg:px-6">
           {showTitle && (
             <AnimatedSection>
-              <h2 className="text-xl md:text-3xl font-bold text-center text-primary-blue mb-10">
+              <h2 className="text-xl md:text-3xl font-bold text-center text-[#1A1A2E] mb-10">
                 Upcoming Events
               </h2>
             </AnimatedSection>
