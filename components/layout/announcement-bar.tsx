@@ -1,35 +1,39 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface AnnouncementBarProps {
-  announcements: string[]
+  announcements: string[];
 }
 
 export const AnnouncementBar = ({ announcements }: AnnouncementBarProps) => {
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     if (announcements.length > 1) {
       const interval = setInterval(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length)
-      }, 5000) // Change announcement every 5 seconds
-      return () => clearInterval(interval)
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length);
+      }, 5000); // Change announcement every 5 seconds
+      return () => clearInterval(interval);
     }
-  }, [announcements])
+  }, [announcements]);
 
   const handlePrev = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + announcements.length) % announcements.length)
-  }
+    setCurrentIndex(
+      (prevIndex) =>
+        (prevIndex - 1 + announcements.length) % announcements.length
+    );
+  };
 
   const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length)
-  }
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length);
+  };
 
   if (!announcements || announcements.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -39,10 +43,18 @@ export const AnnouncementBar = ({ announcements }: AnnouncementBarProps) => {
           key={index}
           className={cn(
             "absolute inset-0 flex items-center justify-center transition-transform duration-500 ease-in-out",
-            index === currentIndex ? "translate-y-0 opacity-100" : "translate-y-full opacity-0",
+            index === currentIndex
+              ? "translate-y-0 opacity-100"
+              : "translate-y-full opacity-0"
           )}
         >
-          {announcement}
+          <Link
+            href="/notices"
+            className="hover:underline cursor-pointer text-center truncate px-4"
+            title={announcement}
+          >
+            {announcement}
+          </Link>
         </div>
       ))}
       {announcements.length > 1 && (
@@ -70,12 +82,12 @@ export const AnnouncementBar = ({ announcements }: AnnouncementBarProps) => {
               key={index}
               className={cn(
                 "block h-1 w-1 rounded-full bg-white transition-all duration-300",
-                index === currentIndex ? "w-3 bg-white/80" : "bg-white/40",
+                index === currentIndex ? "w-3 bg-white/80" : "bg-white/40"
               )}
             />
           ))}
         </div>
       )}
     </div>
-  )
-}
+  );
+};

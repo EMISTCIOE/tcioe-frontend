@@ -21,7 +21,7 @@ export const HeroSection = ({
         className="z-0"
         priority
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-primary-blue/85 to-primary-blue/65 z-10 flex items-center justify-center text-center px-4">
+      <div className="absolute inset-0 bg-black/60 z-10 flex items-center justify-center text-center px-4">
         <div className="max-w-3xl text-white space-y-4">
           <AnimatedSection delay={0.2}>
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-xl">

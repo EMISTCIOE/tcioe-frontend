@@ -7,7 +7,7 @@ const InaugurationGallery = ({ items }: InaugurationGalleryProps) => {
   return (
       <section className="py-12 bg-gray-50 px-4 md:px-20">
         <AnimatedSection delay={0.1} >
-      <h2 className="text-3xl font-bold text-center mb-10 text-primary-blue border-b-2 border-accent-orange inline-block">
+      <h2 className="text-3xl font-bold text-center mb-10 text-[#1A1A2E] border-b-2 border-accent-orange inline-block">
         Historical Inauguration
       </h2>
 </AnimatedSection>

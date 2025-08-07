@@ -13,7 +13,7 @@ export const QuickStats = ({ stats }: QuickStatsProps) => {
     <section className="py-12 md:py-20 bg-wheat-light">
       <div className="container mx-auto px-4 lg:px-6">
         <AnimatedSection>
-          <h2 className="text-xl md:text-3xl font-bold text-center text-primary-blue mb-10">
+          <h2 className="text-xl md:text-3xl font-bold text-center text-[#1A1A2E] mb-10">
             Our Achievements in Numbers
           </h2>
         </AnimatedSection>

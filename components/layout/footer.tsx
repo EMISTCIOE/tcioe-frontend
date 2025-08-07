@@ -71,7 +71,7 @@ export const Footer = () => {
   ];
 
   return (
-    <footer className="bg-primary-blue text-footer-text py-8 md:py-12 relative">
+    <footer className="bg-[#1A1A2E] text-footer-text py-8 md:py-12 relative">
       <div className="container mx-auto px-4 lg:px-6 flex flex-col space-y-6">
         {/* Top Links Section */}
         <div className="flex md:flex-row flex-col justify-center md:justify-start gap-x-8 gap-y-4 text-base font-normal">

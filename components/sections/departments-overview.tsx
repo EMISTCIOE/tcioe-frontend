@@ -7,7 +7,7 @@ import { AnimatedSection } from "@/components/animated-section"
 // Dynamically get Lucide icon component
 const getIcon = (iconName: string) => {
   const IconComponent = (LucideIcons as any)[iconName]
-  return IconComponent ? <IconComponent className="h-10 w-10 text-primary-blue" /> : null
+  return IconComponent ? <IconComponent className="h-10 w-10 text-[#1A1A2E]" /> : null
 }
 
 export const DepartmentsOverview = ({ departments }: DepartmentsOverviewProps) => {
@@ -15,7 +15,7 @@ export const DepartmentsOverview = ({ departments }: DepartmentsOverviewProps) =
     <section className="py-12 md:py-20 bg-gradient-to-br from-white to-light-teal">
       <div className="container mx-auto px-4 lg:px-6">
         <AnimatedSection>
-          <h2 className="text-xl md:text-3xl font-bold text-center text-primary-blue mb-10">
+          <h2 className="text-xl md:text-3xl font-bold text-center text-[#1A1A2E] mb-10">
             Our Academic Departments
           </h2>
         </AnimatedSection>

@@ -19,7 +19,7 @@ export const QuickLinksSection = ({ links }: QuickLinksSectionProps) => {
     <section className="py-16 md:py-24 bg-gradient-to-br from-white to-teal-light">
       <div className="container mx-auto px-4 lg:px-6">
         <AnimatedSection>
-          <h2 className="text-2xl md:text-4xl font-bold text-center text-primary-blue mb-12">Quick Links</h2>
+          <h2 className="text-2xl md:text-4xl font-bold text-center text-[#1A1A2E] mb-12">Quick Links</h2>
         </AnimatedSection>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {links.map((link, index) => (

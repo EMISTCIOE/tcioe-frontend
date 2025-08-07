@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { Search, MenuIcon, ChevronDown } from "lucide-react";
+import { Search, MenuIcon, ChevronDown, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -87,11 +87,6 @@ export const Header = () => {
     {
       name: "Notices",
       href: "/notices",
-      dropdown: [
-        { name: "Latest Notices", href: "/notices" },
-        { name: "Exam Notices", href: "/notices/exams" },
-        { name: "Admission Notices", href: "/notices/admissions" },
-      ],
     },
     {
       name: "Resources",
@@ -117,9 +112,9 @@ export const Header = () => {
       dropdown: [
         { name: "Unions", href: "/campus-life/unions" },
         { name: "Student Clubs", href: "/campus-life/clubs" },
-        { name: "Sports Activities", href: "/campus-life/sports" },
+
         { name: "Campus Festivals", href: "/campus-life/festivals" },
-        { name: "Technological Fests", href: "/campus-life/tech-fests" },
+        { name: "Club Events", href: "/campus-life/club-events" },
       ],
     },
   ];
@@ -127,17 +122,17 @@ export const Header = () => {
   return (
     <header className="w-full">
       {/* Top Bar */}
-      <div className="bg-header-top-bg text-white text-[10px] md:text-sm py-2 px-4">
+      <div className="bg-[#F1F1F1] text-black text-[10px] md:text-sm py-2 px-4">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex space-x-2 md:space-x-6">
             <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Students
             </Link>
-            <span className="border-l border-white h-3 md:h-5"></span>
+            <span className="border-l border-black h-3 md:h-5"></span>
             <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Faculty & Staff
             </Link>
-            <span className="border-l border-white h-3 md:h-5"></span>
+            <span className="border-l border-black h-3 md:h-5"></span>
             <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Alumni
             </Link>
@@ -147,14 +142,22 @@ export const Header = () => {
             <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Library
             </Link>
-            <span className="border-l border-white h-3 md:h-5"></span>
+            <span className="border-l border-black h-3 md:h-5"></span>
             <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
               Journal
+            </Link>
+            <Link
+              href="/suggestion-box"
+              className="inline-flex items-center hover:underline text-orange-600 hover:text-orange-400 transition-colors"
+              title="Share your feedback and suggestions"
+            >
+              <MessageSquare className="h-4 w-4 mr-1" />
+              Suggestions
             </Link>
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-white hover:bg-white/20"
+              className="h-6 w-6 text-black hover:bg-black/20"
             >
               <Search className="h-4 w-4" />
               <span className="sr-only">Search</span>
@@ -216,6 +219,35 @@ export const Header = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px] p-6">
                 <div className="flex flex-col gap-4 pt-8">
+                  {/* Top Navigation Items */}
+                  <div className="border-b border-gray-200 pb-4 mb-4">
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                      Quick Links
+                    </h3>
+                    <div className="flex flex-col gap-2">
+                      <Link
+                        href="#"
+                        className="block py-2 text-base text-text-dark hover:text-primary-blue transition-colors"
+                      >
+                        Library
+                      </Link>
+                      <Link
+                        href="#"
+                        className="block py-2 text-base text-text-dark hover:text-primary-blue transition-colors"
+                      >
+                        Journal
+                      </Link>
+                      <Link
+                        href="/suggestion-box"
+                        className="inline-flex items-center py-2 text-base text-orange-600 hover:text-orange-700 transition-colors font-medium"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Suggestion Box
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Main Navigation */}
                   {navItems.map((item) => (
                     <div key={item.name}>
                       {item.dropdown && item.dropdown.length > 0 ? (
@@ -298,7 +330,7 @@ export const Header = () => {
       </nav>
 
       {/* Announcement Bar */}
-      <div className="bg-primary-blue text-white py-2 px-4 text-sm overflow-hidden relative">
+      <div className="bg-[#F97A00] text-white py-2 px-4 text-sm overflow-hidden relative">
         <div className="container mx-auto flex items-center">
           <div className="flex-shrink-0 font-semibold mr-4">Announcements</div>
           <div className="flex-1 text-center relative h-5 overflow-hidden">

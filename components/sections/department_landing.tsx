@@ -66,7 +66,7 @@ export const DepartmentLandingPage = ({
           />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-primary-blue mb-4">
+          <h2 className="text-2xl font-bold text-[#1A1A2E] mb-4">
             About the Department
           </h2>
           <p className="text-gray-700 leading-relaxed text-justify">
@@ -78,7 +78,7 @@ export const DepartmentLandingPage = ({
       {/* HOD Message */}
       <section className="px-6 py-12 md:px-20 bg-gray-100 grid md:grid-cols-2 gap-10 items-center">
         <div className="order-2 md:order-1">
-          <h2 className="text-2xl font-bold text-primary-blue mb-4">
+          <h2 className="text-2xl font-bold text-[#1A1A2E] mb-4">
             Message from HOD
           </h2>
           <p className="text-gray-700 leading-relaxed text-justify">
@@ -99,7 +99,7 @@ export const DepartmentLandingPage = ({
 
       {/* Events */}
       <section className="px-6 py-12 md:px-20 bg-white">
-        <h2 className="text-2xl font-semibold text-primary-blue mb-6">
+        <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-6">
           Events
         </h2>
         <ul className="space-y-4">

@@ -15,7 +15,7 @@ export const CampusChiefHeroMessage = ({ name, title, image, message, fullMessag
     <section className="py-12 md:py-20 bg-wheat-light">
       <div className="container mx-auto px-4 lg:px-6">
         <AnimatedSection>
-          <h2 className="text-xl md:text-3xl font-bold text-center text-primary-blue mb-10">
+          <h2 className="text-xl md:text-3xl font-bold text-center text-[#1A1A2E] mb-10">
             Message from the Campus Chief
           </h2>
         </AnimatedSection>
@@ -46,7 +46,7 @@ export const CampusChiefHeroMessage = ({ name, title, image, message, fullMessag
                 <Button
                   onClick={handleButtonClick}
                   variant="outline"
-                  className="text-primary-blue border-primary-blue hover:bg-primary-blue hover:text-white transition-colors bg-transparent rounded-md px-5 py-1.5 text-sm shadow-sm hover:shadow-md"
+                  className="text-[#1A1A2E] border-primary-blue hover:bg-primary-blue hover:text-white transition-colors bg-transparent rounded-md px-5 py-1.5 text-sm shadow-sm hover:shadow-md"
                 >
                   {buttonText}
                 </Button>
