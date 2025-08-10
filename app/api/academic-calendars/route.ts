@@ -32,7 +32,8 @@ export async function GET(request: NextRequest) {
     // Handle program type filter
     const programType = searchParams.get("programType");
     if (programType) {
-      params.append("programType", programType);
+      // Ensure programType is in uppercase for the backend API
+      params.append("programType", programType.toUpperCase());
     }
 
     // Handle ordering
