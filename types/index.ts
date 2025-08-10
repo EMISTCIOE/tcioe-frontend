@@ -235,6 +235,28 @@ export interface DownloadsResponse {
   results: Download[];
 }
 
+// Campus Report API Types
+export interface FiscalSession {
+  uuid: string;
+  sessionFull: string;
+  sessionShort: string;
+}
+
+export interface CampusReport {
+  uuid: string;
+  reportType: "SELF_STUDY" | "ANNUAL" | "FINANCIAL" | "ACADEMIC" | "OTHER";
+  fiscalSession: FiscalSession;
+  publishedDate: string;
+  file: string;
+}
+
+export interface CampusReportsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: CampusReport[];
+}
+
 // API Query Parameters
 export interface PaginatedQueryParams {
   page?: number;
@@ -292,9 +314,9 @@ export interface ClubEventsResponse {
 // Club API Types
 export interface ClubMember {
   uuid: string;
-  name: string;
-  position?: string;
-  image?: string;
+  fullName: string;
+  designation: string;
+  photo?: string;
 }
 
 export interface Club {
@@ -304,7 +326,7 @@ export interface Club {
   shortDescription: string;
   detailedDescription?: string;
   thumbnail: string;
-  website?: string; // Optional website URL
+  websiteUrl?: string; // Optional website URL
   members?: ClubMember[];
 }
 
@@ -313,6 +335,47 @@ export interface ClubsResponse {
   next: string | null;
   previous: string | null;
   results: Club[];
+}
+
+// Union API Types
+export interface UnionMember {
+  uuid: string;
+  fullName: string;
+  designation: string;
+  photo?: string;
+}
+
+export interface Union {
+  uuid: string;
+  name: string;
+  thumbnail: string;
+  shortDescription: string;
+  detailedDescription?: string;
+  websiteUrl?: string;
+  members?: UnionMember[];
+}
+
+export interface UnionsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Union[];
+}
+
+// Academic Calendar API Types
+export interface AcademicCalendar {
+  uuid: string;
+  programType: "BACHELORS" | "MASTERS" | "DIPLOMA" | "OTHER";
+  startYear: number;
+  endYear: number;
+  file: string;
+}
+
+export interface AcademicCalendarsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: AcademicCalendar[];
 }
 
 // Campus Info API Types
@@ -352,8 +415,8 @@ export interface FeedbackResponse {
 
 export interface InaugurationGalleryProps {
   items: Array<{
-    src: string
-    alt: string
-    caption: string
-  }>
+    src: string;
+    alt: string;
+    caption: string;
+  }>;
 }
