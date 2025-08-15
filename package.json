@@ -6,7 +6,11 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "sitemap": "next build && curl http://localhost:3000/sitemap.xml",
+    "seo-audit": "lighthouse http://localhost:3000 --only-categories=seo --output=html --output-path=./seo-audit.html",
+    "analyze": "cross-env ANALYZE=true next build",
+    "check-links": "next build && npx broken-link-checker http://localhost:3000"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",

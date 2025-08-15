@@ -1,5 +1,16 @@
+import { Metadata } from "next";
 import { AnimatedSection } from "@/components/animated-section";
 import DepartmentLandingPage from "@/components/sections/department_landing";
+import { generateSEOMetadata } from "@/components/SEO";
+import { departmentSEOConfig } from "@/lib/seo";
+import { StructuredData } from "@/components/StructuredData";
+
+export const metadata: Metadata = generateSEOMetadata({
+  title: departmentSEOConfig.industrial.title,
+  description: departmentSEOConfig.industrial.description,
+  keywords: departmentSEOConfig.industrial.keywords,
+  url: "/departments/industrial",
+});
 
 const data = {
   departmentName: "Department of Industrial Engineering",
@@ -27,9 +38,36 @@ const data = {
   ],
 };
 
+// Structured data for the department
+const departmentSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollegeDepartment",
+  name: "Department of Industrial Engineering",
+  description: data.departmentDescription,
+  url: `${process.env.NEXT_PUBLIC_BASE_URL}/departments/industrial`,
+  parentOrganization: {
+    "@type": "CollegeOrUniversity",
+    name: "Tribhuvan University Institute of Engineering, Thapathali Campus",
+    url: process.env.NEXT_PUBLIC_BASE_URL,
+  },
+  employee: {
+    "@type": "Person",
+    name: data.hodName,
+    jobTitle: "Head of Department",
+    image: `${process.env.NEXT_PUBLIC_BASE_URL}${data.hodPhoto}`,
+  },
+  hasCredential: {
+    "@type": "EducationalOccupationalCredential",
+    name: "Bachelor of Industrial Engineering",
+    educationalLevel: "Undergraduate",
+    credentialCategory: "degree",
+  },
+};
+
 export default function IndustrialEngineeringPage() {
   return (
     <AnimatedSection className="text-center">
+      <StructuredData data={departmentSchema} />
       <DepartmentLandingPage {...data} />
     </AnimatedSection>
   );
