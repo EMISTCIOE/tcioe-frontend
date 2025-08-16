@@ -4,6 +4,7 @@ import DepartmentLandingPage from "@/components/sections/department_landing";
 import { generateSEOMetadata } from "@/components/SEO";
 import { departmentSEOConfig } from "@/lib/seo";
 import { StructuredData } from "@/components/StructuredData";
+import { DepartmentPageWrapper } from "@/components/DepartmentPageWrapper";
 
 export const metadata: Metadata = generateSEOMetadata({
   title: departmentSEOConfig.civil.title,
@@ -66,9 +67,14 @@ const departmentSchema = {
 
 export default function CivilEngineeringPage() {
   return (
-    <AnimatedSection className="text-center">
-      <StructuredData data={departmentSchema} />
-      <DepartmentLandingPage {...data} />
-    </AnimatedSection>
+    <DepartmentPageWrapper
+      departmentName="Civil Engineering"
+      departmentType="Engineering"
+    >
+      <AnimatedSection className="text-center">
+        <StructuredData data={departmentSchema} />
+        <DepartmentLandingPage {...data} />
+      </AnimatedSection>
+    </DepartmentPageWrapper>
   );
 }

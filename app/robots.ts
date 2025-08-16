@@ -7,12 +7,6 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
-        disallow: ["/api/", "/admin/", "/_next/", "/private/", "*.pdf$"],
-      },
-      // Allow specific bots to crawl API routes for structured data
-      {
-        userAgent: "Googlebot",
         allow: ["/", "/api/events", "/api/notices", "/api/clubs"],
         disallow: ["/api/feedback", "/admin/", "/private/"],
       },
