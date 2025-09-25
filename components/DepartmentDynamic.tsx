@@ -17,25 +17,44 @@ import { useDepartmentEventGallery } from "@/hooks/use-department-event-gallery"
 
 export function DepartmentDynamic({ slug }: { slug: string }) {
   const { department, loading: deptLoading } = useDepartment(slug);
-  const { programs, loading: progLoading } = useDepartmentPrograms(slug, { limit: 100, ordering: "name" });
-  const { staffs, loading: staffLoading } = useDepartmentStaffs(slug, { limit: 6, ordering: "displayOrder" });
-  const { events, loading: eventsLoading } = useDepartmentEvents(slug, { limit: 50, ordering: "-eventStartDate" });
-  const { downloads, loading: downloadsLoading } = useDepartmentDownloads(slug, { limit: 100 });
-  const { plans, loading: plansLoading } = useDepartmentPlans(slug, { limit: 100 });
+  const { programs, loading: progLoading } = useDepartmentPrograms(slug, {
+    limit: 100,
+    ordering: "name",
+  });
+  const { staffs, loading: staffLoading } = useDepartmentStaffs(slug, {
+    limit: 6,
+    ordering: "displayOrder",
+  });
+  const { events, loading: eventsLoading } = useDepartmentEvents(slug, {
+    limit: 50,
+    ordering: "-eventStartDate",
+  });
+  const { downloads, loading: downloadsLoading } = useDepartmentDownloads(
+    slug,
+    { limit: 100 }
+  );
+  const { plans, loading: plansLoading } = useDepartmentPlans(slug, {
+    limit: 100,
+  });
 
   const departmentSubdomainMap: Record<string, string> = {
-    "applied-science": "doas",
-    architecture: "doarch",
-    "automobile-mechanical": "doame",
-    civil: "doce",
-    "electronics-computer": "doece",
-    industrial: "doie",
+    "department-of-applied-science": "doas",
+    "department-of-architecture": "doarch",
+    "department-of-automobile-and-mechanical-engineering": "doame",
+    "department-of-civil-engineering": "doce",
+    "department-of-electronics-and-computer-engineering": "doece",
+    "department-of-industrial-engineering": "doie",
   };
   const subdomain = departmentSubdomainMap[slug] || slug;
   const externalBase = `https://${subdomain}.tcioe.edu.np`;
 
   const loading =
-    deptLoading || progLoading || staffLoading || eventsLoading || downloadsLoading || plansLoading;
+    deptLoading ||
+    progLoading ||
+    staffLoading ||
+    eventsLoading ||
+    downloadsLoading ||
+    plansLoading;
 
   if (loading) {
     return (
@@ -63,9 +82,7 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
     <main className="min-h-screen bg-white">
       {/* Hero with background logo/thumbnail */}
       <section className="relative w-full">
-        <div
-          className="relative flex items-center justify-center py-16 md:py-24 overflow-hidden"
-        >
+        <div className="relative flex items-center justify-center py-16 md:py-24 overflow-hidden">
           {department.thumbnail && (
             <div
               className="absolute inset-0 opacity-10"
@@ -106,9 +123,11 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
       <section className="py-12 bg-gradient-to-br from-white to-light-teal">
         <div className="container mx-auto px-4 lg:px-6">
           <AnimatedSection>
-            <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-6">Academic Programs</h2>
+            <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-6">
+              Academic Programs
+            </h2>
           </AnimatedSection>
-          {programs.length === 0 ? (
+          {!programs || programs.length === 0 ? (
             <p className="text-sm text-text-light">No programs available.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -120,7 +139,10 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
             </div>
           )}
           <div className="mt-6">
-            <Link href={`${externalBase}/programs`} className="text-primary-blue hover:underline font-medium">
+            <Link
+              href={`${externalBase}/programs`}
+              className="text-primary-blue hover:underline font-medium"
+            >
               See more programs
             </Link>
           </div>
@@ -131,14 +153,19 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4 lg:px-6">
           <AnimatedSection>
-            <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-6">Faculty & Staff</h2>
+            <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-6">
+              Faculty & Staff
+            </h2>
           </AnimatedSection>
-          {staffs.length === 0 ? (
+          {!staffs || staffs.length === 0 ? (
             <p className="text-sm text-text-light">No staff listed.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {staffs.map((s) => (
-                <Card key={s.uuid} className="h-full shadow-md border border-gray-100">
+                <Card
+                  key={s.uuid}
+                  className="h-full shadow-md border border-gray-100"
+                >
                   <CardHeader className="flex flex-row items-center gap-3">
                     <Image
                       src={s.photo || "/placeholder-user.jpg"}
@@ -148,7 +175,10 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
                       className="rounded-[30%] object-cover w-16 h-16"
                     />
                     <div>
-                      <CardTitle className="text-base">{s.title ? `${s.title} ` : ""}{s.name}</CardTitle>
+                      <CardTitle className="text-base">
+                        {s.title ? `${s.title} ` : ""}
+                        {s.name}
+                      </CardTitle>
                       <p className="text-sm text-text-light">{s.designation}</p>
                     </div>
                   </CardHeader>
@@ -157,7 +187,10 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
             </div>
           )}
           <div className="mt-6">
-            <Link href={`${externalBase}/faculty`} className="text-primary-blue hover:underline font-medium">
+            <Link
+              href={`${externalBase}/faculty`}
+              className="text-primary-blue hover:underline font-medium"
+            >
               See full faculty list
             </Link>
           </div>
@@ -168,9 +201,11 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
       <section className="py-12 bg-gradient-to-br from-white to-teal-light">
         <div className="container mx-auto px-4 lg:px-6">
           <AnimatedSection>
-            <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-6">Department Events</h2>
+            <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-6">
+              Department Events
+            </h2>
           </AnimatedSection>
-          {events.length === 0 ? (
+          {!events || events.length === 0 ? (
             <p className="text-sm text-text-light">No events.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -189,79 +224,113 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
             </div>
           )}
           <div className="mt-6">
-            <Link href={`${externalBase}/events`} className="text-primary-blue hover:underline font-medium">
+            <Link
+              href={`${externalBase}/events`}
+              className="text-primary-blue hover:underline font-medium"
+            >
               See more events
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Plans & Policies */}
+      {/* Plans & Policies + Downloads (side by side on desktop) */}
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4 lg:px-6">
-          <AnimatedSection>
-            <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-6">Plans & Policies</h2>
-          </AnimatedSection>
-          {plans.length === 0 ? (
-            <p className="text-sm text-text-light">No plans.</p>
-          ) : (
-            <div className="space-y-4">
-              {plans.map((p) => (
-                <Card key={p.uuid} className="shadow-sm border border-gray-100">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{p.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {p.description && (
-                      <p className="text-sm text-text-dark mb-3">{p.description}</p>
-                    )}
-                    <Link href={p.file} target="_blank" className="text-primary-blue hover:underline font-medium">
-                      View file
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Plans & Policies */}
+            <div>
+              <AnimatedSection>
+                <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-6">
+                  Plans & Policies
+                </h2>
+              </AnimatedSection>
+              {!plans || plans.length === 0 ? (
+                <p className="text-sm text-text-light">No plans.</p>
+              ) : (
+                <div className="space-y-4">
+                  {plans.map((p) => (
+                    <Card
+                      key={p.uuid}
+                      className="shadow-sm border border-gray-100"
+                    >
+                      <CardHeader>
+                        <CardTitle className="text-lg">{p.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {p.description && (
+                          <p className="text-sm text-text-dark mb-3">
+                            {p.description}
+                          </p>
+                        )}
+                        <Link
+                          href={p.file}
+                          target="_blank"
+                          className="text-primary-blue hover:underline font-medium"
+                        >
+                          View file
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+              <div className="mt-4">
+                <Link
+                  href={`${externalBase}/plans`}
+                  className="text-primary-blue hover:underline font-medium"
+                >
+                  See all plans & policies
+                </Link>
+              </div>
             </div>
-          )}
-          <div className="mt-4">
-            <Link href={`${externalBase}/plans`} className="text-primary-blue hover:underline font-medium">
-              See all plans & policies
-            </Link>
-          </div>
-        </div>
-      </section>
 
-      {/* Downloads */}
-      <section className="py-12 bg-white">
-        <div className="container mx-auto px-4 lg:px-6">
-          <AnimatedSection>
-            <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-6">Downloads</h2>
-          </AnimatedSection>
-          {downloads.length === 0 ? (
-            <p className="text-sm text-text-light">No downloads.</p>
-          ) : (
-            <div className="space-y-4">
-              {downloads.map((d) => (
-                <Card key={d.uuid} className="shadow-sm border border-gray-100">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{d.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {d.description && (
-                      <p className="text-sm text-text-dark mb-3">{d.description}</p>
-                    )}
-                    <Link href={d.file} target="_blank" className="text-primary-blue hover:underline font-medium">
-                      Download file
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
+            {/* Downloads */}
+            <div>
+              <AnimatedSection>
+                <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-6">
+                  Downloads
+                </h2>
+              </AnimatedSection>
+              {!downloads || downloads.length === 0 ? (
+                <p className="text-sm text-text-light">No downloads.</p>
+              ) : (
+                <div className="space-y-4">
+                  {downloads.map((d) => (
+                    <Card
+                      key={d.uuid}
+                      className="shadow-sm border border-gray-100"
+                    >
+                      <CardHeader>
+                        <CardTitle className="text-lg">{d.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {d.description && (
+                          <p className="text-sm text-text-dark mb-3">
+                            {d.description}
+                          </p>
+                        )}
+                        <Link
+                          href={d.file}
+                          target="_blank"
+                          className="text-primary-blue hover:underline font-medium"
+                        >
+                          Download file
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+              <div className="mt-4">
+                <Link
+                  href={`${externalBase}/downloads`}
+                  className="text-primary-blue hover:underline font-medium"
+                >
+                  See all downloads
+                </Link>
+              </div>
             </div>
-          )}
-          <div className="mt-4">
-            <Link href={`${externalBase}/downloads`} className="text-primary-blue hover:underline font-medium">
-              See all downloads
-            </Link>
           </div>
         </div>
       </section>
@@ -287,12 +356,20 @@ function EventCardWithGallery({
   description?: string | null;
 }) {
   // Always show gallery; fetch a generous page size
-  const { gallery, loading } = useDepartmentEventGallery(eventId, { limit: 100 });
+  const { gallery, loading } = useDepartmentEventGallery(eventId, {
+    limit: 100,
+  });
   return (
     <Card className="overflow-hidden shadow-md border border-gray-100">
       {thumbnail && (
         <div className="w-full h-40 overflow-hidden">
-          <Image src={thumbnail} alt={title} width={800} height={300} className="w-full h-full object-cover" />
+          <Image
+            src={thumbnail}
+            alt={title}
+            width={800}
+            height={300}
+            className="w-full h-full object-cover"
+          />
         </div>
       )}
       <CardHeader className="pb-2">
@@ -309,7 +386,9 @@ function EventCardWithGallery({
           </p>
         </div>
         {description && (
-          <p className="text-sm text-text-dark mb-3 line-clamp-3">{description}</p>
+          <p className="text-sm text-text-dark mb-3 line-clamp-3">
+            {description}
+          </p>
         )}
         <div className="mt-3">
           {loading ? (
@@ -341,7 +420,9 @@ function ProgramCard({ program }: { program: any }) {
     <Card className="h-full shadow-md border border-gray-100 overflow-hidden">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg leading-tight mr-2">{program.name}</CardTitle>
+          <CardTitle className="text-lg leading-tight mr-2">
+            {program.name}
+          </CardTitle>
           <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-100">
             {program.programType}
           </span>

@@ -14,7 +14,6 @@ export const Footer = () => {
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 300) {
-        // Show button after scrolling 300px
         setShowBackToTop(true);
       } else {
         setShowBackToTop(false);
@@ -26,20 +25,8 @@ export const Footer = () => {
   }, []);
 
   const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  const topLinks = [
-    { label: "About", href: "/about" },
-    { label: "Examination Control Board", href: "/examination-board" },
-    { label: "Downloads", href: "/downloads" },
-    { label: "Notices", href: "/notices" },
-    { label: "Campus Map", href: "/campus-map" },
-    { label: "Directory", href: "/directory" },
-  ];
 
   // Load departments dynamically to avoid stale routes
   const [departments, setDepartments] = useState<Array<{ label: string; href: string }>>([]);
@@ -61,11 +48,21 @@ export const Footer = () => {
     fetchDepartments();
   }, []);
 
-  const bottomLinks = [
-    { label: "Annual Reports", href: "/reports" },
+  // Footer columns
+  const quickLinks = [
+    { label: "About", href: "/about" },
+    { label: "Campus Map", href: "/campus-map" },
+    { label: "Contact Us", href: "/contact" },
+    { label: "Directory", href: "/directory" },
+    { label: "Examination Control Board", href: "/examination-board" },
+  ];
+
+  const resources = [
     { label: "Academic Calendar", href: "/academics/calendar" },
-    { label: "Act & Rules", href: "/resources/tu-act-rules" },
+    { label: "Annual Reports", href: "/reports" },
     { label: "Code of Conducts", href: "/resources/code-of-conduct" },
+    { label: "Downloads", href: "/downloads" },
+    { label: "Privacy Policy", href: "/privacy-policy" },
   ];
 
   const legalLinks = [
@@ -76,111 +73,121 @@ export const Footer = () => {
   ];
 
   return (
-    <footer className="bg-[#1A1A2E] text-footer-text py-8 md:py-12 relative">
-      <div className="container mx-auto px-4 lg:px-6 flex flex-col space-y-6">
-        {/* Top Links Section */}
-        <div className="flex md:flex-row flex-col justify-center md:justify-start gap-x-8 gap-y-4 text-base font-normal">
-          {topLinks.map((link) => (
-            <React.Fragment key={link.label}>
-            <Link
-              href={link.href}
-              className="hover:text-accent-orange transition-colors duration-200"
-              >
-              {link.label}
-            </Link>
-            {link !== topLinks[topLinks.length - 1] && (
-              <span className="border-l hidden md:block border-white h-6"></span>
-            )}
-            </React.Fragment>
+    <footer className="bg-[#1A1A2E] text-footer-text py-10 md:py-14 relative">
+      <div className="container mx-auto px-4 lg:px-6 flex flex-col gap-10">
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {[
+            { value: "2500+", label: "Students" },
+            { value: "400+", label: "Faculty Members" },
+            { value: "15+", label: "Programs" },
+            { value: "100+", label: "Research Projects" },
+          ].map((item) => (
+            <div key={item.label} className="text-center md:text-left">
+              <div className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+                {item.value}
+              </div>
+              <div className="text-lg md:text-xl mt-1">{item.label}</div>
+            </div>
           ))}
         </div>
 
-        <div className="border-t border-footer-border pt-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Departments</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-2 text-base">
-            {departments.map((dept) => (
-              <Link
-                key={dept.label}
-                href={dept.href}
-                className="hover:text-accent-orange transition-colors duration-200  sm:text-left"
-              >
-                {dept.label}
-              </Link>
-            ))}
-          </div>
-        </div>
+        <div className="border-t border-footer-border" />
 
-        <div className="border-t border-footer-border pt-6">
-          <div className="flex flex-col md:flex-row justify-center md:justify-start gap-x-8 gap-y-4 text-base font-normal">
-            {bottomLinks.map((link) => (
-              <React.Fragment key={link.label}>
-              <Link
-                
-                href={link.href}
-                className="hover:text-accent-orange transition-colors duration-200"
-                >
-                {link.label}
+        {/* Main Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 items-start">
+          {/* Brand column */}
+          <div className="space-y-5">
+            <Link href="/" className="flex items-center gap-3 text-white group">
+              <Image
+                src="/data/logo.svg"
+                width={60}
+                height={60}
+                alt="Tribhuvan University Institute of Engineering Thapathali Campus Logo"
+                className="flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
+              />
+              <div className="leading-tight">
+                <div className="text-base font-bold">Institute of Engineering</div>
+                <div className="text-xl font-semibold -mt-0.5">Thapathali Campus</div>
+              </div>
+            </Link>
+            <p className="text-sm text-footer-text/80 max-w-xs">
+              Accredited by University Grants Commission (UGC) Nepal. Quality
+              Education Since 1930 A.D.
+            </p>
+            <div className="flex items-center gap-3">
+              <Link href="#" aria-label="Facebook" className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+                <Facebook className="h-5 w-5 text-white" />
               </Link>
-              {link !== bottomLinks[bottomLinks.length - 1] && (
-                <span className="border-l hidden md:block border-white h-6"></span>
-              )}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-
-        <div className="border-t border-footer-border pt-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          {/* Logo and Name */}
-          <Link
-            href="/"
-            className="flex items-center gap-3 text-white text-center md:text-left group"
-          >
-            <Image
-              src="/data/logo.svg" // Placeholder for the college logo
-              width={60}
-              height={60}
-              alt="Tribhuvan University Institute of Engineering Thapathali Campus Logo"
-              className="flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
-            />
-            <div className="flex flex-col leading-tight">
-              <span className="text-base font-bold">Tribhuvan University</span>
-              <span className="text-sm font-semibold">
-                Institute of Engineering
-              </span>
-              <span className="text-xs">Thapathali Campus</span>
+              <Link href="#" aria-label="Instagram" className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+                <Instagram className="h-5 w-5 text-white" />
+              </Link>
+              <Link href="#" aria-label="LinkedIn" className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+                <Linkedin className="h-5 w-5 text-white" />
+              </Link>
             </div>
-          </Link>
+          </div>
 
-          {/* Social Media Icons */}
-          <div className="flex space-x-4">
-            <Link href="#" aria-label="Facebook">
-              <Facebook className="h-7 w-7 text-white hover:text-accent-orange transition-colors duration-200 transform hover:scale-110" />
-            </Link>
-            <Link href="#" aria-label="Instagram">
-              <Instagram className="h-7 w-7 text-white hover:text-accent-orange transition-colors duration-200 transform hover:scale-110" />
-            </Link>
-            <Link href="#" aria-label="LinkedIn">
-              <Linkedin className="h-7 w-7 text-white hover:text-accent-orange transition-colors duration-200 transform hover:scale-110" />
-            </Link>
+          {/* Quick Access */}
+          <div>
+            <h4 className="text-white font-semibold tracking-wide mb-3">QUICK ACCESS</h4>
+            <div className="h-0.5 w-10 bg-accent-orange mb-4" />
+            <ul className="space-y-2">
+              {quickLinks.map((l) => (
+                <li key={l.label}>
+                  <Link href={l.href} className="hover:text-accent-orange transition-colors">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Departments */}
+          <div>
+            <h4 className="text-white font-semibold tracking-wide mb-3">DEPARTMENTS</h4>
+            <div className="h-0.5 w-10 bg-accent-orange mb-4" />
+            <ul className="space-y-2">
+              {(departments.slice(0, 6) || []).map((dept) => (
+                <li key={dept.label}>
+                  <Link href={dept.href} className="hover:text-accent-orange transition-colors">
+                    {dept.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h4 className="text-white font-semibold tracking-wide mb-3">RESOURCES</h4>
+            <div className="h-0.5 w-10 bg-accent-orange mb-4" />
+            <ul className="space-y-2">
+              {resources.map((l) => (
+                <li key={l.label}>
+                  <Link href={l.href} className="hover:text-accent-orange transition-colors">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        {/* Legal Links and Copyright */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-2 text-xs mt-4">
-          <div className="flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-1">
-            {legalLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="hover:text-white transition-colors duration-200"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-          <p className="text-center md:text-right mt-2 md:mt-0">
+        <div className="border-t border-footer-border" />
+
+        {/* Bottom bar */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-3 text-xs">
+          <p className="text-center md:text-left">
             &copy; {currentYear} IOE Thapathali Campus - All rights reserved
           </p>
+          <div className="flex flex-wrap justify-center md:justify-end gap-x-4 gap-y-1">
+            {legalLinks.map((link) => (
+              <Link key={link.label} href={link.href} className="hover:text-white transition-colors">
+                {link.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -189,9 +196,7 @@ export const Footer = () => {
         onClick={scrollToTop}
         className={cn(
           "fixed bottom-8 right-8 bg-accent-orange text-white p-3 rounded-full shadow-lg transition-all duration-300 z-50",
-          showBackToTop
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-4 pointer-events-none"
+          showBackToTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
         )}
         aria-label="Back to top"
       >
