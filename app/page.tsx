@@ -2,7 +2,6 @@
 
 import { HeroSection } from "@/components/sections/hero-section";
 import { CampusChiefHeroMessage } from "@/components/sections/campus-chief-hero-message";
-import { HoDMessagesSection } from "@/components/sections/hod-messages-section";
 import { QuickStats } from "@/components/sections/quick-stats";
 import { NewsEvents } from "@/components/sections/news-events";
 import { DepartmentsOverview } from "@/components/sections/departments-overview";
@@ -10,12 +9,14 @@ import { GallerySection } from "@/components/sections/gallery-section";
 import { QuickLinksSection } from "@/components/sections/quick-links-section";
 import { UpcomingEventsSection } from "@/components/sections/upcoming-events-section"; // Updated import
 import { useCollegeData } from "@/hooks/use-college-data";
+import { useDepartments as useDeptList } from "@/hooks/use-departments";
 import { useNotices } from "@/hooks/use-notices";
 import { campusChiefData } from "@/data/mock-data";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function HomePage() {
   const { data, loading, error } = useCollegeData();
+  const { departments: deptList } = useDeptList({ limit: 6, ordering: "name" });
   const { notices, loading: noticesLoading } = useNotices({
     page: 1,
     limit: 6,
@@ -112,12 +113,6 @@ export default function HomePage() {
 
   const campusChiefMessage = campusChiefData;
 
-  const hodMessages =
-    data?.departments.map((dept) => ({
-      ...dept.head,
-      title: `Head of ${dept.name}`,
-    })) || [];
-
   const quickLinks = [
     { label: "Admissions", href: "/admissions", icon: "UserPlus" },
     {
@@ -142,12 +137,6 @@ export default function HomePage() {
         ]}
       />
       {campusChiefMessage && <CampusChiefHeroMessage {...campusChiefMessage} />}
-      {hodMessages.length > 0 && (
-        <HoDMessagesSection
-          title="Messages from Our Department Heads"
-          messages={hodMessages}
-        />
-      )}
       <QuickStats
         stats={[
           {
@@ -170,14 +159,13 @@ export default function HomePage() {
       />
       <NewsEvents notices={notices || []} />
       <DepartmentsOverview
-        departments={
-          data?.departments.map((dept) => ({
-            name: dept.name,
-            description: dept.description,
-            icon: dept.icon,
-            href: dept.href,
-          })) || []
-        }
+        departments={(deptList || []).map((dept) => ({
+          name: dept.name,
+          description: dept.briefDescription || "",
+          icon: "Building",
+          href: `/departments/${dept.slug}`,
+          image: dept.thumbnail || null,
+        }))}
       />
       <UpcomingEventsSection limit={6} />{" "}
       {/* New Events Section with campus and club events */}

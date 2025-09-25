@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Download, DownloadsResponse, PaginatedQueryParams } from "@/types";
+import env from "@/lib/env";
+import { getMockDepartmentDownloads } from "@/data/mock-departments";
 
 interface UseDepartmentDownloadsParams extends PaginatedQueryParams {}
 
@@ -25,6 +27,12 @@ export function useDepartmentDownloads(
     try {
       setLoading(true);
       setError(null);
+      if (env.USE_MOCK_DEPARTMENT) {
+        const data: DownloadsResponse = getMockDepartmentDownloads(slug);
+        setDownloads(params.limit ? data.results.slice(0, params.limit) : data.results);
+        setPagination({ count: data.count, next: data.next, previous: data.previous });
+        return;
+      }
       const search = new URLSearchParams();
       if (params.page) search.append("page", params.page.toString());
       if (params.limit) search.append("limit", params.limit.toString());
@@ -47,4 +55,3 @@ export function useDepartmentDownloads(
 
   return { downloads, loading, error, pagination, refetch };
 }
-

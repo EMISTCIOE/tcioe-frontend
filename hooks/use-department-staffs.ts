@@ -4,6 +4,8 @@ import type {
   DepartmentStaffsResponse,
   SearchableQueryParams,
 } from "@/types";
+import env from "@/lib/env";
+import { getMockDepartmentStaffs } from "@/data/mock-departments";
 
 interface UseDepartmentStaffsParams extends SearchableQueryParams {
   ordering?: string;
@@ -31,6 +33,12 @@ export function useDepartmentStaffs(
     try {
       setLoading(true);
       setError(null);
+      if (env.USE_MOCK_DEPARTMENT) {
+        const data: DepartmentStaffsResponse = getMockDepartmentStaffs(slug);
+        setStaffs(data.results.slice(0, params.limit || 6));
+        setPagination({ count: data.count, next: data.next, previous: data.previous });
+        return;
+      }
       const search = new URLSearchParams();
       if (params.page) search.append("page", params.page.toString());
       if (params.limit) search.append("limit", params.limit.toString());
@@ -55,4 +63,3 @@ export function useDepartmentStaffs(
 
   return { staffs, loading, error, pagination, refetch };
 }
-

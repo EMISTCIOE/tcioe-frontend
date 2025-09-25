@@ -4,6 +4,8 @@ import type {
   DepartmentListItem,
   SearchableQueryParams,
 } from "@/types";
+import env from "@/lib/env";
+import { mockDepartmentsList } from "@/data/mock-departments";
 
 interface UseDepartmentsParams extends SearchableQueryParams {
   ordering?: string;
@@ -39,6 +41,22 @@ export function useDepartments(
       setLoading(true);
       setError(null);
 
+      if (env.USE_MOCK_DEPARTMENT) {
+        // Simulate filter/search locally for preview mode
+        let results = mockDepartmentsList.results;
+        if (params.search) {
+          const q = params.search.toLowerCase();
+          results = results.filter((d) =>
+            `${d.name} ${d.shortName} ${d.briefDescription}`
+              .toLowerCase()
+              .includes(q)
+          );
+        }
+        setDepartments(results);
+        setPagination({ count: results.length, next: null, previous: null });
+        return;
+      }
+
       const search = new URLSearchParams();
       if (params.page) search.append("page", params.page.toString());
       if (params.limit) search.append("limit", params.limit.toString());
@@ -71,4 +89,3 @@ export function useDepartments(
 
   return { departments, loading, error, pagination, refetch };
 }
-

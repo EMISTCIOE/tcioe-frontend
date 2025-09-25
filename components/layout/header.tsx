@@ -14,11 +14,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { AnnouncementBar } from "./announcement-bar";
 import { useCollegeData } from "@/hooks/use-college-data";
+import { useDepartments as useDeptList } from "@/hooks/use-departments";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
   const { data, loading } = useCollegeData();
+  const { departments: deptList } = useDeptList({ limit: 20, ordering: "name" });
   
 
   useEffect(() => {
@@ -60,20 +62,10 @@ export const Header = () => {
     {
       name: "Departments",
       href: "/departments",
-      dropdown: [
-        { name: "Applied Science", href: "/departments/applied-science" },
-        { name: "Architecture", href: "/departments/architecture" },
-        {
-          name: "Automobile and Mechanical Engineering",
-          href: "/departments/automobile-mechanical",
-        },
-        { name: "Civil Engineering", href: "/departments/civil" },
-        {
-          name: "Electronics and Computer Engineering",
-          href: "/departments/electronics-computer",
-        },
-        { name: "Industrial Engineering", href: "/departments/industrial" },
-      ],
+      dropdown: (deptList || []).map((d) => ({
+        name: d.name,
+        href: `/departments/${d.slug}`,
+      })),
     },
     {
       name: "Admissions",

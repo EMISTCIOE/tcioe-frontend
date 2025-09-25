@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { DepartmentEventItem, DepartmentEventsResponse, SearchableQueryParams } from "@/types";
+import env from "@/lib/env";
+import { getMockDepartmentEvents } from "@/data/mock-departments";
 
 interface UseDepartmentEventsParams extends SearchableQueryParams {
   ordering?: string;
@@ -27,6 +29,12 @@ export function useDepartmentEvents(
     try {
       setLoading(true);
       setError(null);
+      if (env.USE_MOCK_DEPARTMENT) {
+        const data: DepartmentEventsResponse = getMockDepartmentEvents(slug);
+        setEvents(data.results);
+        setPagination({ count: data.count, next: data.next, previous: data.previous });
+        return;
+      }
       const search = new URLSearchParams();
       if (params.page) search.append("page", params.page.toString());
       if (params.limit) search.append("limit", params.limit.toString());
@@ -51,4 +59,3 @@ export function useDepartmentEvents(
 
   return { events, loading, error, pagination, refetch };
 }
-

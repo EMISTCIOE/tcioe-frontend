@@ -4,6 +4,8 @@ import type {
   DepartmentProgramsResponse,
   SearchableQueryParams,
 } from "@/types";
+import env from "@/lib/env";
+import { getMockDepartmentPrograms } from "@/data/mock-departments";
 
 interface UseDepartmentProgramsParams extends SearchableQueryParams {
   ordering?: string;
@@ -31,6 +33,12 @@ export function useDepartmentPrograms(
     try {
       setLoading(true);
       setError(null);
+      if (env.USE_MOCK_DEPARTMENT) {
+        const data: DepartmentProgramsResponse = getMockDepartmentPrograms(slug);
+        setPrograms(data.results);
+        setPagination({ count: data.count, next: data.next, previous: data.previous });
+        return;
+      }
       const search = new URLSearchParams();
       if (params.page) search.append("page", params.page.toString());
       if (params.limit) search.append("limit", params.limit.toString());
@@ -55,4 +63,3 @@ export function useDepartmentPrograms(
 
   return { programs, loading, error, pagination, refetch };
 }
-

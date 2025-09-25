@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Download, DepartmentPlansResponse, PaginatedQueryParams } from "@/types";
+import env from "@/lib/env";
+import { getMockDepartmentPlans } from "@/data/mock-departments";
 
 interface UseDepartmentPlansParams extends PaginatedQueryParams {}
 
@@ -25,7 +27,13 @@ export function useDepartmentPlans(
     try {
       setLoading(true);
       setError(null);
-
+      if (env.USE_MOCK_DEPARTMENT) {
+        const data: DepartmentPlansResponse = getMockDepartmentPlans(slug);
+        setPlans(params.limit ? data.results.slice(0, params.limit) : data.results);
+        setPagination({ count: data.count, next: data.next, previous: data.previous });
+        return;
+      }
+      
       const search = new URLSearchParams();
       if (params.page) search.append("page", params.page.toString());
       if (params.limit) search.append("limit", params.limit.toString());
@@ -48,4 +56,3 @@ export function useDepartmentPlans(
 
   return { plans, loading, error, pagination, refetch };
 }
-

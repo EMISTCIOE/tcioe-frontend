@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { DepartmentDetail } from "@/types";
+import env from "@/lib/env";
+import { getMockDepartmentDetail } from "@/data/mock-departments";
 
 interface UseDepartmentReturn {
   department: DepartmentDetail | null;
@@ -18,6 +20,10 @@ export function useDepartment(slug?: string): UseDepartmentReturn {
     try {
       setLoading(true);
       setError(null);
+      if (env.USE_MOCK_DEPARTMENT) {
+        setDepartment(getMockDepartmentDetail(slug));
+        return;
+      }
       const res = await fetch(`/api/departments/${encodeURIComponent(slug)}`);
       if (!res.ok) {
         if (res.status === 404) throw new Error("Department not found");
@@ -43,4 +49,3 @@ export function useDepartment(slug?: string): UseDepartmentReturn {
 
   return { department, loading, error, refetch };
 }
-

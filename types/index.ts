@@ -191,6 +191,7 @@ export interface DepartmentsOverviewProps {
     description: string;
     icon: string;
     href: string;
+    image?: string | null; // optional department logo/thumbnail
   }>;
 }
 

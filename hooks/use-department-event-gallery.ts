@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { CampusEventGallery, PaginatedQueryParams } from "@/types";
+import env from "@/lib/env";
+import { getMockDepartmentEventGallery } from "@/data/mock-departments";
 
 interface UseDepartmentEventGalleryParams extends PaginatedQueryParams {}
 
@@ -25,6 +27,13 @@ export function useDepartmentEventGallery(
     try {
       setLoading(true);
       setError(null);
+      if (env.USE_MOCK_DEPARTMENT) {
+        const data = getMockDepartmentEventGallery(eventId);
+        const results = params.limit ? data.results.slice(0, params.limit) : data.results;
+        setGallery(results);
+        setPagination({ count: data.count, next: data.next, previous: data.previous });
+        return;
+      }
       const search = new URLSearchParams();
       if (params.page) search.append("page", params.page.toString());
       if (params.limit) search.append("limit", params.limit.toString());
@@ -47,4 +56,3 @@ export function useDepartmentEventGallery(
 
   return { gallery, loading, error, pagination, refetch };
 }
-

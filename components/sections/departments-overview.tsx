@@ -1,14 +1,17 @@
-import Link from "next/link"
-import * as LucideIcons from "lucide-react"
-import type { DepartmentsOverviewProps } from "@/types"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { AnimatedSection } from "@/components/animated-section"
+import Link from "next/link";
+import * as LucideIcons from "lucide-react";
+import Image from "next/image";
+import type { DepartmentsOverviewProps } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AnimatedSection } from "@/components/animated-section";
 
 // Dynamically get Lucide icon component
 const getIcon = (iconName: string) => {
-  const IconComponent = (LucideIcons as any)[iconName]
-  return IconComponent ? <IconComponent className="h-10 w-10 text-[#1A1A2E]" /> : null
-}
+  const IconComponent = (LucideIcons as any)[iconName];
+  return IconComponent ? (
+    <IconComponent className="h-10 w-10 text-[#1A1A2E]" />
+  ) : null;
+};
 
 export const DepartmentsOverview = ({ departments }: DepartmentsOverviewProps) => {
   return (
@@ -25,7 +28,17 @@ export const DepartmentsOverview = ({ departments }: DepartmentsOverviewProps) =
               <Card className="h-full flex flex-col items-center text-center p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300 border border-gray-100 transform hover:-translate-y-0.5">
                 <CardHeader className="pb-3">
                   <div className="mb-3 px-6 py-3 bg-muted rounded-full flex items-center justify-center">
-                    {getIcon(dept.icon)}
+                    {dept.image ? (
+                      <Image
+                        src={dept.image}
+                        alt={dept.name}
+                        width={64}
+                        height={64}
+                        className="rounded-full object-cover w-16 h-16"
+                      />
+                    ) : (
+                      getIcon(dept.icon)
+                    )}
                   </div>
                   <CardTitle className="text-lg font-semibold text-text-dark">{dept.name}</CardTitle>
                 </CardHeader>

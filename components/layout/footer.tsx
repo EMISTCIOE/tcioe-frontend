@@ -41,20 +41,25 @@ export const Footer = () => {
     { label: "Directory", href: "/directory" },
   ];
 
-  const departments = [
-    { label: "Applied Science", href: "/departments/applied-science" },
-    { label: "Architecture", href: "/departments/architecture" },
-    {
-      label: "Automobile and Mechanical Engineering",
-      href: "/departments/automobile-mechanical",
-    },
-    { label: "Civil Engineering", href: "/departments/civil" },
-    {
-      label: "Electronics and Computer Engineering",
-      href: "/departments/electronics-computer",
-    },
-    { label: "Industrial Engineering", href: "/departments/industrial" },
-  ];
+  // Load departments dynamically to avoid stale routes
+  const [departments, setDepartments] = useState<Array<{ label: string; href: string }>>([]);
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const res = await fetch("/api/departments?limit=20&ordering=name");
+        if (!res.ok) return;
+        const data = await res.json();
+        const list = (data.results || []).map((d: any) => ({
+          label: d.name,
+          href: `/departments/${d.slug}`,
+        }));
+        setDepartments(list);
+      } catch (e) {
+        // swallow errors in footer
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   const bottomLinks = [
     { label: "Annual Reports", href: "/reports" },

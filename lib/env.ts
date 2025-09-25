@@ -8,6 +8,8 @@ export const env = {
   API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api-staging.tcioe.edu.np',
   API_TIMEOUT: parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT || '10000', 10),
   API_DEBUG: process.env.NEXT_PUBLIC_API_DEBUG === 'true',
+  // Mocking flag for department UI development
+  USE_MOCK_DEPARTMENT: process.env.NEXT_PUBLIC_USE_MOCK_DEPARTMENT === 'true',
   
   // App Configuration
   NODE_ENV: process.env.NODE_ENV || 'development',
