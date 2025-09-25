@@ -235,6 +235,99 @@ export interface DownloadsResponse {
   results: Download[];
 }
 
+// Department Public API Types
+export interface DepartmentListItem {
+  uuid: string;
+  name: string;
+  slug: string;
+  shortName?: string;
+  briefDescription?: string;
+  thumbnail?: string | null;
+}
+
+export interface DepartmentsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: DepartmentListItem[];
+}
+
+export interface DepartmentSocialLink {
+  uuid: string;
+  platform:
+    | "FACEBOOK"
+    | "INSTAGRAM"
+    | "TWITTER"
+    | "LINKEDIN"
+    | "YOUTUBE"
+    | "WEBSITE";
+  url: string;
+}
+
+export interface DepartmentDetail extends DepartmentListItem {
+  detailedDescription?: string;
+  phoneNo?: string | null;
+  email?: string | null;
+  socialLinks?: DepartmentSocialLink[];
+}
+
+export interface DepartmentProgramItem {
+  uuid: string;
+  name: string;
+  shortName?: string;
+  slug: string;
+  description?: string;
+  programType: "BACHELORS" | "MASTERS" | "DIPLOMA" | "OTHER";
+  thumbnail?: string | null;
+}
+
+export interface DepartmentProgramsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: DepartmentProgramItem[];
+}
+
+export interface DepartmentStaffItem {
+  uuid: string;
+  title?: string | null; // e.g., Er., Dr., Ar.
+  name: string;
+  designation: string;
+  photo?: string | null;
+  phoneNumber?: string | null;
+  email?: string | null;
+  message?: string | null;
+  displayOrder?: number;
+}
+
+export interface DepartmentStaffsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: DepartmentStaffItem[];
+}
+
+export interface DepartmentEventItem {
+  uuid: string;
+  title: string;
+  descriptionShort?: string;
+  eventType: "CULTURAL" | "ACADEMIC" | "SPORTS" | "TECHNICAL" | "OTHER";
+  eventStartDate: string;
+  eventEndDate: string;
+  thumbnail?: string | null;
+}
+
+export interface DepartmentEventsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: DepartmentEventItem[];
+}
+
+// Department Plans have the same shape as downloads
+export interface DepartmentPlansResponse extends DownloadsResponse {}
+
+
 // Campus Report API Types
 export interface FiscalSession {
   uuid: string;
