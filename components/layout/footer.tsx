@@ -29,7 +29,9 @@ export const Footer = () => {
   };
 
   // Load departments dynamically to avoid stale routes
-  const [departments, setDepartments] = useState<Array<{ label: string; href: string }>>([]);
+  const [departments, setDepartments] = useState<
+    Array<{ label: string; href: string }>
+  >([]);
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
@@ -54,12 +56,12 @@ export const Footer = () => {
     { label: "Campus Map", href: "/campus-map" },
     { label: "Contact Us", href: "/contact" },
     { label: "Directory", href: "/directory" },
-    { label: "Examination Control Board", href: "/examination-board" },
+    { label: "Examination Control Board", href: "https://exam.ioe.edu.np/" },
   ];
 
   const resources = [
     { label: "Academic Calendar", href: "/academics/calendar" },
-    { label: "Annual Reports", href: "/reports" },
+    { label: "Reports", href: "resources/campus-reports" },
     { label: "Code of Conducts", href: "/resources/code-of-conduct" },
     { label: "Downloads", href: "/downloads" },
     { label: "Privacy Policy", href: "/privacy-policy" },
@@ -68,7 +70,7 @@ export const Footer = () => {
   const legalLinks = [
     { label: "Accessibility", href: "/accessibility" },
     { label: "Privacy Policy", href: "/privacy-policy" },
-    { label: "Terms of use", href: "/terms-of-use" },
+
     { label: "Sitemap", href: "/sitemap" },
   ];
 
@@ -107,8 +109,12 @@ export const Footer = () => {
                 className="flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
               />
               <div className="leading-tight">
-                <div className="text-base font-bold">Institute of Engineering</div>
-                <div className="text-xl font-semibold -mt-0.5">Thapathali Campus</div>
+                <div className="text-base font-bold">
+                  Institute of Engineering
+                </div>
+                <div className="text-xl font-semibold -mt-0.5">
+                  Thapathali Campus
+                </div>
               </div>
             </Link>
             <p className="text-sm text-footer-text/80 max-w-xs">
@@ -116,13 +122,25 @@ export const Footer = () => {
               Education Since 1930 A.D.
             </p>
             <div className="flex items-center gap-3">
-              <Link href="#" aria-label="Facebook" className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+              <Link
+                href="#"
+                aria-label="Facebook"
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              >
                 <Facebook className="h-5 w-5 text-white" />
               </Link>
-              <Link href="#" aria-label="Instagram" className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+              <Link
+                href="#"
+                aria-label="Instagram"
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              >
                 <Instagram className="h-5 w-5 text-white" />
               </Link>
-              <Link href="#" aria-label="LinkedIn" className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+              <Link
+                href="#"
+                aria-label="LinkedIn"
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              >
                 <Linkedin className="h-5 w-5 text-white" />
               </Link>
             </div>
@@ -130,12 +148,17 @@ export const Footer = () => {
 
           {/* Quick Access */}
           <div>
-            <h4 className="text-white font-semibold tracking-wide mb-3">QUICK ACCESS</h4>
+            <h4 className="text-white font-semibold tracking-wide mb-3">
+              QUICK ACCESS
+            </h4>
             <div className="h-0.5 w-10 bg-accent-orange mb-4" />
             <ul className="space-y-2">
               {quickLinks.map((l) => (
                 <li key={l.label}>
-                  <Link href={l.href} className="hover:text-accent-orange transition-colors">
+                  <Link
+                    href={l.href}
+                    className="hover:text-accent-orange transition-colors"
+                  >
                     {l.label}
                   </Link>
                 </li>
@@ -145,12 +168,17 @@ export const Footer = () => {
 
           {/* Departments */}
           <div>
-            <h4 className="text-white font-semibold tracking-wide mb-3">DEPARTMENTS</h4>
+            <h4 className="text-white font-semibold tracking-wide mb-3">
+              DEPARTMENTS
+            </h4>
             <div className="h-0.5 w-10 bg-accent-orange mb-4" />
             <ul className="space-y-2">
               {(departments.slice(0, 6) || []).map((dept) => (
                 <li key={dept.label}>
-                  <Link href={dept.href} className="hover:text-accent-orange transition-colors">
+                  <Link
+                    href={dept.href}
+                    className="hover:text-accent-orange transition-colors"
+                  >
                     {dept.label}
                   </Link>
                 </li>
@@ -160,12 +188,17 @@ export const Footer = () => {
 
           {/* Resources */}
           <div>
-            <h4 className="text-white font-semibold tracking-wide mb-3">RESOURCES</h4>
+            <h4 className="text-white font-semibold tracking-wide mb-3">
+              RESOURCES
+            </h4>
             <div className="h-0.5 w-10 bg-accent-orange mb-4" />
             <ul className="space-y-2">
               {resources.map((l) => (
                 <li key={l.label}>
-                  <Link href={l.href} className="hover:text-accent-orange transition-colors">
+                  <Link
+                    href={l.href}
+                    className="hover:text-accent-orange transition-colors"
+                  >
                     {l.label}
                   </Link>
                 </li>
@@ -183,7 +216,11 @@ export const Footer = () => {
           </p>
           <div className="flex flex-wrap justify-center md:justify-end gap-x-4 gap-y-1">
             {legalLinks.map((link) => (
-              <Link key={link.label} href={link.href} className="hover:text-white transition-colors">
+              <Link
+                key={link.label}
+                href={link.href}
+                className="hover:text-white transition-colors"
+              >
                 {link.label}
               </Link>
             ))}
@@ -196,7 +233,9 @@ export const Footer = () => {
         onClick={scrollToTop}
         className={cn(
           "fixed bottom-8 right-8 bg-accent-orange text-white p-3 rounded-full shadow-lg transition-all duration-300 z-50",
-          showBackToTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+          showBackToTop
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4 pointer-events-none"
         )}
         aria-label="Back to top"
       >

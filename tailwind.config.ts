@@ -13,7 +13,16 @@ const config = {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      // Reduce default padding on small screens to avoid double padding
+      // when components also apply their own `px-*` classes.
+      padding: {
+        DEFAULT: "1rem",
+        sm: "1rem",
+        md: "1.25rem",
+        lg: "2rem",
+        xl: "2rem",
+        "2xl": "2rem",
+      },
       screens: {
         "2xl": "1400px",
       },

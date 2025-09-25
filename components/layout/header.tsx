@@ -113,8 +113,8 @@ export const Header = () => {
 
   return (
     <header className="w-full">
-      {/* Top Bar */}
-      <div className="bg-[#F1F1F1] text-black text-[10px] md:text-sm py-2 px-4">
+      {/* Top Bar - hidden on small screens to prevent overflow */}
+      <div className="bg-[#F1F1F1] text-black text-[10px] md:text-sm py-2 px-4 hidden md:block">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex space-x-2 md:space-x-6">
             <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
@@ -175,11 +175,11 @@ export const Header = () => {
               className="flex-shrink-0"
             />
             <div className="flex flex-col leading-tight text-primary-blue">
-              <span className="text-lg font-bold">Tribhuvan University</span>
-              <span className="text-base font-semibold">
+              <span className="text-base sm:text-lg font-bold">Tribhuvan University</span>
+              <span className="text-sm sm:text-base font-semibold">
                 Institute of Engineering
               </span>
-              <span className="text-sm text-text-dark">Thapathali Campus</span>
+              <span className="text-xs sm:text-sm text-text-dark">Thapathali Campus</span>
             </div>
           </Link>
           <div className="flex items-center gap-4">

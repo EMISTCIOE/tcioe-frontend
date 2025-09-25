@@ -262,11 +262,7 @@ async function getAllSitemapUrls() {
         title: "Privacy Policy",
         description: "Privacy policy and data protection",
       },
-      {
-        url: "/terms-of-use",
-        title: "Terms of Use",
-        description: "Website terms of use",
-      },
+
       {
         url: "/sitemap",
         title: "Sitemap",
