@@ -137,26 +137,6 @@ export default function HomePage() {
         ]}
       />
       {campusChiefMessage && <CampusChiefHeroMessage {...campusChiefMessage} />}
-      <QuickStats
-        stats={[
-          {
-            label: "Total Students",
-            value: data?.students.totalStudents.toLocaleString() || "2,500+",
-            icon: "Users",
-          },
-          {
-            label: "Faculty Members",
-            value: data?.faculty.length.toString() || "150+",
-            icon: "GraduationCap",
-          },
-          {
-            label: "Departments",
-            value: data?.departments.length.toString() || "5+",
-            icon: "Building",
-          },
-          { label: "Research Projects", value: "100+", icon: "FlaskConical" },
-        ]}
-      />
       <NewsEvents notices={notices || []} />
       <DepartmentsOverview
         departments={(deptList || []).map((dept) => ({
