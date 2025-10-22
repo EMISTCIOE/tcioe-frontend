@@ -1,0 +1,9 @@
+{
+  "name": "tcioe-frontend",
+  "type": "node",
+  "path": "/srv/apps/tcioe-frontend",
+  "port": 3010,
+  "domain": "frontend-tcioe.edu.np",
+  "build": "pnpm install && pnpm build",
+  "start": "pm2 restart tcioe-frontend || pm2 start pnpm --name tcioe-frontend -- start"
+}

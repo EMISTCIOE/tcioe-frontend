@@ -1,0 +1,44 @@
+name: Deploy TCIOE Website to VPS
+on:
+  push:
+    branches: [main] # Trigger on main branch pushes
+
+jobs:
+  deploy:
+    name: Build & Deploy to VPS
+    runs-on: self-hosted # Uses your VPS runner
+    env:
+      NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
+      NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
+      NEXT_PUBLIC_API_TIMEOUT: ${{ secrets.NEXT_PUBLIC_API_TIMEOUT }}
+      NEXT_PUBLIC_API_DEBUG: ${{ secrets.NEXT_PUBLIC_API_DEBUG }}
+      NEXT_PUBLIC_USE_MOCK_DEPARTMENT: ${{ secrets.NEXT_PUBLIC_USE_MOCK_DEPARTMENT }}
+
+      NEXT_PUBLIC_GA_ID: ${{ secrets.NEXT_PUBLIC_GA_ID }}
+      NEXT_PUBLIC_CLARITY_ID: ${{ secrets.NEXT_PUBLIC_CLARITY_ID }}
+      NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+      NEXT_PUBLIC_POSTHOG_HOST: ${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}
+
+      GOOGLE_VERIFICATION_ID: ${{ secrets.GOOGLE_VERIFICATION_ID }}
+      YANDEX_VERIFICATION_ID: ${{ secrets.YANDEX_VERIFICATION_ID }}
+      BING_VERIFICATION_ID: ${{ secrets.BING_VERIFICATION_ID }}
+
+      NEXT_PUBLIC_FACEBOOK_URL: ${{ secrets.NEXT_PUBLIC_FACEBOOK_URL }}
+      NEXT_PUBLIC_TWITTER_HANDLE: ${{ secrets.NEXT_PUBLIC_TWITTER_HANDLE }}
+      NEXT_PUBLIC_LINKEDIN_URL: ${{ secrets.NEXT_PUBLIC_LINKEDIN_URL }}
+
+      NEXT_PUBLIC_PHONE: ${{ secrets.NEXT_PUBLIC_PHONE }}
+      NEXT_PUBLIC_EMAIL: ${{ secrets.NEXT_PUBLIC_EMAIL }}
+      NEXT_PUBLIC_ADDRESS: ${{ secrets.NEXT_PUBLIC_ADDRESS }}
+
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Unified VPS Deployer
+        run: |
+          cd /srv/deployer
+          node deploy.js $GITHUB_REPOSITORY
