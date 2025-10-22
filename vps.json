@@ -5,5 +5,5 @@
   "port": 3002,
   "domain": "frontend-tcioe.edu.np",
   "build": "pnpm install && pnpm build",
-  "start": "pm2 restart tcioe-frontend || pm2 start pnpm --name tcioe-frontend -- start"
+  "start": "pm2 restart tcioe-frontend || pm2 start pnpm --name tcioe-frontend -- start -- -p 3002"
 }
