@@ -68,9 +68,8 @@ export const Footer = () => {
   ];
 
   const legalLinks = [
-    { label: "Accessibility", href: "/accessibility" },
+    { label: "Status", href: "https://status.tcioe.edu.np/", external: true },
     { label: "Privacy Policy", href: "/privacy-policy" },
-
     { label: "Sitemap", href: "/sitemap" },
   ];
 
@@ -220,6 +219,8 @@ export const Footer = () => {
                 key={link.label}
                 href={link.href}
                 className="hover:text-white transition-colors"
+                target={link.external ? "_blank" : undefined}
+                rel={link.external ? "noopener noreferrer" : undefined}
               >
                 {link.label}
               </Link>

@@ -43,6 +43,11 @@ export function CampusDivisionDetailView({
     slug
   );
   const copy = KIND_COPY[kind];
+  const departmentHead = data?.departmentHead;
+  const memberOfficials =
+    data?.officials?.filter(
+      (official) => !departmentHead || official.uuid !== departmentHead.uuid
+    ) ?? [];
 
   if (loading) {
     return (
@@ -181,51 +186,115 @@ export function CampusDivisionDetailView({
         </AnimatedSection>
       )}
 
-      {data.members && data.members.length > 0 && (
+      {departmentHead && (
+        <AnimatedSection className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <Users className="h-5 w-5 text-primary-blue" />
+            <div>
+              <p className="text-xs uppercase tracking-wide text-gray-500">
+                Unit Head
+              </p>
+              <h3 className="text-xl font-semibold text-primary-blue">
+                Department Head
+              </h3>
+            </div>
+          </div>
+          <div className="flex gap-4 rounded-2xl border border-gray-100 p-4 shadow-sm">
+            <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-gray-100">
+              {departmentHead.photo ? (
+                <Image
+                  src={departmentHead.photo}
+                  alt={departmentHead.fullName}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-primary-blue">
+                  {departmentHead.fullName.charAt(0)}
+                </div>
+              )}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-gray-500">
+                {departmentHead.titlePrefixDisplay}
+              </p>
+              <p className="text-lg font-semibold text-primary-blue">
+                {departmentHead.fullName}
+              </p>
+              <p className="text-sm text-gray-600">
+                {departmentHead.designation}
+              </p>
+              {departmentHead.email && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {departmentHead.email}
+                </p>
+              )}
+              {departmentHead.phoneNumber && (
+                <p className="text-xs text-gray-500">
+                  {departmentHead.phoneNumber}
+                </p>
+              )}
+              {departmentHead.bio && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {stripHtmlTags(departmentHead.bio)}
+                </p>
+              )}
+            </div>
+          </div>
+        </AnimatedSection>
+      )}
+
+      {memberOfficials.length > 0 && (
         <AnimatedSection className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <Users className="h-5 w-5 text-primary-blue" />
             <h3 className="text-xl font-semibold text-primary-blue">
-              Team Members
+              Key Officials
             </h3>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            {data.members.map((member) => (
+            {memberOfficials.map((official) => (
               <div
-                key={member.uuid}
+                key={official.uuid}
                 className="flex gap-4 rounded-2xl border border-gray-100 p-4 shadow-sm"
               >
                 <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-gray-100">
-                  {member.photo ? (
+                  {official.photo ? (
                     <Image
-                      src={member.photo}
-                      alt={member.fullName}
+                      src={official.photo}
+                      alt={official.fullName}
                       fill
                       className="object-cover"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-primary-blue">
-                      {member.fullName.charAt(0)}
+                      {official.fullName.charAt(0)}
                     </div>
                   )}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-gray-500">
-                    {member.titlePrefixDisplay}
+                    {official.titlePrefixDisplay}
                   </p>
                   <p className="text-lg font-semibold text-primary-blue">
-                    {member.fullName}
+                    {official.fullName}
                   </p>
-                  <p className="text-sm text-gray-600">{member.designation}</p>
-                  {member.email && (
-                    <p className="text-xs text-gray-500 mt-1">{member.email}</p>
-                  )}
-                  {member.phoneNumber && (
-                    <p className="text-xs text-gray-500">{member.phoneNumber}</p>
-                  )}
-                  {member.bio && (
+                  <p className="text-sm text-gray-600">
+                    {official.designation}
+                  </p>
+                  {official.email && (
                     <p className="text-xs text-gray-500 mt-1">
-                      {stripHtmlTags(member.bio)}
+                      {official.email}
+                    </p>
+                  )}
+                  {official.phoneNumber && (
+                    <p className="text-xs text-gray-500">
+                      {official.phoneNumber}
+                    </p>
+                  )}
+                  {official.bio && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {stripHtmlTags(official.bio)}
                     </p>
                   )}
                 </div>

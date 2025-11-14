@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://api-staging.tcioe.edu.np";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
 
 // GET /api/departments/events/[event_id]/gallery
 // Proxies to: GET /api/v1/public/department-mod/departments/events/{event_id}/gallery
@@ -31,7 +31,10 @@ export async function GET(
 
     const response = await fetch(backendUrl, {
       method: "GET",
-      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
       next: { revalidate: 300 },
     });
 
@@ -44,9 +47,11 @@ export async function GET(
   } catch (error) {
     console.error("Department event gallery API error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch event gallery", message: error instanceof Error ? error.message : "Unknown error" },
+      {
+        error: "Failed to fetch event gallery",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
 }
-

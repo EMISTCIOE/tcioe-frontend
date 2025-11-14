@@ -6,7 +6,7 @@ on:
 jobs:
   deploy:
     name: Build & Deploy to VPS
-    runs-on: self-hosted
+    runs-on: [self-hosted, frontend]
     env:
       NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
       NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}

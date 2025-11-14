@@ -135,6 +135,17 @@ export interface GalleryItem {
   caption?: string;
 }
 
+export interface GlobalGalleryItem {
+  uuid: string;
+  image: string;
+  caption?: string | null;
+  sourceType: string;
+  sourceName: string;
+  sourceContext?: string | null;
+  sourceIdentifier: string;
+  createdAt: string;
+}
+
 export interface College {
   info: {
     name: string;
@@ -199,7 +210,7 @@ export interface DepartmentPageProps {
   department: Department;
 }
 
-export interface CampusDivisionMember {
+export interface CampusDivisionOfficial {
   uuid: string;
   titlePrefix?: string | null;
   titlePrefixDisplay?: string | null;
@@ -228,7 +239,8 @@ export interface CampusDivisionDetail extends CampusDivisionSummary {
   location?: string | null;
   contactEmail?: string | null;
   contactPhone?: string | null;
-  members: CampusDivisionMember[];
+  officials: CampusDivisionOfficial[];
+  departmentHead?: CampusDivisionOfficial | null;
 }
 
 export interface CampusDivisionListResponse {
@@ -248,7 +260,7 @@ export interface AcademicPageProps {
 }
 
 export interface GallerySectionProps {
-  images: GalleryItem[];
+  images: GlobalGalleryItem[];
 }
 
 export interface QuickLinksSectionProps {
@@ -273,6 +285,13 @@ export interface DownloadsResponse {
   next: string | null;
   previous: string | null;
   results: Download[];
+}
+
+export interface GlobalGalleryResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: GlobalGalleryItem[];
 }
 
 // Department Public API Types

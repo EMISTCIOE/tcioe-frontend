@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://api-staging.tcioe.edu.np";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
 
 // GET /api/departments
 // Proxies to: GET /api/v1/public/department-mod/departments
@@ -55,4 +55,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

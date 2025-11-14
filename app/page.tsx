@@ -15,6 +15,7 @@ import { campusChiefData } from "@/data/mock-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FeaturedNoticePopup } from "@/components/FeaturedNoticePopup";
 import { useFeaturedNoticePopup } from "@/hooks/use-featured-notice-popup";
+import { useGlobalGallery } from "@/hooks/use-global-gallery";
 
 export default function HomePage() {
   const { data, loading, error } = useCollegeData();
@@ -29,6 +30,7 @@ export default function HomePage() {
     isOpen: isPopupOpen,
     dismiss: dismissPopup,
   } = useFeaturedNoticePopup();
+  const { items: galleryItems } = useGlobalGallery(9);
 
   if (loading || noticesLoading) {
     return (
@@ -163,7 +165,7 @@ export default function HomePage() {
       />
       <UpcomingEventsSection limit={6} />{" "}
       {/* New Events Section with campus and club events */}
-      <GallerySection images={data?.gallery || []} />
+      <GallerySection images={galleryItems} />
       <QuickLinksSection links={quickLinks} />
     </>
   );

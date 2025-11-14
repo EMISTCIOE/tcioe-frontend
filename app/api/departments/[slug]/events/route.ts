@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://api-staging.tcioe.edu.np";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
 
 // GET /api/departments/[slug]/events
 // Proxies to: GET /api/v1/public/department-mod/departments/{slug}/events
-export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+) {
   try {
     const { slug } = params;
     const { searchParams } = new URL(request.url);
@@ -32,7 +35,10 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
 
     const response = await fetch(backendUrl, {
       method: "GET",
-      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
       next: { revalidate: 300 },
     });
 
@@ -45,9 +51,11 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
   } catch (error) {
     console.error("Department events API error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch department events", message: error instanceof Error ? error.message : "Unknown error" },
+      {
+        error: "Failed to fetch department events",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
 }
-

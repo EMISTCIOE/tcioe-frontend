@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api-staging.tcioe.edu.np";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://cdn.tcioe.edu.np";
 
 // Mock data fallback when backend is not available
 const mockPhoneNumbers = [
