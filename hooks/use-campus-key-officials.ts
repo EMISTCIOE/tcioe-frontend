@@ -91,6 +91,7 @@ export function useCampusKeyOfficials(
     } finally {
       setLoading(false);
     }
+  }, [
     params.page,
     params.limit,
     params.search,
