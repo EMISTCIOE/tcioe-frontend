@@ -41,6 +41,13 @@ export function useNotices(initialParams?: NoticesQueryParams) {
 
       const response = await NoticesService.getNotices(params);
 
+      // Check if we got valid results
+      if (!response || !Array.isArray(response.results)) {
+        setNotices([]);
+        setPagination({ count: 0, next: null, previous: null });
+        return;
+      }
+
       setNotices(response.results);
       setPagination({
         count: response.count,
@@ -48,8 +55,10 @@ export function useNotices(initialParams?: NoticesQueryParams) {
         previous: response.previous,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch notices");
+      // Don't show HTTP errors, just show empty state
       setNotices([]);
+      setPagination({ count: 0, next: null, previous: null });
+      console.error("Error fetching notices:", err);
     } finally {
       setLoading(false);
     }
@@ -95,10 +104,18 @@ export function useNotice(identifier?: string) {
         setLoading(true);
         setError(null);
         const response = await NoticesService.getNoticeBySlugOrId(identifier);
-        setNotice(response);
+
+        if (!response) {
+          setError("Notice not found");
+          setNotice(null);
+        } else {
+          setNotice(response);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch notice");
+        // Don't show HTTP errors, just show "not found" message
+        setError("Notice not found or is no longer available");
         setNotice(null);
+        console.error("Error fetching notice:", err);
       } finally {
         setLoading(false);
       }

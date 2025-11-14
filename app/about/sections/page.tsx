@@ -40,7 +40,9 @@ export default function CampusSectionsPage() {
             <p className="text-lg font-semibold text-red-700">
               Unable to load sections
             </p>
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="text-sm text-red-600">
+              We're having trouble loading the sections right now. Please try again shortly.
+            </p>
             <button
               type="button"
               onClick={refetch}

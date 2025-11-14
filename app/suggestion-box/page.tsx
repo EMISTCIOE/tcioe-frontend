@@ -110,7 +110,10 @@ export default function SuggestionBoxPage() {
                 <h3 className="text-lg font-semibold text-red-800">
                   Error submitting feedback
                 </h3>
-                <p className="text-red-700">{error}</p>
+                <p className="text-red-700">
+                  We're having trouble submitting your suggestion right now.
+                  Please try again shortly.
+                </p>
               </div>
             </div>
           </div>

@@ -124,7 +124,9 @@ export function CompactSuggestionBox({
             <>
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                  <p className="text-red-600 text-sm">{error}</p>
+                  <p className="text-red-600 text-sm">
+                    Something went wrong while submitting your feedback. Please try again shortly.
+                  </p>
                 </div>
               )}
 

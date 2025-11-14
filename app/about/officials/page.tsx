@@ -165,7 +165,9 @@ export default function OfficialsPage() {
         {error && (
           <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-center text-red-700">
             <p className="text-lg font-semibold">Unable to load officials</p>
-            <p className="mt-2 text-sm">{error}</p>
+            <p className="mt-2 text-sm text-gray-600">
+              We're having trouble loading the staff directory. Please try again shortly.
+            </p>
             <button
               type="button"
               onClick={refetch}

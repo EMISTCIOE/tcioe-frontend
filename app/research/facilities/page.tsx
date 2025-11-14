@@ -35,7 +35,9 @@ export default function ResearchFacilitiesPage() {
         {error && (
           <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-center">
             <p className="text-lg font-semibold text-red-700">Unable to load facilities</p>
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="text-sm text-red-600">
+              We're having trouble showing the research facilities right now. Please try again shortly.
+            </p>
             <button
               type="button"
               onClick={refetch}

@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Download, DepartmentPlansResponse, PaginatedQueryParams } from "@/types";
+import type {
+  Download,
+  DepartmentPlansResponse,
+  PaginatedQueryParams,
+} from "@/types";
 import env from "@/lib/env";
 import { getMockDepartmentPlans } from "@/data/mock-departments";
 
@@ -20,7 +24,11 @@ export function useDepartmentPlans(
   const [plans, setPlans] = useState<Download[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({ count: 0, next: null as string | null, previous: null as string | null });
+  const [pagination, setPagination] = useState({
+    count: 0,
+    next: null as string | null,
+    previous: null as string | null,
+  });
 
   const fetchPlans = useCallback(async () => {
     if (!slug) return;
@@ -29,30 +37,64 @@ export function useDepartmentPlans(
       setError(null);
       if (env.USE_MOCK_DEPARTMENT) {
         const data: DepartmentPlansResponse = getMockDepartmentPlans(slug);
-        setPlans(params.limit ? data.results.slice(0, params.limit) : data.results);
-        setPagination({ count: data.count, next: data.next, previous: data.previous });
+        setPlans(
+          params.limit ? data.results.slice(0, params.limit) : data.results
+        );
+        setPagination({
+          count: data.count,
+          next: data.next,
+          previous: data.previous,
+        });
         return;
       }
-      
+
       const search = new URLSearchParams();
       if (params.page) search.append("page", params.page.toString());
       if (params.limit) search.append("limit", params.limit.toString());
 
-      const res = await fetch(`/api/departments/${encodeURIComponent(slug)}/plans?${search.toString()}`);
-      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      const res = await fetch(
+        `/api/departments/${encodeURIComponent(
+          slug
+        )}/plans?${search.toString()}`
+      );
+      if (!res.ok) {
+        // Don't throw error, return empty results
+        setPlans([]);
+        setPagination({ count: 0, next: null, previous: null });
+        return;
+      }
+
       const data: DepartmentPlansResponse = await res.json();
+
+      // Check if we got valid results
+      if (!data || !Array.isArray(data.results)) {
+        setPlans([]);
+        setPagination({ count: 0, next: null, previous: null });
+        return;
+      }
+
       setPlans(data.results);
-      setPagination({ count: data.count, next: data.next, previous: data.previous });
+      setPagination({
+        count: data.count,
+        next: data.next,
+        previous: data.previous,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      // Don't show HTTP errors, just return empty state
+      setPlans([]);
+      setPagination({ count: 0, next: null, previous: null });
       console.error("Error fetching department plans:", err);
     } finally {
       setLoading(false);
     }
   }, [slug, params.page, params.limit]);
 
-  useEffect(() => { fetchPlans(); }, [fetchPlans]);
-  const refetch = useCallback(() => { fetchPlans(); }, [fetchPlans]);
+  useEffect(() => {
+    fetchPlans();
+  }, [fetchPlans]);
+  const refetch = useCallback(() => {
+    fetchPlans();
+  }, [fetchPlans]);
 
   return { plans, loading, error, pagination, refetch };
 }

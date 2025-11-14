@@ -230,7 +230,9 @@ export default function CampusFestivalsPage() {
             <div className="text-red-600 text-lg mb-4">
               Error loading events
             </div>
-            <p className="text-gray-600 mb-4">{error}</p>
+            <p className="text-gray-600 mb-4">
+              We're having trouble loading festival events right now. Please try again shortly.
+            </p>
             <button
               onClick={() => refetch()}
               className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"

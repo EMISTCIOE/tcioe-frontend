@@ -69,7 +69,9 @@ export function CampusDivisionDetailView({
         <p className="text-lg font-semibold text-primary-blue mb-2">
           Unable to load details.
         </p>
-        {error && <p className="text-sm text-gray-600 mb-4">{error}</p>}
+        <p className="text-sm text-gray-600 mb-4">
+          We're having trouble fetching the details right now. Please try again shortly.
+        </p>
         <button
           type="button"
           onClick={refetch}

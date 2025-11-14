@@ -39,7 +39,9 @@ export default function CampusUnitsPage() {
             <p className="text-lg font-semibold text-red-700">
               Unable to load units
             </p>
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="text-sm text-red-600">
+              We're having trouble showing the campus units right now. Please try again shortly.
+            </p>
             <button
               type="button"
               onClick={refetch}

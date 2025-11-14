@@ -185,7 +185,9 @@ export default function ResourcesAcademicCalendarPage() {
             <div className="text-red-600 text-lg mb-4">
               Error loading calendars
             </div>
-            <p className="text-gray-600 mb-4">{error}</p>
+            <p className="text-gray-600 mb-4">
+              We're having trouble loading academic calendar resources right now. Please try again shortly.
+            </p>
             <button
               onClick={() => refetch()}
               className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"

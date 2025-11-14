@@ -66,18 +66,43 @@ export function useDepartments(
       if (params.ordering) search.append("ordering", params.ordering);
 
       const res = await fetch(`/api/departments?${search.toString()}`);
-      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      if (!res.ok) {
+        // Don't throw error, return empty results
+        setDepartments([]);
+        setPagination({ count: 0, next: null, previous: null });
+        return;
+      }
 
       const data: DepartmentsResponse = await res.json();
+
+      // Check if we got valid results
+      if (!data || !Array.isArray(data.results)) {
+        setDepartments([]);
+        setPagination({ count: 0, next: null, previous: null });
+        return;
+      }
+
       setDepartments(data.results);
-      setPagination({ count: data.count, next: data.next, previous: data.previous });
+      setPagination({
+        count: data.count,
+        next: data.next,
+        previous: data.previous,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      // Don't show HTTP errors, just return empty state
+      setDepartments([]);
+      setPagination({ count: 0, next: null, previous: null });
       console.error("Error fetching departments:", err);
     } finally {
       setLoading(false);
     }
-  }, [params.page, params.limit, params.offset, params.search, params.ordering]);
+  }, [
+    params.page,
+    params.limit,
+    params.offset,
+    params.search,
+    params.ordering,
+  ]);
 
   useEffect(() => {
     fetchDepartments();

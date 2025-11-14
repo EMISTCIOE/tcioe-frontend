@@ -27,24 +27,51 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error(`Backend API error: ${response.status}`);
+      console.warn(
+        `Backend returned ${response.status} for research facilities. Returning empty results.`
+      );
+      // Return empty results instead of throwing an error
+      return NextResponse.json(
+        { results: [], count: 0, next: null, previous: null },
+        {
+          status: 200,
+          headers: {
+            "Cache-Control":
+              "public, s-maxage=300, stale-while-revalidate=3600",
+          },
+        }
+      );
     }
 
     const data = await response.json();
-    return NextResponse.json(data, {
-      status: 200,
-      headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
-      },
-    });
-  } catch (error) {
-    console.error("Research Facilities API error:", error);
+
+    // Ensure we return a proper structure even if data is empty
+    const results = data.results || data || [];
     return NextResponse.json(
       {
-        error: "Failed to fetch research facilities",
-        message: error instanceof Error ? error.message : "Unknown error",
+        results: Array.isArray(results) ? results : [],
+        count: data.count || 0,
+        next: data.next || null,
+        previous: data.previous || null,
       },
-      { status: 500 }
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Research Facilities API error:", error);
+    // Return empty results instead of 500 error
+    return NextResponse.json(
+      { results: [], count: 0, next: null, previous: null },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+        },
+      }
     );
   }
 }

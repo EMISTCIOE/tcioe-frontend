@@ -1,4 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import {
+  respondWithList,
+  handleApiError,
+  validateListResponse,
+} from "../utils";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
@@ -53,21 +58,20 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error(`Backend API error: ${response.status}`);
+      console.warn(
+        `Backend returned ${response.status} for campus reports. Returning empty results.`
+      );
+      return respondWithList({
+        results: [],
+        count: 0,
+        next: null,
+        previous: null,
+      });
     }
 
     const data = await response.json();
-
-    return NextResponse.json(data);
+    return respondWithList(validateListResponse(data));
   } catch (error) {
-    console.error("Campus Reports API error:", error);
-
-    return NextResponse.json(
-      {
-        error: "Failed to fetch campus reports",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error, "list", "campus-reports");
   }
 }

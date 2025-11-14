@@ -29,7 +29,9 @@ export function ResearchFacilityDetailView({
         <p className="text-lg font-semibold text-primary-blue mb-2">
           Unable to load facility details.
         </p>
-        {error && <p className="text-sm text-gray-600 mb-4">{error}</p>}
+        <p className="text-sm text-gray-600 mb-4">
+          We're having trouble fetching this facility's information. Please try again shortly.
+        </p>
         <button
           type="button"
           onClick={refetch}

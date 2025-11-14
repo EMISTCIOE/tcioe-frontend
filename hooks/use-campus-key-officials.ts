@@ -74,10 +74,28 @@ export function useCampusKeyOfficials(
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Don't throw error, just show empty results
+        setOfficials([]);
+        setPagination({
+          count: 0,
+          next: null,
+          previous: null,
+        });
+        return;
       }
 
       const data: CampusKeyOfficialsResponse = await response.json();
+
+      // Check if we got valid results
+      if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+        setOfficials([]);
+        setPagination({
+          count: data?.count || 0,
+          next: data?.next || null,
+          previous: data?.previous || null,
+        });
+        return;
+      }
 
       setOfficials(data.results);
       setPagination({
@@ -86,7 +104,13 @@ export function useCampusKeyOfficials(
         previous: data.previous,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      // Don't show HTTP errors, just show empty state
+      setOfficials([]);
+      setPagination({
+        count: 0,
+        next: null,
+        previous: null,
+      });
       console.error("Error fetching campus staff:", err);
     } finally {
       setLoading(false);

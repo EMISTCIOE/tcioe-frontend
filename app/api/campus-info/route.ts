@@ -18,10 +18,37 @@ export async function GET(request: NextRequest) {
     );
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.warn(
+        `Backend returned ${response.status} for campus info. Returning empty data instead of error.`
+      );
+      // Return empty data instead of throwing an error
+      return NextResponse.json(
+        { message: "No campus information available" },
+        {
+          status: 200,
+          headers: {
+            "Cache-Control":
+              "public, s-maxage=300, stale-while-revalidate=3600",
+          },
+        }
+      );
     }
 
     const data = await response.json();
+
+    // Check if data is empty or null
+    if (!data || Object.keys(data).length === 0) {
+      return NextResponse.json(
+        { message: "No campus information available" },
+        {
+          status: 200,
+          headers: {
+            "Cache-Control":
+              "public, s-maxage=300, stale-while-revalidate=3600",
+          },
+        }
+      );
+    }
 
     return NextResponse.json(data, {
       status: 200,
@@ -32,12 +59,15 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching campus info:", error);
 
+    // Return empty data instead of error to prevent breaking the UI
     return NextResponse.json(
+      { message: "No campus information available" },
       {
-        error: "Failed to fetch campus information",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+        status: 200,
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+        },
+      }
     );
   }
 }

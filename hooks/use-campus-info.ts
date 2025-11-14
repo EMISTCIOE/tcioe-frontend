@@ -26,13 +26,33 @@ export function useCampusInfo(): UseCampusInfoReturn {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Check if we got a specific HTTP error
+        if (response.status === 404) {
+          setError("Campus information not available");
+        } else if (response.status >= 500) {
+          setError("Unable to load campus information at this time");
+        } else {
+          setError("Failed to load campus information");
+        }
+        setCampusInfo(null);
+        return;
       }
 
       const data: CampusInfo = await response.json();
+
+      // Check if data is empty
+      if (!data || Object.keys(data).length === 0) {
+        setError("No campus information available");
+        setCampusInfo(null);
+        return;
+      }
+
       setCampusInfo(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred";
+      setError("Unable to load campus information. Please try again later.");
+      setCampusInfo(null);
       console.error("Error fetching campus info:", err);
     } finally {
       setLoading(false);
