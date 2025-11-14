@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     params.append("limit", limit);
     params.append("ordering", ordering);
 
-    const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/campus-units?${params.toString()}`;
+    const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/research-facilities?${params.toString()}`;
 
     const response = await fetch(backendUrl, {
       method: "GET",
@@ -38,10 +38,10 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Campus Units API error:", error);
+    console.error("Research Facilities API error:", error);
     return NextResponse.json(
       {
-        error: "Failed to fetch campus units",
+        error: "Failed to fetch research facilities",
         message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }

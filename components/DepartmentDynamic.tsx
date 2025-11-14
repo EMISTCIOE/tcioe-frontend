@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatedSection } from "@/components/animated-section";
@@ -13,6 +13,7 @@ import { useDepartmentEvents } from "@/hooks/use-department-events";
 import { useDepartmentDownloads } from "@/hooks/use-department-downloads";
 import { useDepartmentPlans } from "@/hooks/use-department-plans";
 import { useDepartmentEventGallery } from "@/hooks/use-department-event-gallery";
+import { useDepartmentSubjects } from "@/hooks/use-department-subjects";
 // no notices here by request
 
 export function DepartmentDynamic({ slug }: { slug: string }) {
@@ -21,6 +22,11 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
     limit: 100,
     ordering: "name",
   });
+  const [selectedProgramSlug, setSelectedProgramSlug] = useState<string | null>(null);
+  const { subjects, loading: subjectsLoading, error: subjectsError } = useDepartmentSubjects(
+    slug,
+    selectedProgramSlug ?? undefined
+  );
   const { staffs, loading: staffLoading } = useDepartmentStaffs(slug, {
     limit: 6,
     ordering: "displayOrder",
@@ -55,6 +61,17 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
     eventsLoading ||
     downloadsLoading ||
     plansLoading;
+
+  useEffect(() => {
+    if (!selectedProgramSlug && programs && programs.length > 0) {
+      setSelectedProgramSlug(programs[0].slug);
+    }
+  }, [programs, selectedProgramSlug]);
+
+  const programOptions = useMemo(
+    () => programs?.map((program) => ({ label: program.name, value: program.slug })) ?? [],
+    [programs]
+  );
 
   if (loading) {
     return (
@@ -146,6 +163,72 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
               See more programs
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Subjects Table */}
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-4 lg:px-6">
+          <AnimatedSection>
+            <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-4">
+              Subjects by Program
+            </h2>
+          </AnimatedSection>
+          {programOptions.length > 0 && (
+            <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-center">
+              <label className="text-sm font-semibold text-text-dark">Filter by program:</label>
+              <select
+                value={selectedProgramSlug ?? ""}
+                onChange={(event) => setSelectedProgramSlug(event.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              >
+                {programOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {subjectsLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <Skeleton className="h-4 w-2/5 mb-3" />
+              <Skeleton className="h-4 w-1/5" />
+            </div>
+          ) : subjectsError ? (
+            <p className="text-sm text-red-600">{subjectsError}</p>
+          ) : subjects && subjects.length > 0 ? (
+            <div className="overflow-x-auto rounded-3xl border border-gray-200 bg-white shadow-sm">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-600">Code</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-600">Subject</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-600">Semester</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-600">Program</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-600">Topics</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {subjects.map((subject) => (
+                    <tr key={subject.uuid}>
+                      <td className="px-4 py-3 font-mono text-xs text-primary-blue">{subject.code}</td>
+                      <td className="px-4 py-3 text-gray-800">{subject.name}</td>
+                      <td className="px-4 py-3 text-gray-600">{subject.semester}</td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {subject.academicProgram?.name ?? subject.program}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 max-w-[280px] line-clamp-3">
+                        {subject.topicsCovered}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-text-light">No subjects available for the selected program.</p>
+          )}
         </div>
       </section>
 

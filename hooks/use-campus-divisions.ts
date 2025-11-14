@@ -7,7 +7,7 @@ import type {
   CampusDivisionSummary,
 } from "@/types";
 
-type DivisionKind = "sections" | "units";
+type DivisionKind = "sections" | "units" | "research-facilities";
 
 interface UseCampusDivisionsOptions {
   limit?: number;

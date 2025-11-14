@@ -7,15 +7,21 @@ const API_BASE_URL = (
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const departmentSlug = searchParams.get("department");
+    if (!departmentSlug) {
+      return NextResponse.json({ error: "Department slug is required" }, { status: 400 });
+    }
+
     const params = new URLSearchParams();
+    const programSlug = searchParams.get("program");
+    if (programSlug) {
+      params.append("program", programSlug);
+    }
 
-    const limit = searchParams.get("limit") || "20";
-    const ordering = searchParams.get("ordering") || "display_order";
-
-    params.append("limit", limit);
-    params.append("ordering", ordering);
-
-    const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/campus-units?${params.toString()}`;
+    const queryString = params.toString();
+    const backendUrl = `${API_BASE_URL}/api/v1/public/curriculum-mod/departments/${departmentSlug}/subjects/${
+      queryString ? `?${queryString}` : ""
+    }`;
 
     const response = await fetch(backendUrl, {
       method: "GET",
@@ -38,10 +44,10 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Campus Units API error:", error);
+    console.error("Department subjects API error:", error);
     return NextResponse.json(
       {
-        error: "Failed to fetch campus units",
+        error: "Failed to fetch subjects",
         message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }

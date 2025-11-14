@@ -216,6 +216,7 @@ export interface CampusDivisionOfficial {
   titlePrefixDisplay?: string | null;
   fullName: string;
   designation: string;
+  designationDisplay?: string | null;
   photo?: string | null;
   email?: string | null;
   phoneNumber?: string | null;
@@ -347,6 +348,31 @@ export interface DepartmentProgramsResponse {
   results: DepartmentProgramItem[];
 }
 
+export interface DepartmentSubjectAcademicProgram {
+  uuid: string;
+  name: string;
+  shortName?: string | null;
+  slug: string;
+}
+
+export interface DepartmentSubjectItem {
+  uuid: string;
+  name: string;
+  slug: string;
+  code: string;
+  semester: string;
+  program: string;
+  topicsCovered: string;
+  academicProgram?: DepartmentSubjectAcademicProgram | null;
+}
+
+export interface DepartmentSubjectsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: DepartmentSubjectItem[];
+}
+
 export interface DepartmentStaffItem {
   uuid: string;
   title?: string | null; // e.g., Er., Dr., Ar.
@@ -385,7 +411,6 @@ export interface DepartmentEventsResponse {
 
 // Department Plans have the same shape as downloads
 export interface DepartmentPlansResponse extends DownloadsResponse {}
-
 
 // Campus Report API Types
 export interface FiscalSession {

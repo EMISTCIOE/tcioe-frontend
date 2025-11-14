@@ -73,15 +73,16 @@ export const Header = () => {
         { name: "Academic Calendar", href: "/academics/calendar" },
       ],
     },
-    {
-      name: "Research",
-      href: "/research",
-      dropdown: [
-        { name: "Research Areas", href: "/research/areas" },
-        { name: "Publications", href: "/research/publications" },
-        { name: "Research Centers", href: "/research/centers" },
-      ],
-    },
+        {
+          name: "Research",
+          href: "/research",
+          dropdown: [
+            { name: "Research Areas", href: "/research/areas" },
+            { name: "Publications", href: "/research/publications" },
+            { name: "Research Centers", href: "/research/centers" },
+            { name: "Research Facilities", href: "/research/facilities" },
+          ],
+        },
     {
       name: "Departments",
       href: "/departments",
