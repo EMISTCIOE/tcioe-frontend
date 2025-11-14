@@ -13,7 +13,7 @@ export function useFeaturedNoticePopup() {
     error,
   } = useNotices({
     limit: 1,
-    ordering: "-publishedAt",
+    ordering: "-published_at",
     is_featured: true,
   });
 

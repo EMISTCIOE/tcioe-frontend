@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import type {
   CampusKeyOfficial,
-  CampusKeyOfficialDesignation,
   CampusKeyOfficialsResponse,
   SearchableQueryParams,
   StaffTitlePrefix,
@@ -9,7 +8,8 @@ import type {
 
 interface UseCampusKeyOfficialsParams extends SearchableQueryParams {
   ordering?: string;
-  designation?: CampusKeyOfficialDesignation;
+  designation?: string;
+  isKeyOfficial?: boolean;
 }
 
 interface UseCampusKeyOfficialsReturn {
@@ -25,7 +25,7 @@ interface UseCampusKeyOfficialsReturn {
 }
 
 /**
- * Fetches campus key officials with support for pagination, search, and filtering by designation.
+ * Fetches campus staff with support for pagination, search, and filtering.
  */
 export function useCampusKeyOfficials(
   params: UseCampusKeyOfficialsParams = {}
@@ -53,6 +53,12 @@ export function useCampusKeyOfficials(
         searchParams.append("ordering", params.ordering.toString());
       if (params.designation)
         searchParams.append("designation", params.designation);
+      if (params.isKeyOfficial !== undefined) {
+        searchParams.append(
+          "is_key_official",
+          params.isKeyOfficial ? "true" : "false"
+        );
+      }
 
       const queryString = searchParams.toString();
       const endpoint = queryString
@@ -81,16 +87,16 @@ export function useCampusKeyOfficials(
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
-      console.error("Error fetching campus key officials:", err);
+      console.error("Error fetching campus staff:", err);
     } finally {
       setLoading(false);
     }
-  }, [
     params.page,
     params.limit,
     params.search,
     params.ordering,
     params.designation,
+    params.isKeyOfficial,
   ]);
 
   useEffect(() => {

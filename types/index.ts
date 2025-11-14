@@ -565,54 +565,17 @@ export type StaffTitlePrefix =
   | "TECHNICIAN"
   | "OTHER";
 
-export type CampusKeyOfficialDesignation =
-  | "CAMPUS_CHIEF"
-  | "ASSIST_CAMPUS_CHIEF_ADMIN"
-  | "ASSIST_CAMPUS_CHIEF_ACADEMIC"
-  | "ASSIST_CAMPUS_CHIEF_PLANNING"
-  | "MSC_COORD_INFORMATION"
-  | "MSC_COORD_EARTHQUAKE"
-  | "MSC_COORD_DESIGN"
-  | "MSC_COORD_MSEQE"
-  | "MSC_COORD_MSIS"
-  | "MSC_COORD_MSEDM"
-  | "HEAD_OF_INDUSTRIAL_DEPARTMENT"
-  | "HEAD_OF_ARCHITECTURE_DEPARTMENT"
-  | "HEAD_OF_APPLIED_SCIENCE_DEPARTMENT"
-  | "HEAD_OF_AUTOMOBILE_AND_MECHANICAL_DEPARTMENT"
-  | "HEAD_OF_ELECTRONICS_AND_COMPUTER_DEPARTMENT"
-  | "EMIS_HEAD"
-  | "RESEARCH_HEAD"
-  | "CONSULTANCY_HEAD"
-  | "EXAMS_ACADEMIC_HEAD"
-  | "LIBRARY_HEAD"
-  | "FINANCE_HEAD"
-  | "PERSONNEL_HEAD"
-  | "PLANNING_HEAD"
-  | "PROCUREMENT_HEAD"
-  | "SECURITY_HEAD"
-  | "IQAC_HEAD"
-  | "ADMINISTRATION_HEAD"
-  | "FACILITIES_HEAD"
-  | "HEAD_OF_MATERIAL_TESTING_LAB"
-  | "HEAD_OF_STORE_SECTION"
-  | "HEAD_OF_FINANCE_ADMINISTRATION_SECTION"
-  | "HEAD_OF_EMIS_UNIT"
-  | "HEAD_OF_SAT"
-  | "DEPUTY_FINANCE_CONTROLLER"
-  | "LIBRARIAN"
-  | "ACCOUNT_OFFICER";
-
 export interface CampusKeyOfficial {
   uuid: string;
   titlePrefix: StaffTitlePrefix | null;
   fullName: string;
-  designation: CampusKeyOfficialDesignation;
+  designation: string;
   designationDisplay: string;
   message: string | null;
   photo: string | null;
   email: string | null;
   phoneNumber: string | null;
+  isKeyOfficial: boolean;
 }
 
 export interface CampusKeyOfficialsResponse {

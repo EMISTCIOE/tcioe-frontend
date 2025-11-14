@@ -12,7 +12,7 @@ export default function LatestNotices() {
   // Use the notices hook to fetch latest notices
   const { notices, loading, error } = useNotices({
     limit: 5,
-    ordering: "-publishedAt",
+    ordering: "-published_at",
   });
 
   if (loading) {

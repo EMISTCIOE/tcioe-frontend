@@ -13,6 +13,8 @@ export interface NoticesQueryParams {
   category?: string;
   department?: string;
   is_featured?: boolean;
+  start_date?: string;
+  end_date?: string;
   ordering?: string;
 }
 
@@ -36,6 +38,8 @@ export class NoticesService {
     if (params?.department) queryParams.department = params.department;
     if (params?.is_featured !== undefined)
       queryParams.is_featured = params.is_featured;
+    if (params?.start_date) queryParams.start_date = params.start_date;
+    if (params?.end_date) queryParams.end_date = params.end_date;
     if (params?.ordering) queryParams.ordering = params.ordering;
 
     return apiClient.get<NoticesResponse>(

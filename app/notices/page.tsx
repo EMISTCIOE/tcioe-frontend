@@ -37,6 +37,8 @@ export default function NoticesPage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("");
 
   const noticesPerPage = 10;
@@ -49,9 +51,18 @@ export default function NoticesPage() {
       search: debouncedSearchTerm || undefined,
       category: selectedCategory || undefined,
       department: selectedDepartment || undefined,
+      start_date: startDate || undefined,
+      end_date: endDate || undefined,
       ordering: "-published_at",
     }),
-    [currentPage, debouncedSearchTerm, selectedCategory, selectedDepartment]
+    [
+      currentPage,
+      debouncedSearchTerm,
+      selectedCategory,
+      selectedDepartment,
+      startDate,
+      endDate,
+    ]
   );
 
   // API hooks
@@ -90,6 +101,8 @@ export default function NoticesPage() {
       if (department) filters.push(department.name);
     }
     if (searchTerm) filters.push(`Search: ${searchTerm}`);
+    if (startDate) filters.push(`Start Date: ${formatNoticeDate(startDate)}`);
+    if (endDate) filters.push(`End Date: ${formatNoticeDate(endDate)}`);
     return filters;
   }, [
     selectedCategory,
@@ -97,17 +110,30 @@ export default function NoticesPage() {
     searchTerm,
     categories,
     departments,
+    startDate,
+    endDate,
   ]);
 
   // Reset to first page when filters change (only when not already on page 1)
   useEffect(() => {
     const shouldReset =
-      (debouncedSearchTerm || selectedCategory || selectedDepartment) &&
+      (debouncedSearchTerm ||
+        selectedCategory ||
+        selectedDepartment ||
+        startDate ||
+        endDate) &&
       currentPage !== 1;
     if (shouldReset) {
       setCurrentPage(1);
     }
-  }, [debouncedSearchTerm, selectedCategory, selectedDepartment]);
+  }, [
+    debouncedSearchTerm,
+    selectedCategory,
+    selectedDepartment,
+    startDate,
+    endDate,
+    currentPage,
+  ]);
 
   // Calculate total pages
   const totalPages = Math.ceil(pagination.count / noticesPerPage);
@@ -120,23 +146,34 @@ export default function NoticesPage() {
     setSearchTerm("");
     setSelectedDepartment("");
     setSelectedCategory("");
+    setStartDate("");
+    setEndDate("");
     setCurrentPage(1);
   };
 
   const removeFilter = (filterToRemove: string) => {
     if (filterToRemove.startsWith("Search:")) {
       setSearchTerm("");
-    } else {
-      const category = categories.find((cat) => cat.name === filterToRemove);
-      const department = departments.find(
-        (dept) => dept.name === filterToRemove
-      );
+      return;
+    }
+    if (filterToRemove.startsWith("Start Date:")) {
+      setStartDate("");
+      return;
+    }
+    if (filterToRemove.startsWith("End Date:")) {
+      setEndDate("");
+      return;
+    }
 
-      if (category) {
-        setSelectedCategory("");
-      } else if (department) {
-        setSelectedDepartment("");
-      }
+    const category = categories.find((cat) => cat.name === filterToRemove);
+    const department = departments.find(
+      (dept) => dept.name === filterToRemove
+    );
+
+    if (category) {
+      setSelectedCategory("");
+    } else if (department) {
+      setSelectedDepartment("");
     }
   };
 
@@ -273,6 +310,38 @@ export default function NoticesPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Date Range Filters */}
+              <div className="flex flex-wrap gap-2">
+                <div className="relative min-w-[160px]">
+                  <Calendar className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
+                  <input
+                    type="date"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-700 bg-white"
+                    value={startDate}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setStartDate(e.target.value)
+                    }
+                    aria-label="Filter start date"
+                    placeholder="From date"
+                    max={endDate || undefined}
+                  />
+                </div>
+                <div className="relative min-w-[160px]">
+                  <Calendar className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
+                  <input
+                    type="date"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-700 bg-white"
+                    value={endDate}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setEndDate(e.target.value)
+                    }
+                    aria-label="Filter end date"
+                    placeholder="To date"
+                    min={startDate || undefined}
+                  />
+                </div>
               </div>
 
               {/* Filter Button - Matching the blue color from UI */}

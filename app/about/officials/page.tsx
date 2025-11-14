@@ -16,12 +16,14 @@ const DEFAULT_LIMIT = 100;
 export default function OfficialsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [designationFilter, setDesignationFilter] = useState("");
+  const [showKeyOnly, setShowKeyOnly] = useState(false);
 
   const { officials, loading, error, pagination, refetch } =
     useCampusKeyOfficials({
       page: 1,
       limit: DEFAULT_LIMIT,
       ordering: "display_order",
+      isKeyOfficial: showKeyOnly ? true : undefined,
     });
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -57,6 +59,7 @@ export default function OfficialsPage() {
   const clearFilters = () => {
     setSearchTerm("");
     setDesignationFilter("");
+    setShowKeyOnly(false);
   };
 
   return (
@@ -65,14 +68,14 @@ export default function OfficialsPage() {
         <AnimatedSection className="text-center space-y-4 mb-10">
           <div className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-primary-blue shadow-sm">
             <Users className="h-4 w-4" />
-            Leadership Directory
+            Staff Directory
           </div>
           <h1 className="text-4xl font-bold text-primary-blue">
-            Key Campus Officials
+            Campus Staff Members
           </h1>
           <p className="text-lg text-text-dark max-w-3xl mx-auto">
-            Meet the campus leadership team, department heads, and section
-            chiefs who keep Thapathali Campus running smoothly.
+            Meet the team of campus leaders and staff members responsible for
+            keeping Thapathali Campus running smoothly.
           </p>
         </AnimatedSection>
 
@@ -114,9 +117,18 @@ export default function OfficialsPage() {
                 ))}
               </select>
             </div>
+            <label className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 md:w-auto">
+              <input
+                type="checkbox"
+                checked={showKeyOnly}
+                onChange={(event) => setShowKeyOnly(event.target.checked)}
+                className="h-4 w-4 accent-primary-blue"
+              />
+              Show key officials only
+            </label>
           </div>
 
-          {(searchTerm || designationFilter) && (
+          {(searchTerm || designationFilter || showKeyOnly) && (
             <div className="mt-4 text-right">
               <button
                 type="button"
@@ -136,7 +148,7 @@ export default function OfficialsPage() {
               <strong className="text-primary-blue">
                 {filteredOfficials.length}
               </strong>{" "}
-              of {totalRecords || filteredOfficials.length} officials
+              of {totalRecords || filteredOfficials.length} staff members
             </span>
             <span className="text-gray-500">
               Updated automatically from the EMIS CMS
@@ -167,7 +179,7 @@ export default function OfficialsPage() {
         {!loading && !error && filteredOfficials.length === 0 && (
           <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center">
             <p className="text-lg font-semibold text-gray-800">
-              No officials match your filters.
+              No staff members match your filters.
             </p>
             <p className="mt-2 text-sm text-gray-500">
               Try clearing the search or selecting a different post.

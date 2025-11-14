@@ -23,7 +23,7 @@ export default function HomePage() {
   const { notices, loading: noticesLoading } = useNotices({
     page: 1,
     limit: 6,
-    ordering: "-publishedAt",
+    ordering: "-published_at",
   });
   const {
     notice: featuredNotice,

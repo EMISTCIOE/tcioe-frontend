@@ -57,7 +57,7 @@ export default function NoticeDetail({ params }: PageParams) {
   const { notice, loading, error } = useNotice(noticeIdentifier);
   const { notices: latestNotices, loading: latestLoading } = useNotices({
     limit: 10,
-    ordering: "-publishedAt",
+    ordering: "-published_at",
   });
 
   const [showAllNotices, setShowAllNotices] = useState<boolean>(false);
@@ -71,7 +71,7 @@ export default function NoticeDetail({ params }: PageParams) {
     try {
       const { notices: allNoticesData } = useNotices({
         limit: 100,
-        ordering: "-publishedAt",
+        ordering: "-published_at",
       });
       setAllNotices(allNoticesData || []);
       setShowAllNotices(true);

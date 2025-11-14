@@ -30,6 +30,11 @@ export async function GET(request: NextRequest) {
       params.append("designation", designation);
     }
 
+    const isKeyOfficial = searchParams.get("is_key_official");
+    if (isKeyOfficial) {
+      params.append("is_key_official", isKeyOfficial);
+    }
+
     const ordering = searchParams.get("ordering") || "display_order";
     params.append("ordering", ordering);
 
@@ -57,11 +62,11 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Campus Key Officials API error:", error);
+    console.error("Campus Staff API error:", error);
 
     return NextResponse.json(
       {
-        error: "Failed to fetch campus key officials",
+        error: "Failed to fetch campus staff",
         message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }

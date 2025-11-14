@@ -222,7 +222,7 @@ export function CampusDivisionDetailView({
                 {departmentHead.fullName}
               </p>
               <p className="text-sm text-gray-600">
-                {departmentHead.designation}
+                {departmentHead.designationDisplay || departmentHead.designation}
               </p>
               {departmentHead.email && (
                 <p className="text-xs text-gray-500 mt-1">
@@ -249,7 +249,7 @@ export function CampusDivisionDetailView({
           <div className="flex items-center gap-3 mb-4">
             <Users className="h-5 w-5 text-primary-blue" />
             <h3 className="text-xl font-semibold text-primary-blue">
-              Key Officials
+              Key Staff Members
             </h3>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -280,7 +280,7 @@ export function CampusDivisionDetailView({
                     {official.fullName}
                   </p>
                   <p className="text-sm text-gray-600">
-                    {official.designation}
+                    {official.designationDisplay || official.designation}
                   </p>
                   {official.email && (
                     <p className="text-xs text-gray-500 mt-1">
