@@ -249,10 +249,9 @@ export default function NoticesPage() {
 
         {/* Search and Filters Section - matching the UI exactly */}
         <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6">
-            <div className="flex flex-col lg:flex-row gap-4 items-end">
-              {/* Search Bar */}
-              <div className="relative flex-1 max-w-lg">
+          <div className="p-6 space-y-4">
+            <div className="grid gap-4">
+              <div className="relative">
                 <input
                   className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-500"
                   placeholder="Search notices..."
@@ -273,11 +272,9 @@ export default function NoticesPage() {
                   </button>
                 )}
               </div>
-
-              {/* Department Filter */}
-              <div className="flex-shrink-0">
+              <div className="grid gap-4 md:grid-cols-2">
                 <select
-                  className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-48 text-sm text-gray-700"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm text-gray-700"
                   value={selectedDepartment}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                     setSelectedDepartment(e.target.value)
@@ -291,12 +288,8 @@ export default function NoticesPage() {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              {/* Category Filter */}
-              <div className="flex-shrink-0">
                 <select
-                  className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-48 text-sm text-gray-700"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm text-gray-700"
                   value={selectedCategory}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                     setSelectedCategory(e.target.value)
@@ -311,10 +304,8 @@ export default function NoticesPage() {
                   ))}
                 </select>
               </div>
-
-              {/* Date Range Filters */}
-              <div className="flex flex-wrap gap-2">
-                <div className="relative min-w-[160px]">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="relative">
                   <Calendar className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
                   <input
                     type="date"
@@ -328,7 +319,7 @@ export default function NoticesPage() {
                     max={endDate || undefined}
                   />
                 </div>
-                <div className="relative min-w-[160px]">
+                <div className="relative">
                   <Calendar className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
                   <input
                     type="date"
@@ -343,12 +334,12 @@ export default function NoticesPage() {
                   />
                 </div>
               </div>
-
-              {/* Filter Button - Matching the blue color from UI */}
-              <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm font-medium shadow-sm">
-                <Filter className="h-4 w-4" />
-                Filter
-              </button>
+              <div className="flex justify-end">
+                <button className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm font-medium shadow-sm">
+                  <Filter className="h-4 w-4" />
+                  Filter
+                </button>
+              </div>
             </div>
           </div>
         </div>

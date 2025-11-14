@@ -135,6 +135,9 @@ export const Header = () => {
     },
   ];
 
+  const navLinkBase =
+    "h-full px-4 py-3 text-sm md:text-base font-medium leading-tight text-text-dark transition-colors duration-200 hover:bg-background-light hover:text-primary-blue";
+
   return (
     <header className="w-full">
       {/* Top Bar - hidden on small screens to prevent overflow */}
@@ -304,15 +307,15 @@ export const Header = () => {
       {/* Navigation Bar (Desktop) */}
       <nav className="bg-white border-t border-gray-200 hidden md:block">
         <div className="container mx-auto flex justify-center">
-          <ul className="flex md:space-x-8">
+          <ul className="flex items-center md:space-x-8">
             {navItems.map((item) => (
-              <li key={item.name}>
+              <li key={item.name} className="flex items-center h-full">
                 {item.dropdown && item.dropdown.length > 0 ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="text-text-dark hover:bg-background-light hover:text-primary-blue px-4 py-3 font-medium md:text-base text-sm transition-colors duration-200"
+                        className={`${navLinkBase} gap-2`}
                       >
                         {item.name}
                         <ChevronDown className="ml-1 h-4 w-4" />
@@ -334,7 +337,7 @@ export const Header = () => {
                 ) : (
                   <Link
                     href={item.href}
-                    className="flex items-center text-text-dark hover:bg-background-light hover:text-primary-blue px-4 py-3 text-base font-medium transition-colors duration-200"
+                    className={`flex items-center justify-center ${navLinkBase}`}
                   >
                     {item.name}
                   </Link>

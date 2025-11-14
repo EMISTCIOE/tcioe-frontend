@@ -64,6 +64,7 @@ export default function NoticeDetail({ params }: PageParams) {
   const [allNotices, setAllNotices] = useState<Notice[]>([]);
   const [showViewMoreButton, setShowViewMoreButton] = useState<boolean>(true);
   const [checkButton, setCheckButton] = useState<boolean>(false);
+  const [shareText, setShareText] = useState("Share");
   const scrollableRef = useRef<HTMLDivElement>(null);
 
   // Function to load all notices
@@ -161,35 +162,69 @@ export default function NoticeDetail({ params }: PageParams) {
 
   // Parse the active ID for highlighting in the sidebar
   const activeId = notice.uuid;
+  const mediaLabel =
+    downloadableMedia?.caption?.trim().length > 0
+      ? downloadableMedia!.caption!
+      : notice.title;
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+
+  const handleShare = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = shareUrl;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      setShareText("Copied!");
+    } catch (error) {
+      setShareText("Failed");
+    } finally {
+      setTimeout(() => setShareText("Share"), 1600);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-10">
       <div className="max-w-7xl mx-auto">
-        {/* Title heading at the top, outside the flex layout */}
-        <h1 className="text-3xl font-bold text-gray-800 border-b-4 border-orange-500 inline-block pb-1 mb-6">
+        {/* Title heading */}
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 border-b-4 border-orange-500 inline-block pb-1 mb-6">
           Notices and Announcements
         </h1>
 
-        <div className="flex flex-col md:flex-row gap-10 mt-6">
+        <div className="flex flex-col gap-6 mt-6">
           {/* Main Notice Detail Section */}
           <div className="flex-1">
-            <div>
-              <h2 className="text-2xl font-semibold text-blue-900 flex items-start justify-between flex-wrap">
-                <span className="mr-2">{notice.title}</span>
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-semibold text-blue-900 leading-snug">
+                  {notice.title}
+                </h2>
                 {notice.category?.name && (
-                  <span className={getCategoryColor(notice.category.name)}>
+                  <span
+                    className={`inline-flex items-center mt-1 text-xs font-semibold uppercase px-3 py-1 rounded-full ${getCategoryColor(
+                      notice.category.name
+                    )}`}
+                  >
                     {notice.category.name}
                   </span>
                 )}
-              </h2>
-              <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
-                <Calendar className="inline h-4 w-4" />
-                <span>Published on {formattedDate}</span>
+              </div>
+              <div className="text-sm text-gray-500 flex flex-wrap gap-3">
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  Published on {formattedDate}
+                </span>
                 <span>
-                  {" | "}
                   {notice.department?.name ?? "College Wide"}
                 </span>
-              </p>
+              </div>
             </div>
 
             {/* Notice Description */}
@@ -206,39 +241,23 @@ export default function NoticeDetail({ params }: PageParams) {
               <div className="mt-8 bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
                 {/* Media Header */}
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-white/20 p-3 rounded-lg">
-                        <FileText className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <h4 className="text-lg font-semibold">
-                          {downloadableMedia.caption || "Document Viewer"}
-                        </h4>
-                        <p className="text-blue-100 text-sm">{notice.title}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() =>
-                          window.open(downloadableMedia.file, "_blank")
-                        }
-                        className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Open in New Tab
-                      </button>
-                      <a
-                        href={downloadableMedia.file}
-                        download
-                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
-                      >
-                        <Download className="h-4 w-4" />
-                        Download
-                      </a>
-                    </div>
-                  </div>
+                <div className="flex items-center justify-end gap-2 sm:gap-3">
+                  <button
+                    onClick={() => window.open(downloadableMedia.file, "_blank")}
+                    className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Open in New Tab
+                  </button>
+                  <a
+                    href={downloadableMedia.file}
+                    download
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download
+                  </a>
+                </div>
                 </div>
 
                 {/* Media Viewer Container */}
@@ -258,8 +277,8 @@ export default function NoticeDetail({ params }: PageParams) {
                   {downloadableMedia.file.toLowerCase().includes(".pdf") ||
                   downloadableMedia.mediaType === "DOCUMENT" ? (
                     /* PDF Iframe */
-                    <iframe
-                      src={`${downloadableMedia.file}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`}
+                  <iframe
+                    src={`${downloadableMedia.file}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
                       className="w-full h-[800px] border-0"
                       title={`Document for ${notice.title}`}
                       onLoad={() => {
@@ -330,17 +349,18 @@ export default function NoticeDetail({ params }: PageParams) {
                       {downloadableMedia.mediaType === "IMAGE"
                         ? "Image"
                         : "Document"}
-                      : {downloadableMedia.caption || "Untitled"}
+                      : {mediaLabel}
                     </span>
                     <div className="flex items-center gap-4">
                       <button
                         onClick={() =>
-                          navigator.clipboard.writeText(window.location.href)
+                          handleShare()
                         }
                         className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                        title="Copy link to clipboard"
                       >
                         <Share2 className="h-4 w-4" />
-                        Share
+                        {shareText}
                       </button>
                       <span className="text-gray-400">|</span>
                       <span>Published: {formattedDate}</span>

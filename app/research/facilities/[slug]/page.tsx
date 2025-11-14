@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { CampusDivisionDetailView } from "@/components/campus-division-detail";
+import { ResearchFacilityDetailView } from "@/components/research-facility-detail";
 
 export default function ResearchFacilityDetailPage() {
   const params = useParams<{ slug: string }>();
@@ -9,7 +9,7 @@ export default function ResearchFacilityDetailPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
-      <CampusDivisionDetailView slug={slug} kind="research-facilities" />
+      <ResearchFacilityDetailView slug={slug} />
     </div>
   );
 }
