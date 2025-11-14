@@ -13,6 +13,8 @@ import { useDepartments as useDeptList } from "@/hooks/use-departments";
 import { useNotices } from "@/hooks/use-notices";
 import { campusChiefData } from "@/data/mock-data";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FeaturedNoticePopup } from "@/components/FeaturedNoticePopup";
+import { useFeaturedNoticePopup } from "@/hooks/use-featured-notice-popup";
 
 export default function HomePage() {
   const { data, loading, error } = useCollegeData();
@@ -22,6 +24,11 @@ export default function HomePage() {
     limit: 6,
     ordering: "-publishedAt",
   });
+  const {
+    notice: featuredNotice,
+    isOpen: isPopupOpen,
+    dismiss: dismissPopup,
+  } = useFeaturedNoticePopup();
 
   if (loading || noticesLoading) {
     return (
@@ -127,6 +134,13 @@ export default function HomePage() {
 
   return (
     <>
+      {featuredNotice && (
+        <FeaturedNoticePopup
+          notice={featuredNotice}
+          open={isPopupOpen}
+          onClose={dismissPopup}
+        />
+      )}
       <HeroSection
         backgroundImage="/data/hero.webp?height=800&width=1600"
         title="Innovating for a Brighter Future"

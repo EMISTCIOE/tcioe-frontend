@@ -87,67 +87,66 @@ export default function LatestNotices() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {displayNotices.map((notice) => (
-            <div
-              key={notice.uuid}
-              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
-            >
-              {notice.thumbnail && (
-                <div
-                  className="h-48 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${notice.thumbnail})` }}
-                >
-                  <div className="h-full bg-black bg-opacity-20"></div>
+          {displayNotices.map((notice) => {
+            const departmentLabel = notice.department?.name ?? "College Wide";
+            return (
+              <div
+                key={notice.uuid}
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+              >
+                {notice.thumbnail && (
+                  <div
+                    className="h-48 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${notice.thumbnail})` }}
+                  >
+                    <div className="h-full bg-black bg-opacity-20"></div>
+                  </div>
+                )}
+
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    {notice.category && (
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full font-medium ${getCategoryColor(
+                          notice.category.name
+                        )}`}
+                      >
+                        {notice.category.name}
+                      </span>
+                    )}
+                    {notice.isFeatured && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium">
+                        Featured
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">
+                    {notice.title}
+                  </h3>
+
+                  <div className="flex items-center text-sm text-gray-500 mb-3">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    <span>{formatRelativeDate(notice.publishedAt)}</span>
+                    <span className="mx-2">•</span>
+                    <span className="truncate">{departmentLabel}</span>
+                  </div>
+
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                    {extractTextFromHtml(notice.description)}
+                  </p>
+
+                  <Link
+                    href={`/notices/${notice.slug}`}
+                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-sm group"
+                  >
+                    Read More
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
                 </div>
-              )}
-
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  {notice.category && (
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full font-medium ${getCategoryColor(
-                        notice.category.name
-                      )}`}
-                    >
-                      {notice.category.name}
-                    </span>
-                  )}
-                  {notice.isFeatured && (
-                    <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium">
-                      Featured
-                    </span>
-                  )}
-                </div>
-
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">
-                  {notice.title}
-                </h3>
-
-                <div className="flex items-center text-sm text-gray-500 mb-3">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <span>{formatRelativeDate(notice.publishedAt)}</span>
-                  {notice.department && (
-                    <>
-                      <span className="mx-2">•</span>
-                      <span className="truncate">{notice.department.name}</span>
-                    </>
-                  )}
-                </div>
-
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                  {extractTextFromHtml(notice.description)}
-                </p>
-
-                <Link
-                  href={`/notices/${notice.slug}`}
-                  className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-sm group"
-                >
-                  Read More
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {notices && notices.length > 3 && (

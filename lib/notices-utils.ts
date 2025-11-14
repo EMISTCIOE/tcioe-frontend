@@ -138,7 +138,7 @@ export function filterNoticesBySearch(notices: Notice[], searchTerm: string): No
     notice.title.toLowerCase().includes(term) ||
     notice.description.toLowerCase().includes(term) ||
     notice.author.fullName.toLowerCase().includes(term) ||
-    notice.department.name.toLowerCase().includes(term) ||
+    ((notice.department?.name ?? '').toLowerCase().includes(term)) ||
     notice.category.name.toLowerCase().includes(term)
   );
 }

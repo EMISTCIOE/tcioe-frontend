@@ -382,7 +382,9 @@ export default function NoticesPage() {
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <span>{formatNoticeDate(notice.publishedAt)}</span>
                       <span>|</span>
-                      <span>{notice.department.name}</span>
+                      <span>
+                        {notice.department?.name ?? "College Wide"}
+                      </span>
                     </div>
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryBadgeColor(

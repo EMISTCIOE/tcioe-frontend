@@ -185,7 +185,10 @@ export default function NoticeDetail({ params }: PageParams) {
               <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
                 <Calendar className="inline h-4 w-4" />
                 <span>Published on {formattedDate}</span>
-                {notice.department?.name && ` | ${notice.department.name}`}
+                <span>
+                  {" | "}
+                  {notice.department?.name ?? "College Wide"}
+                </span>
               </p>
             </div>
 
