@@ -15,12 +15,21 @@ import { Button } from "@/components/ui/button";
 import { AnnouncementBar } from "./announcement-bar";
 import { useCollegeData } from "@/hooks/use-college-data";
 import { useDepartments as useDeptList } from "@/hooks/use-departments";
+import { useCampusDivisions } from "@/hooks/use-campus-divisions";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
   const { data, loading } = useCollegeData();
   const { departments: deptList } = useDeptList({ limit: 20, ordering: "name" });
+  const { items: sectionLinks } = useCampusDivisions("sections", {
+    limit: 8,
+    ordering: "display_order",
+  });
+  const { items: unitLinks } = useCampusDivisions("units", {
+    limit: 8,
+    ordering: "display_order",
+  });
   
 
   useEffect(() => {
@@ -37,8 +46,22 @@ export const Header = () => {
         { name: "Mission, Vision and Values", href: "/about/mission-vision" },
         { name: "Organization Chart", href: "/about/organization-chart" },
         { name: "Key Campus Officials", href: "/about/officials" },
-        { name: "Campus Sections", href: "/about/sections" },
-        { name: "Campus Units", href: "/about/units" },
+        {
+          name: "Campus Sections",
+          href: "/about/sections",
+          dropdown: sectionLinks.map((section) => ({
+            name: section.name,
+            href: `/about/sections/${section.slug}`,
+          })),
+        },
+        {
+          name: "Campus Units",
+          href: "/about/units",
+          dropdown: unitLinks.map((unit) => ({
+            name: unit.name,
+            href: `/about/units/${unit.slug}`,
+          })),
+        },
       ],
     },
     {

@@ -199,6 +199,45 @@ export interface DepartmentPageProps {
   department: Department;
 }
 
+export interface CampusDivisionMember {
+  uuid: string;
+  titlePrefix?: string | null;
+  titlePrefixDisplay?: string | null;
+  fullName: string;
+  designation: string;
+  photo?: string | null;
+  email?: string | null;
+  phoneNumber?: string | null;
+  bio?: string | null;
+}
+
+export interface CampusDivisionSummary {
+  uuid: string;
+  name: string;
+  slug: string;
+  shortDescription: string;
+  thumbnail?: string | null;
+  displayOrder: number;
+}
+
+export interface CampusDivisionDetail extends CampusDivisionSummary {
+  detailedDescription?: string | null;
+  objectives?: string | null;
+  achievements?: string | null;
+  heroImage?: string | null;
+  location?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  members: CampusDivisionMember[];
+}
+
+export interface CampusDivisionListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: CampusDivisionSummary[];
+}
+
 export interface AcademicPageProps {
   programs: Program[];
   calendar: Array<{
