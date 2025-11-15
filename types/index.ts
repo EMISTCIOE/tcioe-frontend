@@ -146,6 +146,25 @@ export interface GlobalGalleryItem {
   createdAt: string;
 }
 
+export interface GlobalEventReference {
+  uuid: string;
+  name: string;
+}
+
+export interface GlobalEvent {
+  uuid: string;
+  title: string;
+  description?: string | null;
+  eventType?: "CULTURAL" | "ACADEMIC" | "SPORTS" | "TECHNICAL" | "OTHER";
+  eventStartDate: string;
+  eventEndDate?: string | null;
+  thumbnail?: string | null;
+  unions?: GlobalEventReference[];
+  clubs?: GlobalEventReference[];
+  departments?: GlobalEventReference[];
+  createdAt: string;
+}
+
 export interface College {
   info: {
     name: string;

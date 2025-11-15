@@ -110,9 +110,11 @@ export const UpcomingEventsSection = ({
         default:
           return "bg-gray-100 text-gray-800";
       }
-    } else {
-      return "bg-indigo-100 text-indigo-800";
     }
+    if (event.source === "global") {
+      return "bg-emerald-100 text-emerald-800";
+    }
+    return "bg-indigo-100 text-indigo-800";
   };
 
   const getEventTypeLabel = (event: any) => {
@@ -121,9 +123,11 @@ export const UpcomingEventsSection = ({
         event.eventType?.charAt(0) + event.eventType?.slice(1).toLowerCase() ||
         "Campus Event"
       );
-    } else {
-      return "Club Event";
     }
+    if (event.source === "global") {
+      return "Global Event";
+    }
+    return "Club Event";
   };
 
   return (
