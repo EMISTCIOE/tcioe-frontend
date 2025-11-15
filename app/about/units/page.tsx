@@ -40,7 +40,8 @@ export default function CampusUnitsPage() {
               Unable to load units
             </p>
             <p className="text-sm text-red-600">
-              We're having trouble showing the campus units right now. Please try again shortly.
+              We're having trouble showing the campus units right now. Please
+              try again shortly.
             </p>
             <button
               type="button"
@@ -81,9 +82,6 @@ export default function CampusUnitsPage() {
                   </div>
                 )}
                 <div className="flex flex-1 flex-col p-6">
-                  <p className="text-xs uppercase tracking-wide text-primary-blue">
-                    Unit #{unit.displayOrder}
-                  </p>
                   <h3 className="mt-1 text-2xl font-semibold text-primary-blue">
                     {unit.name}
                   </h3>

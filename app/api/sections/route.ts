@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     params.append("ordering", ordering);
 
     const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/campus-sections?${params.toString()}`;
+    console.log("Fetching campus sections from:", backendUrl);
 
     const response = await fetch(backendUrl, {
       method: "GET",
@@ -23,8 +24,9 @@ export async function GET(request: NextRequest) {
         "Content-Type": "application/json",
       },
       next: { revalidate: 300 },
+      
     });
-
+    console.log("Campus Sections API response status:", response);
     if (!response.ok) {
       throw new Error(`Backend API error: ${response.status}`);
     }

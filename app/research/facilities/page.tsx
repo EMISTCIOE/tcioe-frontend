@@ -7,10 +7,13 @@ import { useCampusDivisions } from "@/hooks/use-campus-divisions";
 import { stripHtmlTags } from "@/lib/utils";
 
 export default function ResearchFacilitiesPage() {
-  const { items, loading, error, refetch } = useCampusDivisions("research-facilities", {
-    limit: 50,
-    ordering: "display_order",
-  });
+  const { items, loading, error, refetch } = useCampusDivisions(
+    "research-facilities",
+    {
+      limit: 50,
+      ordering: "display_order",
+    }
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -19,10 +22,12 @@ export default function ResearchFacilitiesPage() {
           <p className="text-sm uppercase tracking-wide text-primary-blue">
             Research Facilities
           </p>
-          <h1 className="text-4xl font-bold text-primary-blue">Research Facilities &amp; Labs</h1>
+          <h1 className="text-4xl font-bold text-primary-blue">
+            Research Facilities &amp; Labs
+          </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Discover the laboratories, centres, and research hubs that power innovation across Thapathali
-            Campus.
+            Discover the laboratories, centres, and research hubs that power
+            innovation across Thapathali Campus.
           </p>
         </AnimatedSection>
 
@@ -34,9 +39,12 @@ export default function ResearchFacilitiesPage() {
 
         {error && (
           <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-center">
-            <p className="text-lg font-semibold text-red-700">Unable to load facilities</p>
+            <p className="text-lg font-semibold text-red-700">
+              Unable to load facilities
+            </p>
             <p className="text-sm text-red-600">
-              We're having trouble showing the research facilities right now. Please try again shortly.
+              We're having trouble showing the research facilities right now.
+              Please try again shortly.
             </p>
             <button
               type="button"
@@ -50,8 +58,12 @@ export default function ResearchFacilitiesPage() {
 
         {!loading && !error && items.length === 0 && (
           <div className="rounded-3xl border border-gray-200 bg-white p-10 text-center">
-            <p className="text-lg font-semibold text-gray-800">Facilities are being updated.</p>
-            <p className="mt-2 text-sm text-gray-500">Please check back soon for details.</p>
+            <p className="text-lg font-semibold text-gray-800">
+              Facilities are being updated.
+            </p>
+            <p className="mt-2 text-sm text-gray-500">
+              Please check back soon for details.
+            </p>
           </div>
         )}
 
@@ -73,10 +85,9 @@ export default function ResearchFacilitiesPage() {
                   </div>
                 )}
                 <div className="flex flex-1 flex-col p-6">
-                  <p className="text-xs uppercase tracking-wide text-primary-blue">
-                    Facility #{facility.displayOrder}
-                  </p>
-                  <h3 className="mt-1 text-2xl font-semibold text-primary-blue">{facility.name}</h3>
+                  <h3 className="mt-1 text-2xl font-semibold text-primary-blue">
+                    {facility.name}
+                  </h3>
                   <p className="mt-3 flex-1 text-sm text-gray-600">
                     {stripHtmlTags(facility.shortDescription)}
                   </p>

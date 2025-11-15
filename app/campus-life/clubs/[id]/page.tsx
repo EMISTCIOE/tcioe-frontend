@@ -15,7 +15,11 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useClub, generateClubSubdomain } from "@/hooks/use-clubs";
-import { useEvents, formatEventDate, generateEventSlug } from "@/hooks/use-events";
+import {
+  useEvents,
+  formatEventDate,
+  generateEventSlug,
+} from "@/hooks/use-events";
 import { useFilteredGlobalGallery } from "@/hooks/use-filtered-global-gallery";
 import type { Club, ClubEvent } from "@/types";
 
@@ -31,10 +35,7 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
     id: resolvedParams.id,
   });
 
-  const {
-    events: clubEvents,
-    loading: clubEventsLoading,
-  } = useEvents({
+  const { events: clubEvents, loading: clubEventsLoading } = useEvents({
     type: "club",
     limit: 4,
     ordering: "-date",
@@ -93,7 +94,9 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
 
         const results = await Promise.all(detailPromises);
         if (isMounted) {
-          setClubEventDetails(results.filter((item): item is ClubEvent => Boolean(item)));
+          setClubEventDetails(
+            results.filter((item): item is ClubEvent => Boolean(item))
+          );
         }
       } catch (err) {
         console.error("Error fetching club event details:", err);
@@ -107,15 +110,15 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
     };
   }, [clubEvents, club?.uuid]);
 
-  const clubGalleryImages = clubEventDetails.flatMap((event) => event.gallery || []);
-  const {
-    items: clubCollections,
-    loading: clubCollectionsLoading,
-  } = useFilteredGlobalGallery({
-    sourceType: "club_gallery",
-    sourceIdentifier: club?.uuid,
-    limit: 6,
-  });
+  const clubGalleryImages = clubEventDetails.flatMap(
+    (event) => event.gallery || []
+  );
+  const { items: clubCollections, loading: clubCollectionsLoading } =
+    useFilteredGlobalGallery({
+      sourceType: "club_gallery",
+      sourceIdentifier: club?.uuid,
+      limit: 6,
+    });
 
   // Extract text from HTML description
   const extractTextFromHtml = (html: string) => {
@@ -361,7 +364,9 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
                         <div className="p-5">
                           <div className="flex items-center text-sm font-medium text-blue-600 mb-2">
                             <Calendar className="mr-2 h-4 w-4" />
-                            <span>{formatEventDate(event.date)}</span>
+                            <span>
+                              {formatEventDate(event.eventDate || event.date)}
+                            </span>
                           </div>
                           <h3 className="text-lg font-semibold text-gray-900">
                             {event.title}
