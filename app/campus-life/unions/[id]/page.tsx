@@ -6,7 +6,8 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUnion, generateUnionSlug } from "@/hooks/use-unions";
-import type { Union } from "@/types";
+import { useEvents, formatEventDate, generateEventSlug } from "@/hooks/use-events";
+import type { CampusEvent, Union } from "@/types";
 
 interface UnionDetailPageProps {
   params: Promise<{
@@ -19,6 +20,17 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
   const { union, loading, error, refetch } = useUnion({
     id: resolvedParams.id,
   });
+
+  const {
+    events: unionEvents,
+    loading: unionEventsLoading,
+  } = useEvents({
+    type: "campus",
+    limit: 4,
+    ordering: "-eventStartDate",
+    union: union?.uuid,
+  });
+  const [unionEventDetails, setUnionEventDetails] = useState<CampusEvent[]>([]);
 
   // Handle contact button click
   const handleGetInTouch = () => {
@@ -48,6 +60,37 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
       alert("Link copied to clipboard!");
     }
   };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!unionEvents.length || !union?.uuid) {
+      setUnionEventDetails([]);
+      return;
+    }
+
+    (async () => {
+      try {
+        const detailPromises = unionEvents.slice(0, 3).map(async (event) => {
+          const response = await fetch(`/api/events/${event.uuid}?type=campus`);
+          if (!response.ok) return null;
+          return (await response.json()) as CampusEvent;
+        });
+        const results = await Promise.all(detailPromises);
+        if (isMounted) {
+          setUnionEventDetails(results.filter((item): item is CampusEvent => Boolean(item)));
+        }
+      } catch (error) {
+        console.error("Error fetching union event details:", error);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [unionEvents, union?.uuid]);
+
+  const unionGalleryImages = unionEventDetails.flatMap((event) => event.gallery || []);
 
   // Extract text from HTML description
   const extractTextFromHtml = (html: string) => {
@@ -167,6 +210,7 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
               <p className="text-xl text-white/90 leading-relaxed max-w-3xl">
                 {union.shortDescription}
               </p>
+
             </div>
           </div>
         </div>
@@ -251,6 +295,105 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
                 </div>
               </div>
             )}{" "}
+            {/* Union Posts */}
+            {union?.uuid && (unionEventsLoading || unionEvents.length > 0) && (
+              <div className="bg-white border-t border-gray-200 p-8 md:p-12">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                      Union Posts
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      Recent campus events supported by the union.
+                    </p>
+                  </div>
+                  <Link
+                    href="/campus-life/festivals"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                  >
+                    View All Campus Events →
+                  </Link>
+                </div>
+
+                {unionEventsLoading ? (
+                  <div className="text-center py-12 text-gray-500">
+                    Loading union posts...
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {unionEvents.map((event) => (
+                      <Link
+                        key={event.uuid}
+                        href={`/campus-life/festivals/${generateEventSlug(
+                          event.title,
+                          event.eventStartDate
+                        )}`}
+                        className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-lg"
+                      >
+                        <div className="relative h-48 bg-gray-100">
+                          <Image
+                            src={event.thumbnail}
+                            alt={event.title}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
+                        </div>
+                        <div className="p-5">
+                          <div className="flex items-center text-sm font-medium text-blue-600 mb-2">
+                            <Calendar className="mr-2 h-4 w-4" />
+                            <span>{formatEventDate(event.eventStartDate)}</span>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {event.title}
+                          </h3>
+                          {event.descriptionShort && (
+                            <p className="mt-2 text-sm text-gray-600 line-clamp-3">
+                              {event.descriptionShort}
+                            </p>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Union Gallery */}
+            {unionGalleryImages.length > 0 && (
+              <div className="bg-white border-t border-gray-200 p-8 md:p-12">
+                <div className="mb-6">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                    Event Gallery
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Moments from campus events backed by the union.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                  {unionGalleryImages.slice(0, 6).map((item) => (
+                    <div
+                      key={item.uuid}
+                      className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100"
+                    >
+                      <Image
+                        src={item.image}
+                        alt={item.caption || "Gallery image"}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw"
+                      />
+                      {item.caption && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1 text-xs font-medium text-white">
+                          {item.caption}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Call to Action */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 md:p-12 text-white">
               <div className="text-center">

@@ -15,7 +15,8 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useClub, generateClubSubdomain } from "@/hooks/use-clubs";
-import type { Club } from "@/types";
+import { useEvents, formatEventDate, generateEventSlug } from "@/hooks/use-events";
+import type { Club, ClubEvent } from "@/types";
 
 interface ClubDetailPageProps {
   params: Promise<{
@@ -28,6 +29,17 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
   const { club, loading, error, refetch } = useClub({
     id: resolvedParams.id,
   });
+
+  const {
+    events: clubEvents,
+    loading: clubEventsLoading,
+  } = useEvents({
+    type: "club",
+    limit: 4,
+    ordering: "-date",
+    club: club?.uuid,
+  });
+  const [clubEventDetails, setClubEventDetails] = useState<ClubEvent[]>([]);
 
   // Get club subdomain URL
   const clubSubdomain = club ? generateClubSubdomain(club.name) : null;
@@ -62,6 +74,39 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
       alert("Link copied to clipboard!");
     }
   };
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!clubEvents.length || !club?.uuid) {
+      setClubEventDetails([]);
+      return;
+    }
+
+    const fetchDetails = async () => {
+      try {
+        const detailPromises = clubEvents.slice(0, 3).map(async (event) => {
+          const response = await fetch(`/api/events/${event.uuid}?type=club`);
+          if (!response.ok) return null;
+          return (await response.json()) as ClubEvent;
+        });
+
+        const results = await Promise.all(detailPromises);
+        if (isMounted) {
+          setClubEventDetails(results.filter((item): item is ClubEvent => Boolean(item)));
+        }
+      } catch (err) {
+        console.error("Error fetching club event details:", err);
+      }
+    };
+
+    fetchDetails();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [clubEvents, club?.uuid]);
+
+  const clubGalleryImages = clubEventDetails.flatMap((event) => event.gallery || []);
 
   // Extract text from HTML description
   const extractTextFromHtml = (html: string) => {
@@ -187,6 +232,12 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
               <p className="text-xl text-white/90 leading-relaxed max-w-3xl">
                 {club.shortDescription}
               </p>
+
+              {club?.department?.name && (
+                <div className="mt-3 text-sm text-white/80">
+                  Department: {club.department.name}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -248,6 +299,106 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
                           </p>
                         )}
                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Club Posts */}
+            {club?.uuid && (clubEventsLoading || clubEvents.length > 0) && (
+              <div className="bg-white border-t border-gray-200 p-8 md:p-12">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                      Club Posts
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      Highlights and recaps from the latest club events.
+                    </p>
+                  </div>
+                  <Link
+                    href="/campus-life/club-events"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                  >
+                    View All Club Events →
+                  </Link>
+                </div>
+
+                {clubEventsLoading ? (
+                  <div className="text-center py-12 text-gray-500">
+                    Loading club posts...
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {clubEvents.map((event) => (
+                      <Link
+                        key={event.uuid}
+                        href={`/campus-life/club-events/${generateEventSlug(
+                          event.title,
+                          event.date
+                        )}`}
+                        className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-lg"
+                      >
+                        <div className="relative h-48 bg-gray-100">
+                          <Image
+                            src={event.thumbnail}
+                            alt={event.title}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
+                        </div>
+                        <div className="p-5">
+                          <div className="flex items-center text-sm font-medium text-blue-600 mb-2">
+                            <Calendar className="mr-2 h-4 w-4" />
+                            <span>{formatEventDate(event.date)}</span>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {event.title}
+                          </h3>
+                          {event.descriptionShort && (
+                            <p className="mt-2 text-sm text-gray-600 line-clamp-3">
+                              {event.descriptionShort}
+                            </p>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Club Gallery */}
+            {clubGalleryImages.length > 0 && (
+              <div className="bg-white border-t border-gray-200 p-8 md:p-12">
+                <div className="mb-6">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                    Event Gallery
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Memories captured during recent club happenings.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                  {clubGalleryImages.slice(0, 6).map((item) => (
+                    <div
+                      key={item.uuid}
+                      className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100"
+                    >
+                      <Image
+                        src={item.image}
+                        alt={item.caption || "Gallery image"}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw"
+                      />
+                      {item.caption && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1 text-xs font-medium text-white">
+                          {item.caption}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

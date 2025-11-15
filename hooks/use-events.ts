@@ -35,6 +35,8 @@ interface UseEventsParams extends SearchableQueryParams {
   type?: EventType;
   eventType?: CampusEventType;
   ordering?: string;
+  club?: string;
+  union?: string;
 }
 
 interface UseEventsParams extends SearchableQueryParams {
@@ -82,6 +84,8 @@ export function useEvents(params: UseEventsParams = {}): UseEventsReturn {
       if (params.type) searchParams.append("type", params.type);
       if (params.eventType) searchParams.append("eventType", params.eventType);
       if (params.ordering) searchParams.append("ordering", params.ordering);
+      if (params.club) searchParams.append("club", params.club);
+      if (params.union) searchParams.append("union", params.union);
 
       const response = await fetch(`/api/events?${searchParams.toString()}`, {
         method: "GET",
@@ -115,6 +119,8 @@ export function useEvents(params: UseEventsParams = {}): UseEventsReturn {
     params.type,
     params.eventType,
     params.ordering,
+    params.club,
+    params.union
   ]);
 
   useEffect(() => {

@@ -461,6 +461,7 @@ export interface CampusEvent {
   eventEndDate: string;
   thumbnail: string;
   gallery?: CampusEventGallery[];
+  union?: UnionSummary | null;
 }
 
 export interface CampusEventsResponse {
@@ -468,6 +469,17 @@ export interface CampusEventsResponse {
   next: string | null;
   previous: string | null;
   results: CampusEvent[];
+}
+
+export interface DepartmentSummary {
+  uuid: string;
+  name: string;
+}
+
+export interface UnionSummary {
+  uuid: string;
+  name: string;
+  department?: DepartmentSummary | null;
 }
 
 export interface ClubEvent {
@@ -505,6 +517,7 @@ export interface Club {
   thumbnail: string;
   websiteUrl?: string; // Optional website URL
   members?: ClubMember[];
+  department?: DepartmentSummary | null;
 }
 
 export interface ClubsResponse {
@@ -530,6 +543,7 @@ export interface Union {
   detailedDescription?: string;
   websiteUrl?: string;
   members?: UnionMember[];
+  department?: DepartmentSummary | null;
 }
 
 export interface UnionsResponse {

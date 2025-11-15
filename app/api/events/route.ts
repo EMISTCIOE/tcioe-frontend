@@ -7,13 +7,12 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
-    // Get event type (campus or club)
-    const eventType = searchParams.get("type") || "all"; // 'campus', 'club', or 'all'
+    const eventType = searchParams.get("type") || "all";
+    const clubFilter = searchParams.get("club");
+    const unionFilter = searchParams.get("union");
 
-    // Build query parameters for the backend API
     const params = new URLSearchParams();
 
-    // Handle pagination
     const page = searchParams.get("page");
     const limit = searchParams.get("limit") || "10";
 
@@ -26,33 +25,45 @@ export async function GET(request: NextRequest) {
       params.append("limit", limit);
     }
 
-    // Handle search
     const search = searchParams.get("search");
     if (search) {
       params.append("search", search);
     }
 
-    // Handle event type filter for campus events
     const campusEventType = searchParams.get("eventType");
     if (campusEventType) {
       params.append("eventType", campusEventType);
     }
 
+    const clubParams = new URLSearchParams(params);
+    const campusParams = new URLSearchParams(params);
+
+    if (clubFilter) {
+      clubParams.append("club", clubFilter);
+    }
+    if (unionFilter) {
+      campusParams.append("union", unionFilter);
+    }
+
+    const onlyClub = Boolean(clubFilter);
+    const onlyUnion = Boolean(unionFilter);
+    const includeClubEvents = !onlyUnion && (eventType === "all" || eventType === "club" || onlyClub);
+    const includeCampusEvents = !onlyClub && (eventType === "all" || eventType === "campus" || onlyUnion);
+
     let campusEvents = [];
     let clubEvents = [];
     let totalCount = 0;
 
-    // Fetch campus events
-    if (eventType === "campus" || eventType === "all") {
+    if (includeCampusEvents) {
       try {
-        const campusUrl = `${API_BASE_URL}/api/v1/public/website-mod/campus-events?${params.toString()}`;
+        const campusUrl = `${API_BASE_URL}/api/v1/public/website-mod/campus-events?${campusParams.toString()}`;
         const campusResponse = await fetch(campusUrl, {
           method: "GET",
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-          next: { revalidate: 300 }, // Cache for 5 minutes
+          next: { revalidate: 300 },
         });
 
         if (campusResponse.ok) {
@@ -61,7 +72,7 @@ export async function GET(request: NextRequest) {
             ...event,
             source: "campus",
           }));
-          if (eventType === "campus") {
+          if (eventType === "campus" || onlyUnion) {
             totalCount = campusData.count;
           }
         }
@@ -70,17 +81,16 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Fetch club events
-    if (eventType === "club" || eventType === "all") {
+    if (includeClubEvents) {
       try {
-        const clubUrl = `${API_BASE_URL}/api/v1/public/website-mod/club-events?${params.toString()}`;
+        const clubUrl = `${API_BASE_URL}/api/v1/public/website-mod/club-events?${clubParams.toString()}`;
         const clubResponse = await fetch(clubUrl, {
           method: "GET",
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-          next: { revalidate: 300 }, // Cache for 5 minutes
+          next: { revalidate: 300 },
         });
 
         if (clubResponse.ok) {
@@ -89,7 +99,7 @@ export async function GET(request: NextRequest) {
             ...event,
             source: "club",
           }));
-          if (eventType === "club") {
+          if (eventType === "club" || onlyClub) {
             totalCount = clubData.count;
           }
         }
@@ -98,12 +108,11 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Combine and sort events if fetching both
+    const shouldCombineResults = eventType === "all" && !onlyClub && !onlyUnion;
     let allEvents = [];
-    if (eventType === "all") {
-      allEvents = [...campusEvents, ...clubEvents];
 
-      // Sort by date (newest first)
+    if (shouldCombineResults) {
+      allEvents = [...campusEvents, ...clubEvents];
       allEvents.sort((a, b) => {
         const dateA = new Date(a.eventStartDate || a.date);
         const dateB = new Date(b.eventStartDate || b.date);
@@ -112,19 +121,17 @@ export async function GET(request: NextRequest) {
 
       totalCount = allEvents.length;
 
-      // Apply client-side pagination for combined results
       const pageNum = parseInt(page || "1");
       const limitNum = parseInt(limit);
       const startIndex = (pageNum - 1) * limitNum;
       const endIndex = startIndex + limitNum;
       allEvents = allEvents.slice(startIndex, endIndex);
-    } else if (eventType === "campus") {
+    } else if (eventType === "campus" || onlyUnion) {
       allEvents = campusEvents;
-    } else if (eventType === "club") {
+    } else {
       allEvents = clubEvents;
     }
 
-    // Calculate pagination info
     const pageNum = parseInt(page || "1");
     const limitNum = parseInt(limit);
     const hasNext = pageNum * limitNum < totalCount;
