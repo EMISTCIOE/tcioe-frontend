@@ -1,6 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { camelCaseKeys } from "../../utils";
 
+function resolveImageUrl(imageUrl: string, baseUrl: string): string {
+  if (!imageUrl) return imageUrl;
+
+  // If the URL is already absolute, return as is
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+    return imageUrl;
+  }
+
+  // If it's a relative URL, prepend the base URL
+  const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+  const cleanImageUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+
+  return `${cleanBaseUrl}${cleanImageUrl}`;
+}
+
+function processClubDetailData(data: any, baseUrl: string): any {
+  if (!data) return data;
+
+  return {
+    ...data,
+    thumbnail: data.thumbnail
+      ? resolveImageUrl(data.thumbnail, baseUrl)
+      : data.thumbnail,
+  };
+}
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
 
@@ -87,7 +113,10 @@ export async function GET(
 
     const data = await response.json();
 
-    return NextResponse.json(camelCaseKeys(data));
+    // Process the data to ensure image URLs are absolute
+    const processedData = processClubDetailData(data, API_BASE_URL);
+
+    return NextResponse.json(camelCaseKeys(processedData));
   } catch (error) {
     console.error("Club details API error:", error);
 

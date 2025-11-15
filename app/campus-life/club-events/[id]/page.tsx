@@ -15,6 +15,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEvent, formatEventDate } from "@/hooks/use-events";
 import { useClub, generateClubSlug } from "@/hooks/use-clubs";
+import { useFilteredGlobalGallery } from "@/hooks/use-filtered-global-gallery";
 import type { ClubEvent } from "@/types";
 
 interface ClubEventDetailPageProps {
@@ -53,6 +54,17 @@ export default function ClubEventDetailPage({
     error: clubError,
   } = useClub({
     id: shouldFetchClub ? clubSlugForSearch : "",
+  });
+
+  // Fetch global gallery images as fallback
+  const {
+    items: globalGalleryItems,
+    loading: galleryLoading,
+    error: galleryError,
+  } = useFilteredGlobalGallery({
+    sourceType: "global_event",
+    sourceIdentifier: clubEvent?.uuid,
+    limit: 12,
   });
 
   // Debug logging
@@ -173,7 +185,7 @@ export default function ClubEventDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-10">
+    <div className="min-h-screen bg-gray-50 px-4 sm:px-6 py-6 sm:py-10">
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <Link
@@ -214,27 +226,29 @@ export default function ClubEventDetailPage({
           </div>
 
           {/* Event Info */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {/* Club Name */}
             <div className="flex items-center text-blue-600 mb-3">
-              <Users className="h-5 w-5 mr-2" />
-              <span className="font-medium">{clubEvent.clubName}</span>
+              <Users className="h-5 w-5 mr-2 flex-shrink-0" />
+              <span className="font-medium break-words">
+                {clubEvent.clubName}
+              </span>
             </div>
 
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 break-words">
               {clubEvent.title}
             </h1>
 
             {/* Event Details */}
-            <div className="flex flex-wrap gap-6 mb-6">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-6 mb-6">
               <div className="flex items-center text-gray-600">
-                <Calendar className="h-5 w-5 mr-2" />
-                <span>{formatEventDateDisplay()}</span>
+                <Calendar className="h-5 w-5 mr-2 flex-shrink-0" />
+                <span className="break-words">{formatEventDateDisplay()}</span>
               </div>
               {clubEvent.location && (
                 <div className="flex items-center text-gray-600">
-                  <MapPin className="h-5 w-5 mr-2" />
-                  <span>{clubEvent.location}</span>
+                  <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
+                  <span className="break-words">{clubEvent.location}</span>
                 </div>
               )}
             </div>
@@ -257,7 +271,13 @@ export default function ClubEventDetailPage({
             {/* Short Description */}
             {clubEvent.descriptionShort && (
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
-                <p className="text-gray-700 leading-relaxed">
+                <p
+                  className="text-gray-700 leading-relaxed break-words"
+                  style={{
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                  }}
+                >
                   {clubEvent.descriptionShort}
                 </p>
               </div>
@@ -266,7 +286,7 @@ export default function ClubEventDetailPage({
         </div>
 
         {/* Event Content */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-8">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">
             Event Details
           </h2>
@@ -285,20 +305,37 @@ export default function ClubEventDetailPage({
           {/* Event Description */}
           {clubEvent.descriptionDetailed ? (
             <div
-              className="prose prose-gray max-w-none"
+              className="prose prose-gray max-w-none break-words overflow-hidden"
+              style={{
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+                hyphens: "auto",
+              }}
               dangerouslySetInnerHTML={{
                 __html: clubEvent.descriptionDetailed,
               }}
             />
           ) : clubEvent.description ? (
             <div
-              className="prose prose-gray max-w-none"
+              className="prose prose-gray max-w-none break-words overflow-hidden"
+              style={{
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+                hyphens: "auto",
+              }}
               dangerouslySetInnerHTML={{
                 __html: clubEvent.description,
               }}
             />
           ) : clubEvent.descriptionShort ? (
-            <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+            <div
+              className="text-gray-700 leading-relaxed whitespace-pre-wrap break-words overflow-hidden"
+              style={{
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+                hyphens: "auto",
+              }}
+            >
               {clubEvent.descriptionShort}
             </div>
           ) : (
@@ -332,8 +369,8 @@ export default function ClubEventDetailPage({
         </div>
 
         {/* About Club/Organizer Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-8">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4 break-words">
             About{" "}
             {clubEvent.clubs && clubEvent.clubs.length > 0
               ? clubEvent.clubs[0].name
@@ -341,26 +378,32 @@ export default function ClubEventDetailPage({
           </h2>
 
           <div className="flex items-start space-x-3 mb-4">
-            <div className="flex flex-col md:flex-row gap-6 w-full">
+            <div className="flex flex-col md:flex-row gap-4 sm:gap-6 w-full">
               {/* Club Logo */}
               {clubDetails?.thumbnail && (
                 <div className="flex-shrink-0">
-                  <div className="w-24 h-24 md:w-32 md:h-32 relative rounded-lg overflow-hidden bg-gray-100 border">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 relative rounded-lg overflow-hidden bg-gray-100 border">
                     <Image
                       src={clubDetails.thumbnail}
                       alt={`${clubEvent.clubName} logo`}
                       fill
                       className="object-cover"
-                      sizes="(max-width: 768px) 96px, 128px"
+                      sizes="(max-width: 640px) 80px, (max-width: 768px) 96px, 128px"
                     />
                   </div>
                 </div>
               )}
               {/* Club Content */}
-              <div className="flex-1">
-                <p className="text-gray-700 mb-4">
+              <div className="flex-1 min-w-0">
+                <p
+                  className="text-gray-700 mb-4 break-words"
+                  style={{
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                  }}
+                >
                   This event is organized by{" "}
-                  <strong>
+                  <strong className="break-words">
                     {clubEvent.clubs && clubEvent.clubs.length > 0
                       ? clubEvent.clubs[0].name
                       : clubEvent.clubName || "our organization"}
@@ -408,40 +451,74 @@ export default function ClubEventDetailPage({
         </div>
 
         {/* Event Gallery */}
-        {clubEvent.gallery && clubEvent.gallery.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+        {((clubEvent.gallery && clubEvent.gallery.length > 0) ||
+          (globalGalleryItems && globalGalleryItems.length > 0)) && (
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
               Event Gallery
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {clubEvent.gallery.map((galleryItem) => (
-                <div
-                  key={galleryItem.uuid}
-                  className="relative aspect-square bg-gray-200 rounded-lg overflow-hidden"
-                >
-                  <Image
-                    src={galleryItem.image}
-                    alt={galleryItem.caption}
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                  {galleryItem.caption && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-2">
-                      <p className="text-sm">{galleryItem.caption}</p>
+            {galleryLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {/* Display direct event gallery first */}
+                {clubEvent.gallery?.map((galleryItem) => (
+                  <div
+                    key={`direct-${galleryItem.uuid}`}
+                    className="relative aspect-square bg-gray-200 rounded-lg overflow-hidden"
+                  >
+                    <Image
+                      src={galleryItem.image}
+                      alt={galleryItem.caption || clubEvent.title}
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                    {galleryItem.caption && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-2">
+                        <p className="text-xs sm:text-sm break-words">
+                          {galleryItem.caption}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Display global gallery items as fallback */}
+                {(!clubEvent.gallery || clubEvent.gallery.length === 0) &&
+                  globalGalleryItems?.map((galleryItem) => (
+                    <div
+                      key={`global-${galleryItem.uuid}`}
+                      className="relative aspect-square bg-gray-200 rounded-lg overflow-hidden"
+                    >
+                      <Image
+                        src={galleryItem.image}
+                        alt={galleryItem.caption || clubEvent.title}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                      {galleryItem.caption && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-2">
+                          <p className="text-xs sm:text-sm break-words">
+                            {galleryItem.caption}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                  ))}
+              </div>
+            )}
           </div>
         )}
 
         {/* Club Information */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-8">
           {/* Action Links */}
-          <div className="flex flex-wrap gap-4 mt-6 pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
             {clubEvent.registrationLink && (
               <a
                 href={clubEvent.registrationLink}

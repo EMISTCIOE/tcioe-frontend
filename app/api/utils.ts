@@ -2,6 +2,61 @@ import { NextResponse } from "next/server";
 
 const CAMEL_CASE_REGEX = /_([a-z])/g;
 
+/**
+ * Resolves relative image URLs to absolute URLs
+ */
+export function resolveImageUrl(imageUrl: string, baseUrl: string): string {
+  if (!imageUrl) return imageUrl;
+
+  // If the URL is already absolute, return as is
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+    return imageUrl;
+  }
+
+  // If it's a relative URL, prepend the base URL
+  const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+  const cleanImageUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+
+  return `${cleanBaseUrl}${cleanImageUrl}`;
+}
+
+/**
+ * Recursively processes an object to resolve all image URLs
+ */
+export function resolveImageUrls(
+  data: any,
+  baseUrl: string,
+  imageFields: string[] = ["image", "thumbnail"]
+): any {
+  if (!data || !baseUrl) return data;
+
+  if (Array.isArray(data)) {
+    return data.map((item) => resolveImageUrls(item, baseUrl, imageFields));
+  }
+
+  if (typeof data === "object" && data !== null) {
+    const processed = { ...data };
+
+    // Process known image fields
+    for (const field of imageFields) {
+      if (processed[field] && typeof processed[field] === "string") {
+        processed[field] = resolveImageUrl(processed[field], baseUrl);
+      }
+    }
+
+    // Recursively process nested objects
+    for (const key in processed) {
+      if (processed[key] && typeof processed[key] === "object") {
+        processed[key] = resolveImageUrls(processed[key], baseUrl, imageFields);
+      }
+    }
+
+    return processed;
+  }
+
+  return data;
+}
+
 export function toCamelCase(value: string): string {
   return value.replace(CAMEL_CASE_REGEX, (_, letter: string) =>
     letter ? letter.toUpperCase() : ""

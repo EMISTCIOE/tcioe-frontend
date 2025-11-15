@@ -12,6 +12,7 @@ import {
   Users,
   Tag,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import React from "react";
 import Link from "next/link";
@@ -21,6 +22,9 @@ import {
   formatEventDateRange,
   isUpcomingEvent,
   isPastEvent,
+  isRunningEvent,
+  getEventStatus,
+  getEventStatusBadge,
   generateEventSlug,
   type EventType,
   type CampusEventType,
@@ -42,6 +46,7 @@ export default function CampusFestivalsPage() {
     "all"
   );
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("");
+  const [isFiltersOpen, setIsFiltersOpen] = useState<boolean>(false);
 
   const eventsPerPage = 12;
 
@@ -127,6 +132,88 @@ export default function CampusFestivalsPage() {
       : text;
   };
 
+  // Render individual event card
+  const renderEventCard = (event: UnifiedEvent) => {
+    const campusEvent = event as CampusEvent;
+    const eventStatus = getEventStatus(event);
+
+    return (
+      <div
+        key={event.uuid}
+        className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 overflow-hidden"
+      >
+        {/* Event Image */}
+        <div className="relative h-48 bg-gray-200">
+          {event.thumbnail ? (
+            <Image
+              src={event.thumbnail}
+              alt={event.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+              <Calendar className="w-16 h-16 text-gray-400" />
+            </div>
+          )}
+          {/* Event Type Badge */}
+          <div className="absolute top-3 left-3">
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-medium ${getEventTypeColor(
+                campusEvent.eventType
+              )}`}
+            >
+              {campusEvent.eventType}
+            </span>
+          </div>
+          {/* Event Status Badge */}
+          <div className="absolute top-3 right-3">
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-medium ${getEventStatusBadge(
+                eventStatus
+              )}`}
+            >
+              {eventStatus.charAt(0).toUpperCase() + eventStatus.slice(1)}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4">
+          {/* Event Title */}
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+            {event.title}
+          </h3>
+
+          {/* Event Date */}
+          <div className="flex items-center text-sm text-gray-500 mb-2">
+            <Calendar className="h-4 w-4 mr-2" />
+            {formatEventDateRange(
+              campusEvent.eventStartDate,
+              campusEvent.eventEndDate
+            )}
+          </div>
+
+          {/* Event Description */}
+          {campusEvent.descriptionShort && (
+            <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+              {campusEvent.descriptionShort}
+            </p>
+          )}
+
+          {/* Read More Button */}
+          <Link
+            href={`/campus-life/festivals/${generateEventSlug(event.title)}`}
+            className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+          >
+            Read More
+            <ChevronRight className="ml-1 h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-10">
       <div className="max-w-7xl mx-auto">
@@ -143,22 +230,25 @@ export default function CampusFestivalsPage() {
 
         {/* Filters Section */}
         <div className="mb-8 bg-white rounded-lg shadow-sm p-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
-            {/* Search Bar */}
-            <div className="relative flex-1 max-w-md">
+          {/* Search Bar - Always visible */}
+          <div className="mb-4">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Search Events
+              </label>
               <input
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Search events..."
+                placeholder="Search campus events..."
                 value={searchTerm}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setSearchTerm(e.target.value)
                 }
                 aria-label="Search events"
               />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3 bottom-2.5 h-5 w-5 text-gray-400" />
               {searchTerm && (
                 <button
-                  className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 bottom-2.5 text-gray-400 hover:text-gray-600"
                   onClick={() => setSearchTerm("")}
                   aria-label="Clear search"
                 >
@@ -166,48 +256,125 @@ export default function CampusFestivalsPage() {
                 </button>
               )}
             </div>
+          </div>
 
-            {/* Event Type Filter */}
-            <div className="flex-shrink-0">
-              <select
-                className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white min-w-48"
-                value={selectedEventType}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                  setSelectedEventType(e.target.value as CampusEventType | "")
-                }
-              >
-                <option value="">All Event Types</option>
-                <option value="CULTURAL">Cultural</option>
-                <option value="ACADEMIC">Academic</option>
-                <option value="SPORTS">Sports</option>
-                <option value="TECHNICAL">Technical</option>
-                <option value="OTHER">Other</option>
-              </select>
-            </div>
-
-            {/* Time Filter */}
-            <div className="flex-shrink-0">
-              <select
-                className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white min-w-48"
-                value={eventFilter}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                  setEventFilter(e.target.value as "upcoming" | "past" | "all")
-                }
-              >
-                <option value="all">All Events</option>
-                <option value="upcoming">Upcoming Events</option>
-                <option value="past">Past Events</option>
-              </select>
-            </div>
-
-            {/* Clear Filters Button */}
+          {/* Mobile Filter Toggle Button */}
+          <div className="md:hidden mb-4">
             <button
-              onClick={handleClearFilters}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50"
+              onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+              className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-300 rounded-md hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              Clear All
+              <div className="flex items-center">
+                <Filter className="w-4 h-4 mr-2" />
+                Filters
+                {(selectedEventType || eventFilter !== "all") && (
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Active
+                  </span>
+                )}
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  isFiltersOpen ? "rotate-180" : ""
+                }`}
+              />
             </button>
           </div>
+
+          {/* Filters Grid - Always visible on desktop, collapsible on mobile */}
+          <div className={`${isFiltersOpen ? "block" : "hidden"} md:block`}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              {/* Event Type Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Event Type
+                </label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  value={selectedEventType}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    setSelectedEventType(e.target.value as CampusEventType | "")
+                  }
+                >
+                  <option value="">All Event Types</option>
+                  <option value="CULTURAL">Cultural</option>
+                  <option value="ACADEMIC">Academic</option>
+                  <option value="SPORTS">Sports</option>
+                  <option value="TECHNICAL">Technical</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+
+              {/* Time Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Event Status
+                </label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  value={eventFilter}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    setEventFilter(
+                      e.target.value as "upcoming" | "past" | "all"
+                    )
+                  }
+                >
+                  <option value="all">All Events</option>
+                  <option value="upcoming">Upcoming Events</option>
+                  <option value="past">Past Events</option>
+                </select>
+              </div>
+
+              {/* Clear Filters Button */}
+              <div className="flex items-end">
+                <button
+                  onClick={handleClearFilters}
+                  className="w-full px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Applied Filters */}
+          {(searchTerm || selectedEventType || eventFilter !== "all") && (
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
+              {searchTerm && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                  Search: "{searchTerm}"
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="ml-2 text-blue-600 hover:text-blue-800"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              {selectedEventType && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                  Type: {selectedEventType}
+                  <button
+                    onClick={() => setSelectedEventType("")}
+                    className="ml-2 text-purple-600 hover:text-purple-800"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              {eventFilter !== "all" && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                  Status: {eventFilter}
+                  <button
+                    onClick={() => setEventFilter("all")}
+                    className="ml-2 text-green-600 hover:text-green-800"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Results Count */}
@@ -216,6 +383,80 @@ export default function CampusFestivalsPage() {
             Showing {filteredEvents.length} of {pagination.count} events
           </div>
         )}
+
+        {/* Events Categorized by Status */}
+        {!loading &&
+          !error &&
+          filteredEvents.length > 0 &&
+          (() => {
+            const runningEvents = filteredEvents.filter(
+              (event) => getEventStatus(event) === "running"
+            );
+            const upcomingEvents = filteredEvents.filter(
+              (event) => getEventStatus(event) === "upcoming"
+            );
+            const pastEvents = filteredEvents.filter(
+              (event) => getEventStatus(event) === "past"
+            );
+
+            return (
+              <div className="space-y-12">
+                {/* Running Events */}
+                {runningEvents.length > 0 && (
+                  <div>
+                    <div className="flex items-center mb-6">
+                      <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                      <h2 className="text-2xl font-bold text-gray-800">
+                        Currently Running Events
+                      </h2>
+                      <span className="ml-3 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {runningEvents.length}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {runningEvents.map((event) => renderEventCard(event))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Upcoming Events */}
+                {upcomingEvents.length > 0 && (
+                  <div>
+                    <div className="flex items-center mb-6">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                      <h2 className="text-2xl font-bold text-gray-800">
+                        Upcoming Events
+                      </h2>
+                      <span className="ml-3 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {upcomingEvents.length}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {upcomingEvents.map((event) => renderEventCard(event))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Past Events */}
+                {pastEvents.length > 0 && (
+                  <div>
+                    <div className="flex items-center mb-6">
+                      <div className="w-3 h-3 bg-gray-500 rounded-full mr-3"></div>
+                      <h2 className="text-2xl font-bold text-gray-800">
+                        Past Events
+                      </h2>
+                      <span className="ml-3 bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+                        {pastEvents.length}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {pastEvents.map((event) => renderEventCard(event))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
         {/* Loading State */}
         {loading && (
@@ -256,96 +497,6 @@ export default function CampusFestivalsPage() {
             >
               Clear Filters
             </button>
-          </div>
-        )}
-
-        {/* Events Grid */}
-        {!loading && !error && filteredEvents.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map((event) => {
-              const campusEvent = event as CampusEvent;
-              const isUpcoming = isUpcomingEvent(event);
-
-              return (
-                <div
-                  key={event.uuid}
-                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 overflow-hidden"
-                >
-                  {/* Event Image */}
-                  <div className="relative h-48 bg-gray-200">
-                    {event.thumbnail ? (
-                      <Image
-                        src={event.thumbnail}
-                        alt={event.title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                        <Calendar className="w-16 h-16 text-gray-400" />
-                      </div>
-                    )}
-                    {/* Event Type Badge */}
-                    <div className="absolute top-3 left-3">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getEventTypeColor(
-                          campusEvent.eventType
-                        )}`}
-                      >
-                        {campusEvent.eventType}
-                      </span>
-                    </div>
-                    {/* Upcoming/Past Badge */}
-                    <div className="absolute top-3 right-3">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          isUpcoming
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        {isUpcoming ? "Upcoming" : "Past"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-4">
-                    {/* Event Title */}
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                      {event.title}
-                    </h3>
-
-                    {/* Event Date */}
-                    <div className="flex items-center text-sm text-gray-500 mb-2">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      {formatEventDateRange(
-                        campusEvent.eventStartDate,
-                        campusEvent.eventEndDate
-                      )}
-                    </div>
-
-                    {/* Event Description */}
-                    {campusEvent.descriptionShort && (
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                        {campusEvent.descriptionShort}
-                      </p>
-                    )}
-
-                    {/* Read More Button */}
-                    <Link
-                      href={`/campus-life/festivals/${generateEventSlug(
-                        event.title
-                      )}`}
-                      className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
-                    >
-                      Read More
-                      <ChevronRight className="ml-1 h-4 w-4" />
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
           </div>
         )}
 

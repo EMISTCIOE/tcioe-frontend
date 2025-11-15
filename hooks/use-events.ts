@@ -303,8 +303,82 @@ export const isUpcomingEvent = (event: UnifiedEvent): boolean => {
   }
 };
 
+export const isRunningEvent = (event: UnifiedEvent): boolean => {
+  try {
+    const startDateString = getEventDate(event);
+    const endDateString = getEventEndDate(event);
+
+    if (!startDateString) return false;
+
+    const startDate = new Date(startDateString);
+    const today = new Date();
+
+    // Set to start of day for date-only comparison
+    today.setHours(0, 0, 0, 0);
+    startDate.setHours(0, 0, 0, 0);
+
+    // If no end date, consider it running if it started today or before
+    if (!endDateString) {
+      return startDate <= today;
+    }
+
+    const endDate = new Date(endDateString);
+    endDate.setHours(0, 0, 0, 0);
+
+    // Event is running if today is between start and end date (inclusive)
+    return startDate <= today && today <= endDate;
+  } catch {
+    return false;
+  }
+};
+
 export const isPastEvent = (event: UnifiedEvent): boolean => {
-  return !isUpcomingEvent(event);
+  try {
+    const startDateString = getEventDate(event);
+    const endDateString = getEventEndDate(event);
+
+    if (!startDateString) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // If there's an end date, use that to determine if past
+    if (endDateString) {
+      const endDate = new Date(endDateString);
+      endDate.setHours(0, 0, 0, 0);
+      return endDate < today;
+    }
+
+    // If no end date, consider past if start date has passed
+    const startDate = new Date(startDateString);
+    startDate.setHours(0, 0, 0, 0);
+    return startDate < today;
+  } catch {
+    return false;
+  }
+};
+
+export const getEventStatus = (
+  event: UnifiedEvent
+): "upcoming" | "running" | "past" => {
+  if (isRunningEvent(event)) return "running";
+  if (isUpcomingEvent(event)) return "upcoming";
+  return "past";
+};
+
+export const getEventStatusBadge = (
+  status: "upcoming" | "running" | "past"
+) => {
+  switch (status) {
+    case "upcoming":
+      return "bg-blue-100 text-blue-800";
+    case "running":
+      return "bg-green-100 text-green-800";
+    case "past":
+      return "bg-gray-100 text-gray-600";
+    default:
+      return "bg-gray-100 text-gray-600";
+  }
 };
 
 export const getEventEndDate = (event: UnifiedEvent): string | null => {
