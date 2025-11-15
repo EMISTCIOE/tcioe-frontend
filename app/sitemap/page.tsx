@@ -94,19 +94,22 @@ async function getAllSitemapUrls() {
     ],
     Admissions: [
       {
-        url: "/admissions/undergraduate",
+        url: "https://admissions.tcioe.edu.np/",
         title: "Undergraduate Admissions",
         description: "UG admission procedures",
+        external: true,
       },
       {
-        url: "/admissions/graduate",
+        url: "https://mscadmission.tcioe.edu.np/",
         title: "Graduate Admissions",
         description: "PG admission procedures",
+        external: true,
       },
       {
         url: "/admissions/scholarships",
         title: "Scholarships",
         description: "Available scholarships",
+        external: false,
       },
     ],
     Departments: [

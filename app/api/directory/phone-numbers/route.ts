@@ -118,7 +118,18 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    // Backend returns paginated response with 'results' array
+    // Extract the results array or return data directly if it's already an array
+    let phoneNumbers;
+    if (Array.isArray(data)) {
+      phoneNumbers = data;
+    } else if (data && Array.isArray(data.results)) {
+      phoneNumbers = data.results;
+    } else {
+      console.warn("Unexpected data structure from backend, using mock data");
+      phoneNumbers = mockPhoneNumbers;
+    }
+    return NextResponse.json(phoneNumbers);
   } catch (error) {
     console.warn("Directory phone numbers API error, using mock data:", error);
     // Return mock data when backend is not available

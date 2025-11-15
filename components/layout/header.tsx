@@ -110,6 +110,7 @@ export const Header = () => {
       name: "Resources",
       href: "/resources",
       dropdown: [
+        { name: "Gallery", href: "/gallery" },
         { name: "Academic Calendar", href: "/resources/academic-calendar" },
         { name: "Campus Reports", href: "/resources/campus-reports" },
         { name: "Magazines", href: "/resources/magazines" },

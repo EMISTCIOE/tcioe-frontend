@@ -25,7 +25,13 @@ export default function DirectoryPage() {
           throw new Error("Failed to fetch phone numbers");
         }
         const data = await response.json();
-        setPhoneNumbers(data);
+        // Ensure data is always an array
+        if (Array.isArray(data)) {
+          setPhoneNumbers(data);
+        } else {
+          console.error("Received non-array data:", data);
+          setPhoneNumbers([]);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {

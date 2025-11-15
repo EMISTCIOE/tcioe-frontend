@@ -30,7 +30,9 @@ export default function HomePage() {
     isOpen: isPopupOpen,
     dismiss: dismissPopup,
   } = useFeaturedNoticePopup();
-  const { items: galleryItems } = useGlobalGallery(9);
+
+  // Fetch 9 photos for homepage gallery
+  const { items: galleryItems } = useGlobalGallery({ limit: 9 });
 
   if (loading || noticesLoading) {
     return (
