@@ -8,10 +8,10 @@ const API_BASE_URL =
 // Proxies to: GET /api/v1/public/department-mod/departments/{slug}/plans
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const { searchParams } = new URL(request.url);
 
     const limit = searchParams.get("limit");
