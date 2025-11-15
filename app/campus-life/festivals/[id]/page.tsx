@@ -42,6 +42,16 @@ export default function CampusEventDetailPage({
     return div.textContent || div.innerText || "";
   };
 
+  // Get the appropriate date for display
+  const getEventDate = () => {
+    return campusEvent?.eventStartDate || null;
+  };
+
+  // Get event end date if available
+  const getEventEndDate = () => {
+    return campusEvent?.eventEndDate || null;
+  };
+
   // Get event type color
   const getEventTypeColor = (eventType: string) => {
     switch (eventType) {
@@ -89,20 +99,25 @@ export default function CampusEventDetailPage({
     return (
       <div className="min-h-screen bg-gray-50 px-6 py-10">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="text-red-600 text-lg mb-4">Error loading event</div>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={() => refetch()}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 mr-4"
-          >
-            Try Again
-          </button>
-          <Link
-            href="/campus-life/festivals"
-            className="text-blue-600 hover:text-blue-800"
-          >
-            Back to Events
-          </Link>
+          <div className="text-red-600 text-lg mb-4">Event Not Found</div>
+          <p className="text-gray-600 mb-6">
+            Sorry, we couldn't find this event. It might have been removed or
+            the link may be incorrect.
+          </p>
+          <div className="space-x-4">
+            <button
+              onClick={() => refetch()}
+              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Try Again
+            </button>
+            <Link
+              href="/campus-life/festivals"
+              className="inline-block bg-gray-100 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-200 transition-colors"
+            >
+              Browse All Events
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -113,11 +128,14 @@ export default function CampusEventDetailPage({
       <div className="min-h-screen bg-gray-50 px-6 py-10">
         <div className="max-w-4xl mx-auto text-center">
           <div className="text-gray-600 text-lg mb-4">Event not found</div>
+          <p className="text-gray-500 mb-6">
+            This event may no longer be available.
+          </p>
           <Link
             href="/campus-life/festivals"
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
           >
-            Back to Events
+            Browse All Events
           </Link>
         </div>
       </div>
@@ -141,7 +159,7 @@ export default function CampusEventDetailPage({
           {/* Hero Image */}
           <div className="relative h-64 md:h-80 bg-gray-200">
             <Image
-              src={campusEvent.thumbnail}
+              src={campusEvent.thumbnail || "/logo.jpg"}
               alt={campusEvent.title}
               fill
               className="object-cover"
@@ -186,11 +204,32 @@ export default function CampusEventDetailPage({
                   )}
                 </span>
               </div>
+              {campusEvent.location && (
+                <div className="flex items-center text-gray-600">
+                  <MapPin className="h-5 w-5 mr-2" />
+                  <span>{campusEvent.location}</span>
+                </div>
+              )}
               <div className="flex items-center text-gray-600">
                 <Tag className="h-5 w-5 mr-2" />
                 <span>{campusEvent.eventType} Event</span>
               </div>
             </div>
+
+            {/* Registration Link */}
+            {campusEvent.registrationLink && (
+              <div className="mb-6">
+                <a
+                  href={campusEvent.registrationLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  <ExternalLink className="h-5 w-5 mr-2" />
+                  Register for Event
+                </a>
+              </div>
+            )}
 
             {/* Short Description */}
             {campusEvent.descriptionShort && (
@@ -209,7 +248,14 @@ export default function CampusEventDetailPage({
             Event Details
           </h2>
 
-          {campusEvent.descriptionDetailed ? (
+          {campusEvent.description ? (
+            <div
+              className="prose prose-gray max-w-none"
+              dangerouslySetInnerHTML={{
+                __html: campusEvent.description,
+              }}
+            />
+          ) : campusEvent.descriptionDetailed ? (
             <div
               className="prose prose-gray max-w-none"
               dangerouslySetInnerHTML={{
@@ -223,6 +269,95 @@ export default function CampusEventDetailPage({
             </p>
           )}
         </div>
+
+        {/* Event Organizer Information */}
+        {(campusEvent.union ||
+          (campusEvent as any).clubs?.length > 0 ||
+          (campusEvent as any).departments?.length > 0) && (
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+              About{" "}
+              {campusEvent.union
+                ? campusEvent.union.name
+                : (campusEvent as any).clubs?.length > 0
+                ? (campusEvent as any).clubs[0].name
+                : (campusEvent as any).departments?.length > 0
+                ? (campusEvent as any).departments[0].name
+                : "Organizer"}
+            </h2>
+
+            <div className="flex items-start space-x-3 mb-4">
+              <Users className="h-5 w-5 text-blue-600 mt-1" />
+              <div>
+                <p className="text-sm text-gray-600 mb-2">
+                  {campusEvent.union
+                    ? "Union Event"
+                    : (campusEvent as any).clubs?.length > 0
+                    ? "Student Club Event"
+                    : "Department Event"}
+                </p>
+                <p className="text-gray-700 mb-4">
+                  This event is organized by{" "}
+                  <strong>
+                    {campusEvent.union
+                      ? campusEvent.union.name
+                      : (campusEvent as any).clubs?.length > 0
+                      ? (campusEvent as any).clubs[0].name
+                      : (campusEvent as any).departments?.length > 0
+                      ? (campusEvent as any).departments[0].name
+                      : "our organization"}
+                  </strong>
+                  , one of our active{" "}
+                  {campusEvent.union
+                    ? "student unions"
+                    : (campusEvent as any).clubs?.length > 0
+                    ? "student organizations"
+                    : "academic departments"}{" "}
+                  dedicated to providing enriching experiences for our campus
+                  community.
+                </p>
+
+                {/* Link to organizer detail page */}
+                <div className="mt-4">
+                  {campusEvent.union && (
+                    <Link
+                      href={`/campus-life/unions/${campusEvent.union.uuid}`}
+                      className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Learn more about {campusEvent.union.name}
+                    </Link>
+                  )}
+                  {(campusEvent as any).clubs?.length > 0 && (
+                    <Link
+                      href={`/campus-life/clubs/${(
+                        campusEvent as any
+                      ).clubs[0].name
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
+                      className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Learn more about {(campusEvent as any).clubs[0].name}
+                    </Link>
+                  )}
+                  {(campusEvent as any).departments?.length > 0 && (
+                    <Link
+                      href={`/departments/${
+                        (campusEvent as any).departments[0].uuid
+                      }`}
+                      className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Learn more about{" "}
+                      {(campusEvent as any).departments[0].name}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Event Gallery */}
         {campusEvent.gallery && campusEvent.gallery.length > 0 && (

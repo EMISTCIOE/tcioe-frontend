@@ -14,7 +14,7 @@ export const API_CONFIG = {
     NOTICE_DETAIL: (id: string) => `/api/v1/public/notice-mod/notices/${id}`,
     ACADEMIC_CALENDARS: "/api/v1/public/website-mod/academic-calendars",
     CAMPUS_DOWNLOADS: "/api/v1/public/website-mod/campus-downloads",
-    CAMPUS_EVENTS: "/api/v1/public/website-mod/campus-events",
+    CAMPUS_EVENTS: "/api/v1/public/website-mod/global-events",
     CAMPUS_INFO: "/api/v1/public/website-mod/campus-info",
     CAMPUS_KEY_OFFICIALS: "/api/v1/public/website-mod/campus-key-officials",
     CAMPUS_REPORTS: "/api/v1/public/website-mod/campus-reports",

@@ -156,8 +156,10 @@ export interface GlobalEvent {
   title: string;
   description?: string | null;
   eventType?: "CULTURAL" | "ACADEMIC" | "SPORTS" | "TECHNICAL" | "OTHER";
-  eventStartDate: string;
+  eventStartDate: string | null;
   eventEndDate?: string | null;
+  location?: string;
+  registrationLink?: string | null;
   thumbnail?: string | null;
   unions?: GlobalEventReference[];
   clubs?: GlobalEventReference[];
@@ -419,6 +421,8 @@ export interface DepartmentEventItem {
   eventStartDate: string;
   eventEndDate: string;
   thumbnail?: string | null;
+  registrationLink?: string | null;
+  location?: string;
 }
 
 export interface DepartmentEventsResponse {
@@ -475,12 +479,24 @@ export interface CampusEvent {
   title: string;
   descriptionShort: string;
   descriptionDetailed?: string;
+  description?: string; // From GlobalEvent backend
   eventType: "CULTURAL" | "ACADEMIC" | "SPORTS" | "TECHNICAL" | "OTHER";
-  eventStartDate: string;
-  eventEndDate: string;
-  thumbnail: string;
+  eventStartDate: string | null;
+  eventEndDate: string | null;
+  thumbnail: string | null;
+  registrationLink?: string | null;
+  location?: string;
   gallery?: CampusEventGallery[];
   union?: UnionSummary | null;
+  // Additional fields for GlobalEvent compatibility
+  clubs?: Array<{
+    uuid: string;
+    name: string;
+  }>;
+  departments?: Array<{
+    uuid: string;
+    name: string;
+  }>;
 }
 
 export interface CampusEventsResponse {
@@ -505,11 +521,22 @@ export interface ClubEvent {
   uuid: string;
   title: string;
   clubName: string;
-  date: string;
-  thumbnail: string;
+  date: string | null;
+  eventStartDate?: string | null; // For GlobalEvent compatibility
+  eventEndDate?: string | null; // For GlobalEvent compatibility
+  thumbnail: string | null;
   descriptionShort?: string;
   descriptionDetailed?: string;
+  description?: string; // From GlobalEvent backend
+  registrationLink?: string | null;
+  location?: string | null; // Make sure this is nullable
   gallery?: CampusEventGallery[];
+  // Add fields from GlobalEvent for better compatibility
+  eventType?: "CULTURAL" | "ACADEMIC" | "SPORTS" | "TECHNICAL" | "OTHER";
+  clubs?: Array<{
+    uuid: string;
+    name: string;
+  }>;
 }
 
 export interface ClubEventsResponse {

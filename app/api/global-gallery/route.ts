@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { camelCaseKeys } from "../utils";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://api-staging.tcioe.edu.np";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data, {
+    return NextResponse.json(camelCaseKeys(data), {
       status: 200,
       headers: {
         "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",

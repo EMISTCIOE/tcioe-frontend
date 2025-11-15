@@ -159,8 +159,8 @@ async function getAllSitemapUrls() {
       },
       {
         url: "/campus-life/unions",
-        title: "Student Unions",
-        description: "Student union activities",
+        title: "Unions",
+        description: "Union activities",
       },
     ],
     Research: [

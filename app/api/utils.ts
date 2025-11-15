@@ -1,5 +1,34 @@
 import { NextResponse } from "next/server";
 
+const CAMEL_CASE_REGEX = /_([a-z])/g;
+
+export function toCamelCase(value: string): string {
+  return value.replace(CAMEL_CASE_REGEX, (_, letter: string) =>
+    letter ? letter.toUpperCase() : ""
+  );
+}
+
+export function camelCaseKeys(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => camelCaseKeys(item));
+  }
+
+  if (
+    value &&
+    typeof value === "object" &&
+    !(value instanceof Date) &&
+    !Array.isArray(value)
+  ) {
+    const result: Record<string, unknown> = {};
+    for (const [key, entry] of Object.entries(value)) {
+      result[toCamelCase(key)] = camelCaseKeys(entry);
+    }
+    return result;
+  }
+
+  return value;
+}
+
 /**
  * Helper function for list/paginated API responses with fallback to empty
  * Instead of returning 500 errors when backend fails, return empty results
@@ -13,12 +42,18 @@ export function respondWithList(data: any, options: { status?: number } = {}) {
     previous: data?.previous || null,
   };
 
-  return NextResponse.json(response, {
-    status: options.status || 200,
-    headers: {
-      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+  return NextResponse.json(
+    {
+      ...response,
+      results: camelCaseKeys(response.results),
     },
-  });
+    {
+      status: options.status || 200,
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+      },
+    }
+  );
 }
 
 /**
@@ -28,7 +63,7 @@ export function respondWithObject(
   data: any,
   options: { status?: number } = {}
 ) {
-  return NextResponse.json(data || {}, {
+  return NextResponse.json(camelCaseKeys(data || {}), {
     status: options.status || 200,
     headers: {
       "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",

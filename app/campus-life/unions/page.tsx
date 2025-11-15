@@ -76,7 +76,7 @@ export default function UnionsPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 border-b-4 border-orange-500 inline-block pb-1 mb-4">
-            Student Unions
+            Unions
           </h1>
           <p className="text-lg text-gray-600">
             Discover the various student unions and organizations that represent
@@ -133,7 +133,8 @@ export default function UnionsPage() {
               Error loading unions
             </div>
             <p className="text-gray-600 mb-4">
-              We're having trouble fetching the unions list right now. Please try again shortly.
+              We're having trouble fetching the unions list right now. Please
+              try again shortly.
             </p>
             <button
               onClick={() => refetch()}

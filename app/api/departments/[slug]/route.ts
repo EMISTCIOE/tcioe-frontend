@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { camelCaseKeys } from "../../utils";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
@@ -35,7 +36,7 @@ export async function GET(
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json(camelCaseKeys(data));
   } catch (error) {
     console.error("Department detail API error:", error);
     return NextResponse.json(

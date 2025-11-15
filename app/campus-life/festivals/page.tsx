@@ -231,7 +231,8 @@ export default function CampusFestivalsPage() {
               Error loading events
             </div>
             <p className="text-gray-600 mb-4">
-              We're having trouble loading festival events right now. Please try again shortly.
+              We're having trouble loading festival events right now. Please try
+              again shortly.
             </p>
             <button
               onClick={() => refetch()}
@@ -272,13 +273,19 @@ export default function CampusFestivalsPage() {
                 >
                   {/* Event Image */}
                   <div className="relative h-48 bg-gray-200">
-                    <Image
-                      src={event.thumbnail}
-                      alt={event.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
+                    {event.thumbnail ? (
+                      <Image
+                        src={event.thumbnail}
+                        alt={event.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                        <Calendar className="w-16 h-16 text-gray-400" />
+                      </div>
+                    )}
                     {/* Event Type Badge */}
                     <div className="absolute top-3 left-3">
                       <span
@@ -328,9 +335,7 @@ export default function CampusFestivalsPage() {
                     {/* Read More Button */}
                     <Link
                       href={`/campus-life/festivals/${generateEventSlug(
-                        event.title,
-                        (event as CampusEvent).eventStartDate ||
-                          (event as ClubEvent).date
+                        event.title
                       )}`}
                       className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
                     >

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { camelCaseKeys } from "../utils";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
@@ -47,8 +48,10 @@ export async function GET(request: NextRequest) {
 
     const onlyClub = Boolean(clubFilter);
     const onlyUnion = Boolean(unionFilter);
-    const includeClubEvents = !onlyUnion && (eventType === "all" || eventType === "club" || onlyClub);
-    const includeCampusEvents = !onlyClub && (eventType === "all" || eventType === "campus" || onlyUnion);
+    const includeClubEvents =
+      !onlyUnion && (eventType === "all" || eventType === "club" || onlyClub);
+    const includeCampusEvents =
+      !onlyClub && (eventType === "all" || eventType === "campus" || onlyUnion);
 
     let campusEvents = [];
     let clubEvents = [];
@@ -56,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     if (includeCampusEvents) {
       try {
-        const campusUrl = `${API_BASE_URL}/api/v1/public/website-mod/campus-events?${campusParams.toString()}`;
+        const campusUrl = `${API_BASE_URL}/api/v1/public/website-mod/global-events?${campusParams.toString()}`;
         const campusResponse = await fetch(campusUrl, {
           method: "GET",
           headers: {
@@ -67,13 +70,23 @@ export async function GET(request: NextRequest) {
         });
 
         if (campusResponse.ok) {
-          const campusData = await campusResponse.json();
-          campusEvents = campusData.results.map((event: any) => ({
-            ...event,
-            source: "campus",
-          }));
+          const campusData = camelCaseKeys(await campusResponse.json()) as any;
+          // Filter for campus/department/union events only (exclude club-only events)
+          campusEvents = campusData.results
+            .filter((event: any) => {
+              // Include event if it has unions or departments
+              // Exclude if it only has clubs (club-only events)
+              const hasUnions = event.unions && event.unions.length > 0;
+              const hasDepartments =
+                event.departments && event.departments.length > 0;
+              return hasUnions || hasDepartments;
+            })
+            .map((event: any) => ({
+              ...event,
+              source: "campus",
+            }));
           if (eventType === "campus" || onlyUnion) {
-            totalCount = campusData.count;
+            totalCount = campusEvents.length;
           }
         }
       } catch (error) {
@@ -83,7 +96,7 @@ export async function GET(request: NextRequest) {
 
     if (includeClubEvents) {
       try {
-        const clubUrl = `${API_BASE_URL}/api/v1/public/website-mod/club-events?${clubParams.toString()}`;
+        const clubUrl = `${API_BASE_URL}/api/v1/public/website-mod/global-events?${clubParams.toString()}`;
         const clubResponse = await fetch(clubUrl, {
           method: "GET",
           headers: {
@@ -94,13 +107,24 @@ export async function GET(request: NextRequest) {
         });
 
         if (clubResponse.ok) {
-          const clubData = await clubResponse.json();
-          clubEvents = clubData.results.map((event: any) => ({
-            ...event,
-            source: "club",
-          }));
+          const clubData = camelCaseKeys(await clubResponse.json()) as any;
+          // Filter for club events only (exclude events that have departments or unions)
+          clubEvents = clubData.results
+            .filter((event: any) => {
+              // Include event if it has clubs
+              const hasClubs = event.clubs && event.clubs.length > 0;
+              // Exclude if it has departments or unions (those are campus/department events)
+              const hasDepartments =
+                event.departments && event.departments.length > 0;
+              const hasUnions = event.unions && event.unions.length > 0;
+              return hasClubs && !hasDepartments && !hasUnions;
+            })
+            .map((event: any) => ({
+              ...event,
+              source: "club",
+            }));
           if (eventType === "club" || onlyClub) {
-            totalCount = clubData.count;
+            totalCount = clubEvents.length;
           }
         }
       } catch (error) {
@@ -144,7 +168,7 @@ export async function GET(request: NextRequest) {
       results: allEvents,
     };
 
-    return NextResponse.json(response);
+    return NextResponse.json(camelCaseKeys(response));
   } catch (error) {
     console.error("Events API error:", error);
 

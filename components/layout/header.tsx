@@ -21,7 +21,10 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 export const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
   const { data, loading } = useCollegeData();
-  const { departments: deptList } = useDeptList({ limit: 20, ordering: "name" });
+  const { departments: deptList } = useDeptList({
+    limit: 20,
+    ordering: "name",
+  });
   const { items: sectionLinks } = useCampusDivisions("sections", {
     limit: 8,
     ordering: "display_order",
@@ -30,7 +33,6 @@ export const Header = () => {
     limit: 8,
     ordering: "display_order",
   });
-  
 
   useEffect(() => {
     const handleScroll = () => setIsSticky(window.scrollY > 0);
@@ -73,16 +75,16 @@ export const Header = () => {
         { name: "Academic Calendar", href: "/academics/calendar" },
       ],
     },
-        {
-          name: "Research",
-          href: "/research",
-          dropdown: [
-            { name: "Research Areas", href: "/research/areas" },
-            { name: "Publications", href: "/research/publications" },
-            { name: "Research Centers", href: "/research/centers" },
-            { name: "Research Facilities", href: "/research/facilities" },
-          ],
-        },
+    {
+      name: "Research",
+      href: "/research",
+      dropdown: [
+        { name: "Research Areas", href: "/research/areas" },
+        { name: "Publications", href: "/research/publications" },
+        { name: "Research Centers", href: "/research/centers" },
+        { name: "Research Facilities", href: "/research/facilities" },
+      ],
+    },
     {
       name: "Departments",
       href: "/departments",
@@ -144,25 +146,39 @@ export const Header = () => {
       <div className="bg-[#F1F1F1] text-black text-[10px] md:text-sm py-2 px-4 hidden md:block">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex space-x-2 md:space-x-6">
-            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
+            <Link
+              href="#"
+              className="hover:text-accent-orange transition-colors duration-300"
+            >
               Students
             </Link>
             <span className="border-l border-black h-3 md:h-5"></span>
-            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
+            <Link
+              href="#"
+              className="hover:text-accent-orange transition-colors duration-300"
+            >
               Faculty & Staff
             </Link>
             <span className="border-l border-black h-3 md:h-5"></span>
-            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
+            <Link
+              href="#"
+              className="hover:text-accent-orange transition-colors duration-300"
+            >
               Alumni
             </Link>
-
           </div>
           <div className="flex space-x-2 md:space-x-6 items-center">
-            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
+            <Link
+              href="#"
+              className="hover:text-accent-orange transition-colors duration-300"
+            >
               Library
             </Link>
             <span className="border-l border-black h-3 md:h-5"></span>
-            <Link href="#" className="hover:text-accent-orange transition-colors duration-300">
+            <Link
+              href="#"
+              className="hover:text-accent-orange transition-colors duration-300"
+            >
               Journal
             </Link>
             <Link
@@ -202,11 +218,15 @@ export const Header = () => {
               className="flex-shrink-0"
             />
             <div className="flex flex-col leading-tight text-primary-blue">
-              <span className="text-base sm:text-lg font-bold">Tribhuvan University</span>
+              <span className="text-base sm:text-lg font-bold">
+                Tribhuvan University
+              </span>
               <span className="text-sm sm:text-base font-semibold">
                 Institute of Engineering
               </span>
-              <span className="text-xs sm:text-sm text-text-dark">Thapathali Campus</span>
+              <span className="text-xs sm:text-sm text-text-dark">
+                Thapathali Campus
+              </span>
             </div>
           </Link>
           <div className="flex items-center gap-4">

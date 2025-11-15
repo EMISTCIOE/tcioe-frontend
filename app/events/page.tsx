@@ -22,7 +22,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AnimatedSection } from "@/components/animated-section";
-import { useEvents, type EventType } from "@/hooks/use-events";
+import {
+  useEvents,
+  formatEventDate,
+  getEventDate,
+  type EventType,
+} from "@/hooks/use-events";
 import type { CampusEvent, ClubEvent } from "@/types";
 
 type UnifiedEvent = (CampusEvent | ClubEvent) & {
@@ -340,7 +345,7 @@ export default function AllEventsPage() {
                       <div className="space-y-2 mb-4">
                         <div className="flex items-center text-sm text-gray-600">
                           <Calendar className="h-4 w-4 mr-2 text-blue-600" />
-                          <span>{formatEventDate(event)}</span>
+                          <span>{formatEventDate(getEventDate(event))}</span>
                         </div>
 
                         {event.source === "club" &&

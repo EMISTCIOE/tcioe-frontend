@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { respondWithList, handleApiError } from "../utils";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
@@ -30,7 +31,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Make request to backend API
-    const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/unions?${params.toString()}`;
+    const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/campus-unions?${params.toString()}`;
+    console.log("Fetching unions from:", backendUrl);
 
     const response = await fetch(backendUrl, {
       method: "GET",
@@ -42,21 +44,14 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
+      console.error(`Backend API error: ${response.status}`);
       throw new Error(`Backend API error: ${response.status}`);
     }
 
     const data = await response.json();
 
-    return NextResponse.json(data);
+    return respondWithList(data);
   } catch (error) {
-    console.error("Unions API error:", error);
-
-    return NextResponse.json(
-      {
-        error: "Failed to fetch unions",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error, "list", "unions");
   }
 }

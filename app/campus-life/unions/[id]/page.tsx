@@ -6,7 +6,12 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUnion, generateUnionSlug } from "@/hooks/use-unions";
-import { useEvents, formatEventDate, generateEventSlug } from "@/hooks/use-events";
+import {
+  useEvents,
+  formatEventDate,
+  generateEventSlug,
+  getEventDate,
+} from "@/hooks/use-events";
 import { useFilteredGlobalGallery } from "@/hooks/use-filtered-global-gallery";
 import type { CampusEvent, Union } from "@/types";
 
@@ -22,10 +27,7 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
     id: resolvedParams.id,
   });
 
-  const {
-    events: unionEvents,
-    loading: unionEventsLoading,
-  } = useEvents({
+  const { events: unionEvents, loading: unionEventsLoading } = useEvents({
     type: "campus",
     limit: 4,
     ordering: "-eventStartDate",
@@ -79,7 +81,9 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
         });
         const results = await Promise.all(detailPromises);
         if (isMounted) {
-          setUnionEventDetails(results.filter((item): item is CampusEvent => Boolean(item)));
+          setUnionEventDetails(
+            results.filter((item): item is CampusEvent => Boolean(item))
+          );
         }
       } catch (error) {
         console.error("Error fetching union event details:", error);
@@ -91,15 +95,15 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
     };
   }, [unionEvents, union?.uuid]);
 
-  const unionGalleryImages = unionEventDetails.flatMap((event) => event.gallery || []);
-  const {
-    items: unionCollections,
-    loading: unionCollectionsLoading,
-  } = useFilteredGlobalGallery({
-    sourceType: "union_gallery",
-    sourceIdentifier: union?.uuid,
-    limit: 6,
-  });
+  const unionGalleryImages = unionEventDetails.flatMap(
+    (event) => event.gallery || []
+  );
+  const { items: unionCollections, loading: unionCollectionsLoading } =
+    useFilteredGlobalGallery({
+      sourceType: "union_gallery",
+      sourceIdentifier: union?.uuid,
+      limit: 6,
+    });
 
   // Extract text from HTML description
   const extractTextFromHtml = (html: string) => {
@@ -219,7 +223,6 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
               <p className="text-xl text-white/90 leading-relaxed max-w-3xl">
                 {union.shortDescription}
               </p>
-
             </div>
           </div>
         </div>
@@ -334,8 +337,7 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
                       <Link
                         key={event.uuid}
                         href={`/campus-life/festivals/${generateEventSlug(
-                          event.title,
-                          event.eventStartDate
+                          event.title
                         )}`}
                         className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-lg"
                       >
@@ -351,7 +353,7 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
                         <div className="p-5">
                           <div className="flex items-center text-sm font-medium text-blue-600 mb-2">
                             <Calendar className="mr-2 h-4 w-4" />
-                            <span>{formatEventDate(event.eventStartDate)}</span>
+                            <span>{formatEventDate(getEventDate(event))}</span>
                           </div>
                           <h3 className="text-lg font-semibold text-gray-900">
                             {event.title}
@@ -368,7 +370,6 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
                 )}
               </div>
             )}
-
             {/* Union Gallery */}
             {unionGalleryImages.length > 0 && (
               <div className="bg-white border-t border-gray-200 p-8 md:p-12">
@@ -493,7 +494,7 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
               className="inline-flex items-center bg-white text-blue-600 px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all font-medium"
             >
               <Users className="h-5 w-5 mr-2" />
-              Discover Other Student Unions
+              Discover Other Unions
               <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
             </Link>
           </div>

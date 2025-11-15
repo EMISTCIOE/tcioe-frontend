@@ -19,6 +19,7 @@ import {
   useEvents,
   formatEventDate,
   generateEventSlug,
+  getEventDate,
 } from "@/hooks/use-events";
 import { useFilteredGlobalGallery } from "@/hooks/use-filtered-global-gallery";
 import type { Club, ClubEvent } from "@/types";
@@ -323,7 +324,7 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-6">
                   <div>
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-                      Club Posts
+                      Club Events
                     </h2>
                     <p className="text-sm text-gray-500">
                       Highlights and recaps from the latest club events.
@@ -347,14 +348,13 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
                       <Link
                         key={event.uuid}
                         href={`/campus-life/club-events/${generateEventSlug(
-                          event.title,
-                          event.date
+                          event.title
                         )}`}
                         className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-lg"
                       >
                         <div className="relative h-48 bg-gray-100">
                           <Image
-                            src={event.thumbnail}
+                            src={event.thumbnail || "/placeholder-image.jpg"}
                             alt={event.title}
                             fill
                             className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -364,9 +364,7 @@ export default function ClubDetailPage({ params }: ClubDetailPageProps) {
                         <div className="p-5">
                           <div className="flex items-center text-sm font-medium text-blue-600 mb-2">
                             <Calendar className="mr-2 h-4 w-4" />
-                            <span>
-                              {formatEventDate(event.eventDate || event.date)}
-                            </span>
+                            <span>{formatEventDate(getEventDate(event))}</span>
                           </div>
                           <h3 className="text-lg font-semibold text-gray-900">
                             {event.title}

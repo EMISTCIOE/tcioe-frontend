@@ -8,14 +8,17 @@ import Image from "next/image";
 import {
   useEvents,
   formatEventDate,
+  formatEventDateRange,
+  getEventDate,
+  getEventEndDate,
   isUpcomingEvent,
   isPastEvent,
   generateEventSlug,
   type EventType,
 } from "@/hooks/use-events";
-import type { CampusEvent, ClubEvent } from "@/types";
+import type { CampusEvent, ClubEvent, GlobalEvent } from "@/types";
 
-type UnifiedEvent = (CampusEvent | ClubEvent) & {
+type UnifiedEvent = (CampusEvent | ClubEvent | GlobalEvent) & {
   source: "campus" | "club";
 };
 
@@ -170,7 +173,8 @@ export default function StudentClubsPage() {
               Error loading club events
             </div>
             <p className="text-gray-600 mb-4">
-              We're having trouble loading club events right now. Please try again shortly.
+              We're having trouble loading club events right now. Please try
+              again shortly.
             </p>
             <button
               onClick={() => refetch()}
@@ -203,8 +207,19 @@ export default function StudentClubsPage() {
         {!loading && !error && filteredEvents.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEvents.map((event) => {
-              const clubEvent = event as ClubEvent;
+              // Handle GlobalEvent structure (events are now coming as GlobalEvents with clubs array)
+              const globalEvent = event as any;
               const isUpcoming = isUpcomingEvent(event);
+
+              // Extract club names from GlobalEvent
+              const clubNames =
+                globalEvent.clubs && globalEvent.clubs.length > 0
+                  ? globalEvent.clubs.map((club: any) => club.name).join(", ")
+                  : "Student Club";
+
+              // Get event date (use eventStartDate for GlobalEvent)
+              const eventDate = getEventDate(event);
+              const eventEndDate = getEventEndDate(event);
 
               return (
                 <div
@@ -213,13 +228,19 @@ export default function StudentClubsPage() {
                 >
                   {/* Event Image */}
                   <div className="relative h-48 bg-gray-200">
-                    <Image
-                      src={event.thumbnail}
-                      alt={event.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
+                    {event.thumbnail ? (
+                      <Image
+                        src={event.thumbnail}
+                        alt={event.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                        <Users className="w-16 h-16 text-gray-400" />
+                      </div>
+                    )}
                     {/* Upcoming/Past Badge */}
                     <div className="absolute top-3 right-3">
                       <span
@@ -238,7 +259,7 @@ export default function StudentClubsPage() {
                     {/* Club Name */}
                     <div className="flex items-center text-sm text-blue-600 mb-2">
                       <Users className="h-4 w-4 mr-1" />
-                      {clubEvent.clubName}
+                      {clubNames}
                     </div>
 
                     {/* Event Title */}
@@ -249,21 +270,25 @@ export default function StudentClubsPage() {
                     {/* Event Date */}
                     <div className="flex items-center text-sm text-gray-500 mb-2">
                       <Calendar className="h-4 w-4 mr-2" />
-                      {formatEventDate(clubEvent.date)}
+                      {eventEndDate && eventDate !== eventEndDate
+                        ? formatEventDateRange(eventDate, eventEndDate)
+                        : formatEventDate(eventDate)}
                     </div>
 
                     {/* Event Description (if available) */}
-                    {clubEvent.descriptionShort && (
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                        {clubEvent.descriptionShort}
-                      </p>
+                    {globalEvent.description && (
+                      <div
+                        className="text-gray-600 text-sm mb-4 line-clamp-3"
+                        dangerouslySetInnerHTML={{
+                          __html: globalEvent.description,
+                        }}
+                      />
                     )}
 
                     {/* Read More Button */}
                     <Link
                       href={`/campus-life/club-events/${generateEventSlug(
-                        event.title,
-                        (event as ClubEvent).date
+                        event.title
                       )}`}
                       className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
                     >

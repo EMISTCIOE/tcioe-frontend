@@ -9,23 +9,22 @@ export type CampusEventType =
   | "TECHNICAL"
   | "OTHER";
 
-// Helper function to generate event URL-friendly slug from title and date
+// Helper function to generate event URL-friendly slug from title (no date)
 export function generateEventSlug(title: string, date?: string): string {
+  if (!title) return "";
+
   let slug = title
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+    .replace(/[&]/g, "and") // Replace & with "and"
+    .replace(/[^a-z0-9\s-]/g, "") // Remove special characters except spaces and hyphens
     .replace(/\s+/g, "-") // Replace spaces with hyphens
     .replace(/-+/g, "-") // Replace multiple hyphens with single
     .trim()
     .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
 
-  // Add date to slug if provided
-  if (date) {
-    const eventDate = new Date(date);
-    const year = eventDate.getFullYear();
-    const month = String(eventDate.getMonth() + 1).padStart(2, "0");
-    const day = String(eventDate.getDate()).padStart(2, "0");
-    slug = `${year}-${month}-${day}-${slug}`;
+  // Ensure slug is not empty
+  if (!slug) {
+    slug = "event-" + Date.now();
   }
 
   return slug;
@@ -120,7 +119,7 @@ export function useEvents(params: UseEventsParams = {}): UseEventsReturn {
     params.eventType,
     params.ordering,
     params.club,
-    params.union
+    params.union,
   ]);
 
   useEffect(() => {
@@ -179,18 +178,30 @@ export function useEvent(params: UseEventParams): UseEventReturn {
         }
 
         const eventsData = await eventsResponse.json();
-        const targetEvent = eventsData.results.find(
+
+        let targetEvent = eventsData.results.find(
           (event: CampusEvent | ClubEvent) => {
-            // For campus events, use eventStartDate; for club events, use date
-            const eventDate =
-              (event as CampusEvent).eventStartDate ||
-              (event as ClubEvent).date;
-            return generateEventSlug(event.title, eventDate) === params.id;
+            const eventSlug = generateEventSlug(event.title);
+            return eventSlug === params.id;
           }
         );
 
+        // If not found, try partial matching as fallback
         if (!targetEvent) {
-          throw new Error("Event not found");
+          targetEvent = eventsData.results.find(
+            (event: CampusEvent | ClubEvent) => {
+              const eventSlug = generateEventSlug(event.title);
+              return (
+                eventSlug.includes(params.id) || params.id.includes(eventSlug)
+              );
+            }
+          );
+        }
+
+        if (!targetEvent) {
+          throw new Error(
+            "Event not found - please check the event URL or try browsing from the events list"
+          );
         }
 
         // Now fetch the full event details using UUID
@@ -262,47 +273,91 @@ export function useEvent(params: UseEventParams): UseEventReturn {
 }
 
 // Helper functions
-export const isUpcomingEvent = (event: UnifiedEvent): boolean => {
-  const eventDate = new Date(
-    event.source === "campus"
+export const getEventDate = (event: UnifiedEvent): string => {
+  // Prefer explicit eventDate if provided, then the global eventStartDate, finally legacy fields.
+  return (
+    (event as any).eventDate ||
+    (event as any).eventStartDate ||
+    (event.source === "campus"
       ? (event as CampusEvent).eventStartDate
-      : (event as ClubEvent).date
+      : (event as ClubEvent).date) ||
+    ""
   );
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return eventDate >= today;
+};
+
+export const isUpcomingEvent = (event: UnifiedEvent): boolean => {
+  try {
+    const dateString = getEventDate(event);
+    if (!dateString) return false;
+
+    const eventDate = new Date(dateString);
+
+    // Check if date is valid
+    if (isNaN(eventDate.getTime())) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return eventDate >= today;
+  } catch {
+    return false;
+  }
 };
 
 export const isPastEvent = (event: UnifiedEvent): boolean => {
   return !isUpcomingEvent(event);
 };
 
-export const getEventDate = (event: UnifiedEvent): string => {
-  return event.source === "campus"
-    ? (event as CampusEvent).eventStartDate
-    : (event as ClubEvent).date;
-};
-
 export const getEventEndDate = (event: UnifiedEvent): string | null => {
   return event.source === "campus" ? (event as CampusEvent).eventEndDate : null;
 };
 
-export const formatEventDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+export const formatEventDate = (
+  dateString: string | null | undefined
+): string => {
+  if (!dateString) return "Date TBA";
+
+  try {
+    // Handle ISO string or other formats
+    const date = new Date(dateString);
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn("Invalid date format:", dateString);
+      return "Date TBA";
+    }
+
+    // Format the date without time - always show just the date with day of week
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  } catch (error) {
+    console.warn("Error formatting date:", dateString, error);
+    return "Date TBA";
+  }
 };
 
 export const formatEventDateRange = (
-  startDate: string,
-  endDate?: string
+  startDate: string | null | undefined,
+  endDate?: string | null
 ): string => {
-  const start = formatEventDate(startDate);
-  if (!endDate || startDate === endDate) {
-    return start;
+  if (!startDate) return "Date TBA";
+
+  try {
+    const start = formatEventDate(startDate);
+    if (start === "Date TBA" || start === "Invalid Date") return start;
+
+    if (!endDate || startDate === endDate) {
+      return start;
+    }
+
+    const end = formatEventDate(endDate);
+    if (end === "Date TBA" || end === "Invalid Date") return start;
+
+    return `${start} - ${end}`;
+  } catch {
+    return "Date TBA";
   }
-  const end = formatEventDate(endDate);
-  return `${start} - ${end}`;
 };
