@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useUnion, generateUnionSlug } from "@/hooks/use-unions";
 import { useEvents, formatEventDate, generateEventSlug } from "@/hooks/use-events";
+import { useFilteredGlobalGallery } from "@/hooks/use-filtered-global-gallery";
 import type { CampusEvent, Union } from "@/types";
 
 interface UnionDetailPageProps {
@@ -91,6 +92,14 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
   }, [unionEvents, union?.uuid]);
 
   const unionGalleryImages = unionEventDetails.flatMap((event) => event.gallery || []);
+  const {
+    items: unionCollections,
+    loading: unionCollectionsLoading,
+  } = useFilteredGlobalGallery({
+    sourceType: "union_gallery",
+    sourceIdentifier: union?.uuid,
+    limit: 6,
+  });
 
   // Extract text from HTML description
   const extractTextFromHtml = (html: string) => {
@@ -392,6 +401,50 @@ export default function UnionDetailPage({ params }: UnionDetailPageProps) {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+            {unionCollections.length > 0 && (
+              <div className="bg-white border-t border-gray-200 p-8 md:p-12">
+                <div className="mb-6">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                    Union Gallery
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Collections shared directly by {union.name}.
+                  </p>
+                </div>
+                {unionCollectionsLoading ? (
+                  <div className="text-center py-8 text-gray-500">
+                    Loading union galleries...
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                    {unionCollections.map((item) => (
+                      <div
+                        key={item.uuid}
+                        className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100"
+                      >
+                        <Image
+                          src={item.image}
+                          alt={item.caption || item.sourceName}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw"
+                        />
+                        {(item.caption || item.sourceContext) && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1 text-xs font-medium text-white">
+                            {item.caption || item.sourceName}
+                            {item.sourceContext && (
+                              <span className="block text-white/80">
+                                {item.sourceContext}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {/* Call to Action */}

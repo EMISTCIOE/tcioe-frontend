@@ -14,6 +14,7 @@ import { useDepartmentDownloads } from "@/hooks/use-department-downloads";
 import { useDepartmentPlans } from "@/hooks/use-department-plans";
 import { useDepartmentEventGallery } from "@/hooks/use-department-event-gallery";
 import { useDepartmentSubjects } from "@/hooks/use-department-subjects";
+import { useFilteredGlobalGallery } from "@/hooks/use-filtered-global-gallery";
 // no notices here by request
 
 export function DepartmentDynamic({ slug }: { slug: string }) {
@@ -41,6 +42,14 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
   );
   const { plans, loading: plansLoading } = useDepartmentPlans(slug, {
     limit: 100,
+  });
+  const {
+    items: departmentCollections,
+    loading: departmentCollectionsLoading,
+  } = useFilteredGlobalGallery({
+    sourceType: "department_gallery",
+    sourceIdentifier: department?.uuid,
+    limit: 6,
   });
 
   const departmentSubdomainMap: Record<string, string> = {
@@ -417,6 +426,46 @@ export function DepartmentDynamic({ slug }: { slug: string }) {
           </div>
         </div>
       </section>
+      {departmentCollections.length > 0 && (
+        <section className="py-12 bg-white border-t border-gray-100">
+          <div className="container mx-auto px-4 lg:px-6">
+            <AnimatedSection>
+              <h2 className="text-2xl font-semibold text-[#1A1A2E] mb-6">
+                Department Gallery
+              </h2>
+            </AnimatedSection>
+            {departmentCollectionsLoading ? (
+              <p className="text-sm text-text-light">Loading galleries...</p>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {departmentCollections.map((item) => (
+                  <div
+                    key={item.uuid}
+                    className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100 shadow-sm"
+                  >
+                    <Image
+                      src={item.image}
+                      alt={item.caption || item.sourceName}
+                      fill
+                      className="object-cover"
+                    />
+                    {(item.caption || item.sourceContext) && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-3 py-2 text-xs font-medium text-white">
+                        {item.caption || item.sourceName}
+                        {item.sourceContext && (
+                          <span className="block text-[10px] text-white/80 mt-1">
+                            {item.sourceContext}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </main>
   );
 }
