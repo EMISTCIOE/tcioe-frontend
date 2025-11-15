@@ -5,10 +5,11 @@ const API_BASE_URL =
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/campus-sections/${params.slug}`;
+    const { slug } = await params;
+    const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/campus-sections/${slug}`;
     const response = await fetch(backendUrl, {
       method: "GET",
       headers: {

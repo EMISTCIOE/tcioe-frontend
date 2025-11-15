@@ -394,6 +394,77 @@ export interface DepartmentSubjectsResponse {
   results: DepartmentSubjectItem[];
 }
 
+export interface DepartmentResearchItem {
+  id: string;
+  title: string;
+  abstract?: string;
+  researchType?: string | null;
+  status?: string | null;
+  department?: DepartmentListItem | null;
+  fundingAgency?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  thumbnail?: string | null;
+  isFeatured?: boolean;
+  participantsCount?: number;
+  categories?: Array<{ id: string; name: string; color?: string | null }>;
+  createdAt?: string | null;
+}
+
+export interface DepartmentResearchResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: DepartmentResearchItem[];
+}
+
+export interface DepartmentProjectItem {
+  id: string;
+  title: string;
+  abstract?: string;
+  projectType?: string | null;
+  status?: string | null;
+  department?: DepartmentListItem | null;
+  supervisorName?: string | null;
+  academicYear?: string | null;
+  thumbnail?: string | null;
+  isFeatured?: boolean;
+  createdAt?: string | null;
+}
+
+export interface DepartmentProjectsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: DepartmentProjectItem[];
+}
+
+export interface DepartmentJournalAuthor {
+  id: string;
+  givenName: string;
+  familyName?: string | null;
+  affiliation?: string | null;
+}
+
+export interface DepartmentJournalItem {
+  id: string;
+  title: string;
+  genre?: string | null;
+  datePublished?: string | null;
+  doiId?: string | null;
+  abstract?: string | null;
+  discipline?: string | null;
+  authors?: DepartmentJournalAuthor[];
+  department?: DepartmentListItem | null;
+}
+
+export interface DepartmentJournalResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: DepartmentJournalItem[];
+}
+
 export interface DepartmentStaffItem {
   uuid: string;
   title?: string | null; // e.g., Er., Dr., Ar.

@@ -6,10 +6,10 @@ const API_BASE_URL =
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const eventId = (await params).id;
+    const { id: eventId } = await params;
     const { searchParams } = new URL(request.url);
     const eventType = searchParams.get("type") || "campus"; // 'campus' or 'club'
 

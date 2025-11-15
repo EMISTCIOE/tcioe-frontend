@@ -77,6 +77,8 @@ export async function GET(request: NextRequest) {
 
     const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/global-events?${params.toString()}`;
 
+    console.log("Fetching global events from:", backendUrl);
+
     const response = await fetch(backendUrl, {
       method: "GET",
       headers: {
@@ -97,9 +99,22 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
+    console.log(
+      "Global events data received, count:",
+      data?.results?.length || 0
+    );
+    console.log(
+      "First event detail:",
+      JSON.stringify(data?.results?.[0], null, 2)
+    );
 
     // Process the data to ensure image URLs are absolute
     const processedData = processEventData(data, API_BASE_URL);
+
+    console.log(
+      "After processing, first event:",
+      JSON.stringify(processedData?.results?.[0], null, 2)
+    );
 
     return respondWithList(validateListResponse(processedData));
   } catch (error) {

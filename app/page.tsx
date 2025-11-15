@@ -31,8 +31,11 @@ export default function HomePage() {
     dismiss: dismissPopup,
   } = useFeaturedNoticePopup();
 
-  // Fetch 9 photos for homepage gallery
-  const { items: galleryItems } = useGlobalGallery({ limit: 9 });
+  // Fetch 9 photos for homepage gallery - only college gallery
+  const { items: galleryItems } = useGlobalGallery({
+    limit: 9,
+    sourceType: "college",
+  });
 
   if (loading || noticesLoading) {
     return (

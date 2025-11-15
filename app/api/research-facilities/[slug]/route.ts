@@ -4,16 +4,20 @@ const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np"
 ).replace(/\/+$/, "");
 
-export async function GET(_request: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
   try {
-    const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/research-facilities/${params.slug}`;
+    const { slug } = await params;
+    const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/research-facilities/${slug}`;
     const response = await fetch(backendUrl, {
       method: "GET",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      next: { revalidate: 300 }
+      next: { revalidate: 300 },
     });
 
     if (!response.ok) {
@@ -24,15 +28,15 @@ export async function GET(_request: NextRequest, { params }: { params: { slug: s
     return NextResponse.json(data, {
       status: 200,
       headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600"
-      }
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+      },
     });
   } catch (error) {
     console.error("Research Facility detail API error:", error);
     return NextResponse.json(
       {
         error: "Failed to fetch research facility detail",
-        message: error instanceof Error ? error.message : "Unknown error"
+        message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

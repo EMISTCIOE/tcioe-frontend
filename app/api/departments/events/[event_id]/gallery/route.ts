@@ -8,10 +8,10 @@ const API_BASE_URL =
 // Proxies to: GET /api/v1/public/department-mod/departments/events/{event_id}/gallery
 export async function GET(
   request: NextRequest,
-  { params }: { params: { event_id: string } }
+  { params }: { params: Promise<{ event_id: string }> }
 ) {
   try {
-    const { event_id } = params;
+    const { event_id } = await params;
     const { searchParams } = new URL(request.url);
 
     const limit = searchParams.get("limit");

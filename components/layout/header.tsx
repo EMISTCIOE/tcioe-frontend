@@ -17,9 +17,25 @@ import { useCollegeData } from "@/hooks/use-college-data";
 import { useDepartments as useDeptList } from "@/hooks/use-departments";
 import { useCampusDivisions } from "@/hooks/use-campus-divisions";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { normalizeCode } from "@/lib/department-mapping";
+
+interface NavSubItem {
+  name: string;
+  href: string;
+  external?: boolean;
+  dropdown?: NavSubItem[];
+}
+
+interface NavItem {
+  name: string;
+  href: string;
+  external?: boolean;
+  dropdown?: NavSubItem[];
+}
 
 export const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { data, loading } = useCollegeData();
   const { departments: deptList } = useDeptList({
     limit: 20,
@@ -90,16 +106,31 @@ export const Header = () => {
       href: "/departments",
       dropdown: (deptList || []).map((d) => ({
         name: d.name,
-        href: `/departments/${d.slug}`,
+        href: `/departments/${
+          d.shortName ? normalizeCode(d.shortName) : d.slug
+        }`,
       })),
     },
     {
       name: "Admissions",
-      href: "/admissions",
+      href: "https://admission.tcioe.edu.np",
+      external: true,
       dropdown: [
-        { name: "Undergraduate Admissions", href: "/admissions/undergraduate" },
-        { name: "Graduate Admissions", href: "/admissions/graduate" },
-        { name: "Scholarships", href: "/admissions/scholarships" },
+        {
+          name: "Undergraduate Admissions",
+          href: "https://admission.tcioe.edu.np/",
+          external: true,
+        },
+        {
+          name: "Graduate Admissions",
+          href: "https://mscadmission.tcioe.edu.np/",
+          external: true,
+        },
+        {
+          name: "Scholarships",
+          href: "/admissions/scholarships",
+          external: false,
+        },
       ],
     },
     {
@@ -131,8 +162,7 @@ export const Header = () => {
       dropdown: [
         { name: "Unions", href: "/campus-life/unions" },
         { name: "Student Clubs", href: "/campus-life/clubs" },
-
-        { name: "Campus Festivals", href: "/campus-life/festivals" },
+        { name: "Festivals", href: "/campus-life/festivals" },
         { name: "Club Events", href: "/campus-life/club-events" },
       ],
     },
@@ -250,14 +280,17 @@ export const Header = () => {
               </div>
             </div>
             {/* Mobile Menu Button */}
-            <Sheet>
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden">
                   <MenuIcon className="h-6 w-6" />
                   <span className="sr-only">Toggle navigation</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px] p-6">
+              <SheetContent
+                side="right"
+                className="w-[300px] sm:w-[400px] p-6 overflow-y-auto"
+              >
                 <div className="flex flex-col gap-4 pt-8">
                   {/* Top Navigation Items */}
                   <div className="border-b border-gray-200 pb-4 mb-4">
@@ -267,18 +300,21 @@ export const Header = () => {
                     <div className="flex flex-col gap-2">
                       <Link
                         href="#"
+                        onClick={() => setIsSheetOpen(false)}
                         className="block py-2 text-base text-text-dark hover:text-primary-blue transition-colors"
                       >
                         Library
                       </Link>
                       <Link
                         href="#"
+                        onClick={() => setIsSheetOpen(false)}
                         className="block py-2 text-base text-text-dark hover:text-primary-blue transition-colors"
                       >
                         Journal
                       </Link>
                       <Link
                         href="/suggestion-box"
+                        onClick={() => setIsSheetOpen(false)}
                         className="inline-flex items-center py-2 text-base text-orange-600 hover:text-orange-700 transition-colors font-medium"
                       >
                         <MessageSquare className="h-4 w-4 mr-2" />
@@ -301,7 +337,12 @@ export const Header = () => {
                               <Link
                                 key={subItem.name}
                                 href={subItem.href}
+                                onClick={() => setIsSheetOpen(false)}
                                 className="block py-2 px-3 rounded-md text-base text-text-light hover:bg-primary-blue/10 hover:text-primary-blue transition-colors"
+                                {...((subItem as NavSubItem).external && {
+                                  target: "_blank",
+                                  rel: "noopener noreferrer",
+                                })}
                               >
                                 {subItem.name}
                               </Link>
@@ -311,6 +352,7 @@ export const Header = () => {
                       ) : (
                         <Link
                           href={item.href}
+                          onClick={() => setIsSheetOpen(false)}
                           className="block py-2 text-lg font-medium text-text-dark hover:text-primary-blue transition-colors"
                         >
                           {item.name}
@@ -348,6 +390,10 @@ export const Header = () => {
                           <Link
                             href={subItem.href}
                             className="flex items-center gap-2 px-3 py-2 text-sm text-text-dark rounded-md hover:bg-primary-blue/10 hover:text-primary-blue transition-colors"
+                            {...((subItem as NavSubItem).external && {
+                              target: "_blank",
+                              rel: "noopener noreferrer",
+                            })}
                           >
                             {subItem.name}
                           </Link>

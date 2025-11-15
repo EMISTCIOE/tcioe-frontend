@@ -8,10 +8,10 @@ const API_BASE_URL =
 // Proxies to: GET /api/v1/public/department-mod/departments/{slug}/events
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const { searchParams } = new URL(request.url);
 
     const limit = searchParams.get("limit");
@@ -34,6 +34,8 @@ export async function GET(
       slug
     )}/events?${query.toString()}`;
 
+    console.log("Fetching department events from:", backendUrl);
+
     const response = await fetch(backendUrl, {
       method: "GET",
       headers: {
@@ -44,10 +46,18 @@ export async function GET(
     });
 
     if (!response.ok) {
+      console.error(
+        `Backend department events API returned ${response.status}`
+      );
       throw new Error(`Backend API error: ${response.status}`);
     }
 
     const data = await response.json();
+    console.log("Department events data received:", {
+      count: data?.results?.length || 0,
+      firstEvent: data?.results?.[0] || null,
+    });
+
     return NextResponse.json(camelCaseKeys(data));
   } catch (error) {
     console.error("Department events API error:", error);

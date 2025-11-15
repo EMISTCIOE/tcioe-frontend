@@ -8,10 +8,10 @@ const API_BASE_URL =
 // Proxies to: GET /api/v1/public/department-mod/departments/{slug}
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const backendUrl = `${API_BASE_URL}/api/v1/public/department-mod/departments/${encodeURIComponent(
       slug
     )}`;
