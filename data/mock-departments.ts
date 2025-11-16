@@ -15,8 +15,8 @@ const makeId = (seed: string) => `uuid-${seed}`;
 // Thumbnails and photos are taken from existing public assets where possible
 const deptThumb = (slug: string) =>
   slug === "applied-science"
-    ? "/placeholder-logo.png"
-    : "/placeholder-logo.png";
+    ? "/placeholder-logo.jpg"
+    : "/placeholder-logo.jpg";
 
 export const mockDepartmentsList: DepartmentsResponse = {
   count: 6,

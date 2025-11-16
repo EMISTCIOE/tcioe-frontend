@@ -10,7 +10,11 @@ import { useDepartments } from "@/hooks/use-departments";
 
 export default function DepartmentsPage() {
   const [search, setSearch] = useState("");
-  const { departments, loading } = useDepartments({ limit: 100, ordering: "name", search });
+  const { departments, loading } = useDepartments({
+    limit: 100,
+    ordering: "name",
+    search,
+  });
 
   return (
     <div className="min-h-screen bg-white">
@@ -19,7 +23,9 @@ export default function DepartmentsPage() {
           <h1 className="text-3xl md:text-4xl font-bold text-primary-blue text-center mb-2">
             Departments
           </h1>
-          <p className="text-center text-text-dark mb-8">Explore our academic departments.</p>
+          <p className="text-center text-text-dark mb-8">
+            Explore our academic departments.
+          </p>
         </AnimatedSection>
 
         <div className="max-w-xl mx-auto mb-8">
@@ -43,25 +49,37 @@ export default function DepartmentsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {departments.map((d) => (
-              <Card key={d.uuid} className="h-full overflow-hidden border border-gray-100 shadow-md">
+              <Card
+                key={d.uuid}
+                className="h-full overflow-hidden border border-gray-100 shadow-md"
+              >
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-3">
                     <Image
-                      src={d.thumbnail || "/placeholder-logo.png"}
+                      src={d.thumbnail || "/placeholder-logo.jpg"}
                       alt={d.name}
                       width={56}
                       height={56}
                       className="w-14 h-14 object-cover rounded-full border"
                     />
                     <div>
-                      <CardTitle className="text-lg leading-tight">{d.name}</CardTitle>
-                      {d.shortName && <p className="text-sm text-text-light">{d.shortName}</p>}
+                      <CardTitle className="text-lg leading-tight">
+                        {d.name}
+                      </CardTitle>
+                      {d.shortName && (
+                        <p className="text-sm text-text-light">{d.shortName}</p>
+                      )}
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-text-dark line-clamp-4 mb-4">{d.briefDescription || ""}</p>
-                  <Link href={`/departments/${d.slug}`} className="text-primary-blue hover:underline font-medium">
+                  <p className="text-sm text-text-dark line-clamp-4 mb-4">
+                    {d.briefDescription || ""}
+                  </p>
+                  <Link
+                    href={`/departments/${d.slug}`}
+                    className="text-primary-blue hover:underline font-medium"
+                  >
                     View department
                   </Link>
                 </CardContent>
