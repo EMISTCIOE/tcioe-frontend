@@ -2,9 +2,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Mail, Phone, RefreshCcw, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Mail,
+  Phone,
+  RefreshCcw,
+  Users,
+  Images,
+} from "lucide-react";
 import { AnimatedSection } from "@/components/animated-section";
 import { useCampusDivisionDetail } from "@/hooks/use-campus-divisions";
+import { useFilteredGlobalGallery } from "@/hooks/use-filtered-global-gallery";
 import { stripHtmlTags } from "@/lib/utils";
 
 // Helper function to decode HTML entities
@@ -55,6 +63,21 @@ export function CampusDivisionDetailView({
       (official) => !departmentHead || official.uuid !== departmentHead.uuid
     ) ?? [];
 
+  // Determine the source type for gallery based on kind
+  const gallerySourceType =
+    kind === "units"
+      ? "unit_gallery"
+      : kind === "sections"
+      ? "section_gallery"
+      : undefined;
+
+  const { items: galleryItems, loading: galleryLoading } =
+    useFilteredGlobalGallery({
+      sourceType: gallerySourceType,
+      sourceIdentifier: data?.uuid,
+      limit: 12,
+    });
+
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -70,7 +93,8 @@ export function CampusDivisionDetailView({
           Unable to load details.
         </p>
         <p className="text-sm text-gray-600 mb-4">
-          We're having trouble fetching the details right now. Please try again shortly.
+          We're having trouble fetching the details right now. Please try again
+          shortly.
         </p>
         <button
           type="button"
@@ -349,6 +373,59 @@ export function CampusDivisionDetailView({
               </div>
             ))}
           </div>
+        </AnimatedSection>
+      )}
+
+      {gallerySourceType && (galleryItems.length > 0 || galleryLoading) && (
+        <AnimatedSection className="rounded-3xl border-2 border-emerald-100 bg-gradient-to-br from-emerald-50 to-teal-50 p-8 shadow-md">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 bg-white rounded-xl shadow-sm">
+              <Images className="h-6 w-6 text-emerald-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-emerald-900">Gallery</h3>
+          </div>
+          <p className="text-gray-700 mb-6">
+            Visual moments and highlights from {data?.name}
+          </p>
+          {galleryLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, index) => (
+                <div
+                  key={index}
+                  className="aspect-square rounded-xl bg-white/50 animate-pulse"
+                />
+              ))}
+            </div>
+          ) : galleryItems.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {galleryItems.map((item) => (
+                <div
+                  key={item.uuid}
+                  className="group relative aspect-square overflow-hidden rounded-xl bg-white shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                >
+                  <Image
+                    src={item.image}
+                    alt={item.caption || data?.name || "Gallery image"}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  {item.caption && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <p className="text-white text-sm font-medium line-clamp-2">
+                          {item.caption}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600">No gallery images available yet.</p>
+            </div>
+          )}
         </AnimatedSection>
       )}
     </div>
