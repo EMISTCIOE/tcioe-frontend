@@ -6,7 +6,7 @@ import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 
 // Define interface for Notice data structure
 interface Notice {
-  id: number;
+  id: string;
   title: string;
   published_date: string;
   notice_category?: {
@@ -17,7 +17,7 @@ interface Notice {
 // Define component props interface
 interface NoticesSidebarProps {
   displayNotices: Notice[];
-  activeId?: number;
+  activeId?: string;
   showViewMoreButton: boolean;
   showAllNotices: boolean;
   checkButton: boolean;

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://cdn.tcioe.edu.np";
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
         "Content-Type": "application/json",
       },
       next: { revalidate: 300 },
-      
     });
     console.log("Campus Sections API response status:", response);
     if (!response.ok) {

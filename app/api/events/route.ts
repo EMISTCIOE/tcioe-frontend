@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { camelCaseKeys } from "../utils";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://cdn.tcioe.edu.np";
 
 export async function GET(request: NextRequest) {
   try {

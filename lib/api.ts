@@ -76,14 +76,36 @@ export class ApiClient {
     } catch (error) {
       clearTimeout(timeoutId);
 
-      if (error instanceof Error && error.name === "AbortError") {
+      // Detect abort (timeout)
+      const errAny = error as any;
+      if (errAny && errAny.name === "AbortError") {
         throw new Error(`API Request timeout after ${API_CONFIG.TIMEOUT}ms`);
+      }
+
+      // Network-level failures (e.g. CORS, DNS, network down) are often surfaced
+      // as a TypeError with message 'Failed to fetch' in browsers. Provide a
+      // clearer message to help debugging.
+      if (
+        errAny instanceof TypeError &&
+        /failed to fetch/i.test(errAny.message)
+      ) {
+        const hint = `Network error while fetching ${url.toString()}. This may be caused by an incorrect NEXT_PUBLIC_API_BASE_URL, the API server being unreachable, or a CORS policy blocking the request.`;
+        const enhanced = new Error(
+          `${hint} Original message: ${errAny.message}`
+        );
+        // preserve original stack if available
+        enhanced.stack = errAny.stack;
+        if (API_CONFIG.DEBUG) {
+          console.error(`API Error: GET ${url.toString()}`, errAny);
+        }
+        throw enhanced;
       }
 
       if (API_CONFIG.DEBUG) {
         console.error(`API Error: GET ${url.toString()}`, error);
       }
 
+      // Re-throw original error for upstream handling
       throw error;
     }
   }
@@ -126,8 +148,24 @@ export class ApiClient {
     } catch (error) {
       clearTimeout(timeoutId);
 
-      if (error instanceof Error && error.name === "AbortError") {
+      const errAny = error as any;
+      if (errAny && errAny.name === "AbortError") {
         throw new Error(`API Request timeout after ${API_CONFIG.TIMEOUT}ms`);
+      }
+
+      if (
+        errAny instanceof TypeError &&
+        /failed to fetch/i.test(errAny.message)
+      ) {
+        const hint = `Network error while PATCHing ${this.baseURL}${endpoint}. This may be caused by an incorrect NEXT_PUBLIC_API_BASE_URL, the API server being unreachable, or a CORS policy blocking the request.`;
+        const enhanced = new Error(
+          `${hint} Original message: ${errAny.message}`
+        );
+        enhanced.stack = errAny.stack;
+        if (API_CONFIG.DEBUG) {
+          console.error(`API Error: PATCH ${this.baseURL}${endpoint}`, errAny);
+        }
+        throw enhanced;
       }
 
       if (API_CONFIG.DEBUG) {

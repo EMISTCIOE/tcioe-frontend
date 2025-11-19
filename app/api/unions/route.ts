@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { respondWithList, handleApiError } from "../utils";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://cdn.tcioe.edu.np";
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Make request to backend API
-    const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/campus-unions?${params.toString()}`;
+    const backendUrl = `${API_BASE_URL}/api/v1/public/website-mod/unions?${params.toString()}`;
     console.log("Fetching unions from:", backendUrl);
 
     const response = await fetch(backendUrl, {
@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
       },
       next: { revalidate: 300 }, // Cache for 5 minutes
     });
+    console.log("Backend response status:", response.status);
 
     if (!response.ok) {
       console.error(`Backend API error: ${response.status}`);

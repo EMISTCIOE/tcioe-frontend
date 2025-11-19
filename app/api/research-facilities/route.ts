@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np"
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://cdn.tcioe.edu.np"
 ).replace(/\/+$/, "");
 
 export async function GET(request: NextRequest) {

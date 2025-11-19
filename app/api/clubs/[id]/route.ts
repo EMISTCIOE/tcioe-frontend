@@ -28,7 +28,7 @@ function processClubDetailData(data: any, baseUrl: string): any {
 }
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://cdn.tcioe.edu.np";
 
 // Helper function to check if string is UUID format
 function isUUID(str: string): boolean {

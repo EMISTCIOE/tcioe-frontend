@@ -4,7 +4,7 @@ import { AnimatedSection } from "@/components/animated-section";
 import { useEffect, useState } from "react";
 
 interface PhoneNumber {
-  id: number;
+  id: string;
   department_name: string;
   phone_number: string;
   description: string;

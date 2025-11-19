@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Search, Github, ExternalLink, Users, Calendar, Tag } from "lucide-react";
 
 interface Project {
-  id: number;
+  id: string;
   title: string;
   abstract: string;
   description: string;

@@ -58,6 +58,8 @@ export function useNotices(initialParams?: NoticesQueryParams) {
       // Don't show HTTP errors, just show empty state
       setNotices([]);
       setPagination({ count: 0, next: null, previous: null });
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
       console.error("Error fetching notices:", err);
     } finally {
       setLoading(false);

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { camelCaseKeys } from "../utils";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://cdn.tcioe.edu.np";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://cdn.tcioe.edu.np";
 
 function resolveImageUrl(imageUrl: string, baseUrl: string): string {
   if (!imageUrl) return imageUrl;

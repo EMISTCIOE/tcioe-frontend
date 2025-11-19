@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 interface Research {
-  id: number;
+  id: string;
   title: string;
   abstract: string;
   description: string;
