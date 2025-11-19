@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, use } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Calendar,
@@ -43,16 +43,15 @@ const getCategoryClasses = (category: string) => {
 
 // In Next.js App Router, page components receive params directly as a prop
 interface PageParams {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 }
 
-export default function NoticeDetail({ params }: PageParams) {
-  // Unwrap the params Promise using React.use()
-  const resolvedParams = use(params);
-  const noticeIdentifier = resolvedParams.id; // Can be either slug or UUID
-
+// Inner component that receives resolved params
+function NoticeDetailContent({
+  noticeIdentifier,
+}: {
+  noticeIdentifier: string;
+}) {
   // Use the new hooks for API calls
   const { notice, loading, error } = useNotice(noticeIdentifier);
   const { notices: latestNotices, loading: latestLoading } = useNotices({
@@ -66,25 +65,112 @@ export default function NoticeDetail({ params }: PageParams) {
   const [checkButton, setCheckButton] = useState<boolean>(false);
   const [shareText, setShareText] = useState("Share");
   const scrollableRef = useRef<HTMLDivElement>(null);
+  // PDF viewer state
+  const pdfIframeRef = useRef<HTMLIFrameElement | null>(null);
+  const [pdfTotalPages, setPdfTotalPages] = useState<number | null>(null);
+  const [pdfCurrentPage, setPdfCurrentPage] = useState<number>(1);
+  const [pdfZoom, setPdfZoom] = useState<number>(100);
+  const [autoFitZoom, setAutoFitZoom] = useState<boolean>(true);
 
-  // Function to load all notices
-  const loadAllNotices = async () => {
-    try {
-      const { notices: allNoticesData } = useNotices({
-        limit: 100,
-        ordering: "-published_at",
-      });
-      setAllNotices(allNoticesData || []);
-      setShowAllNotices(true);
-      setShowViewMoreButton(false);
-      setCheckButton(true);
-    } catch (error) {
-      console.error("Error loading all notices:", error);
-      setAllNotices([]);
-      setShowAllNotices(true);
-      setShowViewMoreButton(false);
-      setCheckButton(true);
+  // Load all notices at component level (hooks must be called at top level)
+  const {
+    notices: allNoticesFromAPI,
+    loading: loadingAllNotices,
+    error: errorAllNotices,
+  } = useNotices({
+    limit: 100,
+    ordering: "-published_at",
+  });
+
+  const downloadableMedia = notice?.medias?.find(
+    (media) =>
+      media.mediaType === "DOCUMENT" || media.file.toLowerCase().includes(".pdf")
+  );
+
+  const handleZoomOut = () => {
+    setAutoFitZoom(false);
+    setPdfZoom((z) => Math.max(50, z - 10));
+  };
+
+  const handleZoomIn = () => {
+    setAutoFitZoom(false);
+    setPdfZoom((z) => Math.min(400, z + 10));
+  };
+
+  // Load PDF metadata (page count) using pdf.js from CDN when we have a PDF
+  useEffect(() => {
+    let mounted = true;
+    const loadPdfMeta = async () => {
+      if (!downloadableMedia) return;
+      const isPdf =
+        downloadableMedia.file.toLowerCase().endsWith(".pdf") ||
+        downloadableMedia.mediaType === "DOCUMENT";
+      if (!isPdf) return;
+
+      try {
+        // Load pdf.js from CDN if not already present
+        if (!(window as any).pdfjsLib) {
+          await new Promise<void>((resolve, reject) => {
+            const s = document.createElement("script");
+            s.src =
+              "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js";
+            s.async = true;
+            s.onload = () => resolve();
+            s.onerror = () => reject(new Error("Failed to load pdfjs"));
+            document.head.appendChild(s);
+          });
+        }
+
+        const pdfjsLib = (window as any).pdfjsLib;
+        if (pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
+        }
+
+        const resp = await fetch(downloadableMedia.file);
+        const arrayBuffer = await resp.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const pdf = await loadingTask.promise;
+        if (!mounted) return;
+        setPdfTotalPages(pdf.numPages || null);
+        setPdfCurrentPage(1);
+        setPdfZoom(100);
+        setAutoFitZoom(true);
+      } catch (err) {
+        // If metadata can't be loaded, leave pages unknown
+        setPdfTotalPages(null);
+        setPdfCurrentPage(1);
+        console.warn("Could not load PDF metadata:", err);
+      }
+    };
+
+    loadPdfMeta();
+    return () => {
+      mounted = false;
+    };
+  }, [downloadableMedia]);
+
+  // Update iframe src whenever page/zoom/media changes
+  useEffect(() => {
+    if (!downloadableMedia) return;
+    const base = downloadableMedia.file;
+    const page = pdfCurrentPage || 1;
+    const zoomParam = autoFitZoom ? "page-width" : `${pdfZoom}%`;
+    const src = `${base}#toolbar=0&navpanes=0&scrollbar=0&page=${page}&zoom=${encodeURIComponent(
+      zoomParam
+    )}`;
+    if (pdfIframeRef.current) {
+      // set src directly to navigate
+      pdfIframeRef.current.src = src;
     }
+  }, [downloadableMedia, pdfCurrentPage, pdfZoom, autoFitZoom]);
+
+  // Function to show all notices (just updates state now)
+  const loadAllNotices = () => {
+    setAllNotices(allNoticesFromAPI || []);
+    setShowAllNotices(true);
+    setShowViewMoreButton(false);
+    setCheckButton(true);
   };
 
   // Function to scroll back to top
@@ -153,20 +239,16 @@ export default function NoticeDetail({ params }: PageParams) {
     ? formatNoticeDate(notice.publishedAt)
     : null;
 
-  // Get the first downloadable media file
-  const downloadableMedia = notice.medias?.find(
-    (media) =>
-      media.mediaType === "DOCUMENT" ||
-      media.file.toLowerCase().includes(".pdf")
-  );
-
   // Parse the active ID for highlighting in the sidebar
   const activeId = notice.uuid;
   const mediaLabel =
-    downloadableMedia?.caption?.trim().length > 0
-      ? downloadableMedia!.caption!
+    downloadableMedia &&
+    downloadableMedia.caption &&
+    downloadableMedia.caption.trim().length > 0
+      ? downloadableMedia.caption
       : notice.title;
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const pdfViewerZoomParam = autoFitZoom ? "page-width" : `${pdfZoom}%`;
 
   const handleShare = async () => {
     try {
@@ -221,9 +303,7 @@ export default function NoticeDetail({ params }: PageParams) {
                   <Calendar className="h-4 w-4" />
                   Published on {formattedDate}
                 </span>
-                <span>
-                  {notice.department?.name ?? "College Wide"}
-                </span>
+                <span>{notice.department?.name ?? "College Wide"}</span>
               </div>
             </div>
 
@@ -240,28 +320,89 @@ export default function NoticeDetail({ params }: PageParams) {
             {downloadableMedia && (
               <div className="mt-8 bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
                 {/* Media Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
-                <div className="flex items-center justify-end gap-2 sm:gap-3">
-                  <button
-                    onClick={() => window.open(downloadableMedia.file, "_blank")}
-                    className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Open in New Tab
-                  </button>
-                  <a
-                    href={downloadableMedia.file}
-                    download
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download
-                  </a>
-                </div>
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-white">
+                  <div className="flex items-center justify-between">
+                    {/* Left: simple reader controls: page input and zoom */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center bg-white/20 px-2 py-1 rounded-md text-sm text-white">
+                        <label className="mr-2">Page</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={pdfTotalPages ?? 9999}
+                          value={pdfCurrentPage}
+                          onChange={(e) => {
+                            let v = Number(e.target.value || 1);
+                            if (pdfTotalPages)
+                              v = Math.min(Math.max(1, v), pdfTotalPages);
+                            setPdfCurrentPage(v);
+                          }}
+                          className="w-14 text-black px-1 rounded"
+                        />
+                        <span className="mx-2">of</span>
+                        <span className="font-semibold">
+                          {pdfTotalPages ?? "—"}
+                        </span>
+                      </div>
+
+                      <div className="inline-flex items-center bg-white/10 rounded-md overflow-hidden text-sm">
+                        <button
+                          onClick={handleZoomOut}
+                          className="px-2 py-1 text-white"
+                          aria-label="Zoom out"
+                        >
+                          -
+                        </button>
+                        <div className="px-3 py-1 text-white">
+                          {autoFitZoom ? "Auto" : `${pdfZoom}%`}
+                        </div>
+                        <button
+                          onClick={handleZoomIn}
+                          className="px-2 py-1 text-white"
+                          aria-label="Zoom in"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Right: download and info */}
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={downloadableMedia.file}
+                        download
+                        className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded-md transition-colors flex items-center gap-1 text-sm"
+                        title="Download"
+                      >
+                        <Download className="h-3 w-3" />
+                      </a>
+                      <button
+                        onClick={() => {
+                          const el = document.getElementById("media-info");
+                          if (el) el.classList.toggle("hidden");
+                        }}
+                        className="bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded-md transition-colors"
+                        title="Info"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-3 w-3"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-8-3a1 1 0 100-2 1 1 0 000 2zm1 9V9a1 1 0 10-2 0v7a1 1 0 002 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Media Viewer Container */}
-                <div className="relative bg-gray-50">
+                <div className="relative bg-gray-50 overflow-x-hidden">
                   {/* Loading overlay */}
                   <div
                     className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10"
@@ -277,9 +418,12 @@ export default function NoticeDetail({ params }: PageParams) {
                   {downloadableMedia.file.toLowerCase().includes(".pdf") ||
                   downloadableMedia.mediaType === "DOCUMENT" ? (
                     /* PDF Iframe */
-                  <iframe
-                    src={`${downloadableMedia.file}#toolbar=0&navpanes=0&scrollbar=0&zoom=page-width`}
-                      className="w-full h-[800px] border-0"
+                    <iframe
+                      ref={pdfIframeRef}
+                      src={`${downloadableMedia.file}#toolbar=0&navpanes=0&scrollbar=0&page=${pdfCurrentPage}&zoom=${encodeURIComponent(
+                        pdfViewerZoomParam
+                      )}`}
+                      className="w-full max-w-full h-[800px] border-0"
                       title={`Document for ${notice.title}`}
                       onLoad={() => {
                         const loadingElement =
@@ -343,7 +487,10 @@ export default function NoticeDetail({ params }: PageParams) {
                 </div>
 
                 {/* Media Footer */}
-                <div className="bg-gray-50 p-4 border-t border-gray-200">
+                <div
+                  id="media-info"
+                  className="bg-gray-50 p-4 border-t border-gray-200"
+                >
                   <div className="flex justify-between items-center text-sm text-gray-600">
                     <span>
                       {downloadableMedia.mediaType === "IMAGE"
@@ -353,9 +500,7 @@ export default function NoticeDetail({ params }: PageParams) {
                     </span>
                     <div className="flex items-center gap-4">
                       <button
-                        onClick={() =>
-                          handleShare()
-                        }
+                        onClick={() => handleShare()}
                         className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
                         title="Copy link to clipboard"
                       >
@@ -453,4 +598,13 @@ export default function NoticeDetail({ params }: PageParams) {
       </div>
     </div>
   );
+}
+
+// Wrapper component that unwraps params
+export default function NoticeDetail({ params }: PageParams) {
+  // Unwrap params Promise using React.use()
+  const resolvedParams = React.use(params);
+  const noticeIdentifier = resolvedParams.id;
+
+  return <NoticeDetailContent noticeIdentifier={noticeIdentifier} />;
 }
