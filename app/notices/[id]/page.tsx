@@ -198,7 +198,7 @@ export default function NoticeDetail({ params }: PageParams) {
           Notices and Announcements
         </h1>
 
-        <div className="flex flex-col gap-6 mt-6">
+        <div className="flex flex-col gap-6 mt-6 md:flex-row md:items-start md:gap-10">
           {/* Main Notice Detail Section */}
           <div className="flex-1">
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
@@ -278,7 +278,7 @@ export default function NoticeDetail({ params }: PageParams) {
                   downloadableMedia.mediaType === "DOCUMENT" ? (
                     /* PDF Iframe */
                   <iframe
-                    src={`${downloadableMedia.file}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+                    src={`${downloadableMedia.file}#toolbar=0&navpanes=0&scrollbar=0&zoom=page-width`}
                       className="w-full h-[800px] border-0"
                       title={`Document for ${notice.title}`}
                       onLoad={() => {
@@ -374,27 +374,32 @@ export default function NoticeDetail({ params }: PageParams) {
             {notice.medias && notice.medias.length > 1 && (
               <div className="mt-6 bg-white p-6 rounded-lg shadow-sm">
                 <h3 className="text-lg font-semibold mb-3">Additional Media</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {notice.medias
-                    .filter((media) => media.uuid !== downloadableMedia?.uuid)
-                    .map((media) => (
-                      <div key={media.uuid} className="border rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          {/* Icon placeholder */}
-                          <span className="text-sm">📄</span>
-                          <span className="font-medium">{media.caption}</span>
-                        </div>
-                        <a
-                          href={media.file}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                <div className="overflow-x-auto md:overflow-visible -mx-3 px-3 pb-2">
+                  <div className="flex gap-4 snap-x snap-mandatory scroll-smooth md:grid md:grid-cols-2 md:snap-none">
+                    {notice.medias
+                      .filter((media) => media.uuid !== downloadableMedia?.uuid)
+                      .map((media) => (
+                        <div
+                          key={media.uuid}
+                          className="border rounded-lg p-4 flex-shrink-0 min-w-full snap-start md:min-w-0"
                         >
-                          View {media.mediaType.toLowerCase()}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </div>
-                    ))}
+                          <div className="flex items-center gap-2 mb-2">
+                            {/* Icon placeholder */}
+                            <span className="text-sm">📄</span>
+                            <span className="font-medium">{media.caption}</span>
+                          </div>
+                          <a
+                            href={media.file}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                          >
+                            View {media.mediaType.toLowerCase()}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
+                      ))}
+                  </div>
                 </div>
               </div>
             )}

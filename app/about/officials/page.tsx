@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { Mail, Phone, Users } from "lucide-react";
+import { Mail, Users } from "lucide-react";
 
 import { AnimatedSection } from "@/components/animated-section";
 import {
@@ -54,7 +54,7 @@ export default function OfficialsPage() {
             Staff Directory
           </div>
           <h1 className="text-4xl font-bold text-primary-blue">
-            Campus Staff Members
+            Campus Key Officials
           </h1>
           <p className="text-lg text-text-dark max-w-3xl mx-auto">
             Meet the team of campus leaders and staff members responsible for
@@ -121,53 +121,43 @@ export default function OfficialsPage() {
                   return (
                     <article
                       key={official.uuid}
-                      className="group w-56 flex-shrink-0 flex flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                      className="group w-full max-w-[18rem] flex-shrink-0 rounded-[1.5rem] border border-gray-200 bg-white transition hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(15,23,42,0.15)]"
                     >
-                      <div className="relative h-44 w-full bg-gradient-to-br from-primary-blue/10 to-secondary/10">
-                        <Image
-                          src={photoSrc}
-                          alt={displayName}
-                          fill
-                          className="object-cover"
-                        />
-                        <div className="absolute inset-x-4 bottom-4 rounded-full bg-white/80 px-3 py-1 text-center text-xs font-semibold text-primary-blue shadow">
-                          {official.designationDisplay}
+                      <div className="flex justify-center pt-6">
+                        <div className="relative h-32 w-32 overflow-hidden rounded-[1.4rem] border-2 border-white bg-gray-50 shadow-[0_15px_45px_rgba(15,23,42,0.1)]">
+                          <Image
+                            src={photoSrc}
+                            alt={displayName}
+                            fill
+                            className="object-contain"
+                          />
                         </div>
                       </div>
-                      <div className="flex flex-1 flex-col gap-3 p-4">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-wide text-primary-blue">
-                            {official.designationDisplay}
-                          </p>
-                          <h3 className="mt-1 text-base font-semibold text-gray-900">
-                            {displayName || official.fullName}
-                          </h3>
-                        </div>
+                      <div className="mt-3 flex items-center justify-center gap-3 px-5">
+                        <span className="h-0.5 w-10 bg-orange-400 rounded-full" />
+                        <span className="h-0.5 w-10 bg-orange-400 rounded-full" />
+                      </div>
+                      <div className="flex flex-col gap-1 px-6 pb-6 pt-4 text-center">
+                        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-primary-blue opacity-80">
+                          {official.designationDisplay}
+                        </p>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {displayName || official.fullName}
+                        </h3>
                         {messagePreview && (
                           <p className="text-sm leading-relaxed text-gray-600">
                             {messagePreview}
                           </p>
                         )}
-                        <div className="mt-auto flex flex-col gap-2 text-sm text-gray-600">
-                          {official.email && (
-                            <a
-                              href={`mailto:${official.email}`}
-                              className="flex items-center gap-2 text-primary-blue hover:underline"
-                            >
-                              <Mail className="h-4 w-4" />
-                              {official.email}
-                            </a>
-                          )}
-                          {official.phoneNumber && (
-                            <a
-                              href={`tel:${official.phoneNumber}`}
-                              className="flex items-center gap-2 text-gray-700"
-                            >
-                              <Phone className="h-4 w-4" />
-                              {official.phoneNumber}
-                            </a>
-                          )}
-                        </div>
+                        {official.email && (
+                          <a
+                            href={`mailto:${official.email}`}
+                            className="mt-2 inline-flex items-center justify-center gap-2 text-sm font-semibold text-primary-blue transition hover:text-primary-blue/80"
+                          >
+                            <Mail className="h-4 w-4" />
+                            {official.email}
+                          </a>
+                        )}
                       </div>
                     </article>
                   );
