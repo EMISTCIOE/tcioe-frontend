@@ -604,7 +604,13 @@ function NoticeDetailContent({
 export default function NoticeDetail({ params }: PageParams) {
   // Unwrap params Promise using React.use()
   const resolvedParams = React.use(params);
-  const noticeIdentifier = resolvedParams.id;
+  const noticeIdentifier = (() => {
+    try {
+      return decodeURIComponent(resolvedParams.id);
+    } catch {
+      return resolvedParams.id;
+    }
+  })();
 
   return <NoticeDetailContent noticeIdentifier={noticeIdentifier} />;
 }

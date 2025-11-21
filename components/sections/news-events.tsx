@@ -155,7 +155,7 @@ export const NewsEvents = ({ notices }: NewsEventsProps) => {
             asChild
             className="bg-accent-orange hover:bg-accent-orange/90 text-white px-6 py-2 text-base rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
-            <Link href="/notices">View All News</Link>
+            <Link href="/notices">View All Notices</Link>
           </Button>
         </AnimatedSection>
       </div>

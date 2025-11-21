@@ -373,6 +373,17 @@ export interface DepartmentProgramsResponse {
   results: DepartmentProgramItem[];
 }
 
+export interface ProgramCatalogItem extends DepartmentProgramItem {
+  department: DepartmentListItem;
+}
+
+export interface ProgramCatalogResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProgramCatalogItem[];
+}
+
 export interface DepartmentSubjectAcademicProgram {
   uuid: string;
   name: string;

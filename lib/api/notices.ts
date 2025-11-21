@@ -69,18 +69,26 @@ export class NoticesService {
    * If it's a slug, search for the notice and then get detailed data using UUID
    */
   static async getNoticeBySlugOrId(identifier: string): Promise<Notice> {
+    const safeIdentifier = (() => {
+      try {
+        return decodeURIComponent(identifier);
+      } catch {
+        return identifier;
+      }
+    })();
+
     // Check if identifier is a UUID (basic UUID format check)
     const isUUID =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        identifier
+        safeIdentifier
       );
 
     if (isUUID) {
       // It's a UUID, use direct endpoint
-      return this.getNoticeById(identifier);
+      return this.getNoticeById(safeIdentifier);
     } else {
       // It's a slug, first try to extract UUID from the slug
-      const uuidMatch = identifier.match(
+      const uuidMatch = safeIdentifier.match(
         /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i
       );
 
@@ -96,11 +104,11 @@ export class NoticesService {
 
         // Find exact slug match
         const notice = searchResponse.results.find(
-          (n) => n.slug === identifier
+          (n) => n.slug === safeIdentifier
         );
 
         if (!notice) {
-          throw new Error(`Notice with slug "${identifier}" not found`);
+          throw new Error(`Notice with slug "${safeIdentifier}" not found`);
         }
 
         // Now use the notice's UUID to get detailed data

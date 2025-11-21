@@ -12,8 +12,14 @@ export const CampusChiefHeroMessage = ({
 }: CampusChiefMessageProps) => {
   const [expanded, setExpanded] = useState(false);
 
-  const preview = message ?? "";
-  const extra = fullMessage ?? "";
+  // Create a proper preview from the full message if no separate message is provided
+  const fullText = fullMessage || message || "";
+  const shouldShowToggle = fullText.length > 300;
+
+  const preview = shouldShowToggle
+    ? fullText.substring(0, 300) + "..."
+    : fullText;
+  const extra = shouldShowToggle ? fullText.substring(300) : "";
 
   return (
     <section className="py-12 md:py-20 bg-white">
@@ -29,9 +35,9 @@ export const CampusChiefHeroMessage = ({
             {/* Text */}
             <div className="order-2 md:order-1">
               <p className="text-gray-800 text-base md:text-lg leading-relaxed text-justify">
-                {preview} {expanded && extra}
+                {expanded ? fullText : preview}
               </p>
-              {fullMessage && (
+              {shouldShowToggle && (
                 <button
                   onClick={() => setExpanded((v) => !v)}
                   className="mt-3 text-accent-orange hover:underline font-medium"

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedSection } from "@/components/animated-section";
 import { CalendarDays, MapPin, Clock, Users } from "lucide-react";
 import { useUpcomingEvents } from "@/hooks/use-upcoming-events";
+import { getEventStatus, getEventStatusBadge } from "@/hooks/use-events";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface UpcomingEventsSectionProps {
@@ -51,7 +52,7 @@ export const UpcomingEventsSection = ({
       >
         <div className="container mx-auto px-4 lg:px-6">
           <div className="text-center text-red-500">
-            <p>Failed to load upcoming events: {error}</p>
+            <p>Failed to load events: {error}</p>
           </div>
         </div>
       </section>
@@ -67,12 +68,12 @@ export const UpcomingEventsSection = ({
           {showTitle && (
             <AnimatedSection>
               <h2 className="text-xl md:text-3xl font-bold text-center text-[#1A1A2E] mb-10">
-                Upcoming Events
+                Events
               </h2>
             </AnimatedSection>
           )}
           <div className="text-center text-gray-500">
-            <p>No upcoming events found.</p>
+            <p>No events found.</p>
           </div>
         </div>
       </section>
@@ -138,7 +139,7 @@ export const UpcomingEventsSection = ({
         {showTitle && (
           <AnimatedSection>
             <h2 className="text-xl md:text-3xl font-bold text-center text-primary-blue mb-10">
-              Upcoming Events
+              Events
             </h2>
           </AnimatedSection>
         )}
@@ -155,7 +156,7 @@ export const UpcomingEventsSection = ({
                       alt={event.title}
                       className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                     />
-                    <div className="absolute top-3 right-3">
+                    <div className="absolute top-3 right-3 flex flex-col gap-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${getEventTypeColor(
                           event
@@ -163,11 +164,45 @@ export const UpcomingEventsSection = ({
                       >
                         {getEventTypeLabel(event)}
                       </span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getEventStatusBadge(
+                          getEventStatus(event as any)
+                        )}`}
+                      >
+                        {getEventStatus(event as any) === "running"
+                          ? "Live"
+                          : getEventStatus(event as any) === "upcoming"
+                          ? "Upcoming"
+                          : "Past"}
+                      </span>
                     </div>
                   </div>
                 )}
 
                 <CardHeader className="p-4 pb-2">
+                  {/* Show badges for events without thumbnails */}
+                  {!event.thumbnail && (
+                    <div className="flex gap-2 mb-2 flex-wrap">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getEventTypeColor(
+                          event
+                        )}`}
+                      >
+                        {getEventTypeLabel(event)}
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getEventStatusBadge(
+                          getEventStatus(event as any)
+                        )}`}
+                      >
+                        {getEventStatus(event as any) === "running"
+                          ? "Live"
+                          : getEventStatus(event as any) === "upcoming"
+                          ? "Upcoming"
+                          : "Past"}
+                      </span>
+                    </div>
+                  )}
                   <CardTitle className="text-lg font-semibold text-text-dark line-clamp-2">
                     {event.title}
                   </CardTitle>
