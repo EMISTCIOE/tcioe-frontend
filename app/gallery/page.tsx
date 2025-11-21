@@ -97,22 +97,16 @@ export default function GalleryPage() {
 
   const lightboxStyle = useMemo(() => {
     const fallbackWidth =
-      viewportSize.width > 0
-        ? Math.min(viewportSize.width * 0.8, 900)
-        : 800;
+      viewportSize.width > 0 ? Math.min(viewportSize.width * 0.8, 900) : 800;
     const fallbackHeight =
-      viewportSize.height > 0
-        ? Math.min(viewportSize.height * 0.7, 700)
-        : 600;
+      viewportSize.height > 0 ? Math.min(viewportSize.height * 0.7, 700) : 600;
 
     if (!lightboxSize) {
       return { width: fallbackWidth, height: fallbackHeight };
     }
 
     const maxWidth =
-      viewportSize.width > 0
-        ? viewportSize.width * 0.9
-        : lightboxSize.width;
+      viewportSize.width > 0 ? viewportSize.width * 0.9 : lightboxSize.width;
     const maxHeight =
       viewportSize.height > 0
         ? viewportSize.height * 0.85
@@ -299,9 +293,6 @@ export default function GalleryPage() {
                             {item.sourceContext}
                           </p>
                         )}
-                      </div>
-                      <div className="absolute top-3 right-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-700 shadow-sm">
-                        {item.sourceType}
                       </div>
                     </div>
                   </button>
