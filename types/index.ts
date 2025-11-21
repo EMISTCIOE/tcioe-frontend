@@ -719,6 +719,7 @@ export type StaffTitlePrefix =
   | "MR"
   | "MRS"
   | "MS"
+  | "AR"
   | "ASSOC_PROF"
   | "ASST_PROF"
   | "LECTURER"

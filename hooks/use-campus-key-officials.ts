@@ -97,9 +97,16 @@ export function useCampusKeyOfficials(
         return;
       }
 
-      setOfficials(data.results);
+      // Deduplicate officials by uuid to avoid showing the same person twice
+      const uniqueResults = Array.from(
+        new Map(
+          data.results.map((official) => [official.uuid, official])
+        ).values()
+      );
+
+      setOfficials(uniqueResults);
       setPagination({
-        count: data.count,
+        count: data.count ?? uniqueResults.length,
         next: data.next,
         previous: data.previous,
       });
@@ -148,6 +155,8 @@ const staffTitlePrefixLabels: Partial<Record<StaffTitlePrefix, string>> = {
   MR: "Mr.",
   MRS: "Mrs.",
   MS: "Ms.",
+  AR: "Ar.",
+  OTHER: "Other",
   ASSOC_PROF: "Assoc. Prof.",
   ASST_PROF: "Asst. Prof.",
 };

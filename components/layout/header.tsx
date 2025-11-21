@@ -3,7 +3,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { Search, MenuIcon, ChevronDown, MessageSquare } from "lucide-react";
+import {
+  Search,
+  MenuIcon,
+  ChevronDown,
+  MessageSquare,
+  BookOpen,
+  FileText,
+  GraduationCap,
+  Users,
+  User,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -169,7 +179,7 @@ export const Header = () => {
   ];
 
   const navLinkBase =
-    "h-full px-4 py-3 text-sm md:text-base font-medium leading-tight text-text-dark transition-colors duration-200 hover:bg-background-light hover:text-primary-blue";
+    "h-full px-2 sm:px-3 md:px-4 py-3 text-xs sm:text-sm md:text-base font-medium leading-tight text-text-dark transition-colors duration-200 hover:bg-background-light hover:text-primary-blue";
 
   return (
     <header className="w-full">
@@ -179,45 +189,50 @@ export const Header = () => {
           <div className="flex space-x-2 md:space-x-6">
             <Link
               href="#"
-              className="hover:text-accent-orange transition-colors duration-300"
+              className="inline-flex items-center gap-1 hover:text-accent-orange transition-colors duration-300"
             >
+              <GraduationCap className="h-3 w-3 md:h-4 md:w-4" />
               Students
             </Link>
             <span className="border-l border-black h-3 md:h-5"></span>
             <Link
               href="#"
-              className="hover:text-accent-orange transition-colors duration-300"
+              className="inline-flex items-center gap-1 hover:text-accent-orange transition-colors duration-300"
             >
+              <Users className="h-3 w-3 md:h-4 md:w-4" />
               Faculty & Staff
             </Link>
             <span className="border-l border-black h-3 md:h-5"></span>
             <Link
               href="#"
-              className="hover:text-accent-orange transition-colors duration-300"
+              className="inline-flex items-center gap-1 hover:text-accent-orange transition-colors duration-300"
             >
+              <User className="h-3 w-3 md:h-4 md:w-4" />
               Alumni
             </Link>
           </div>
           <div className="flex space-x-2 md:space-x-6 items-center">
             <Link
               href="#"
-              className="hover:text-accent-orange transition-colors duration-300"
+              className="inline-flex items-center gap-1 hover:text-accent-orange transition-colors duration-300"
             >
+              <BookOpen className="h-3 w-3 md:h-4 md:w-4" />
               Library
             </Link>
             <span className="border-l border-black h-3 md:h-5"></span>
             <Link
               href="#"
-              className="hover:text-accent-orange transition-colors duration-300"
+              className="inline-flex items-center gap-1 hover:text-accent-orange transition-colors duration-300"
             >
+              <FileText className="h-3 w-3 md:h-4 md:w-4" />
               Journal
             </Link>
             <Link
               href="/suggestion-box"
-              className="inline-flex items-center hover:underline text-orange-600 hover:text-orange-400 transition-colors"
+              className="inline-flex items-center gap-1 hover:underline text-orange-600 hover:text-orange-400 transition-colors"
               title="Share your feedback and suggestions"
             >
-              <MessageSquare className="h-4 w-4 mr-1" />
+              <MessageSquare className="h-3 w-3 md:h-4 md:w-4" />
               Suggestions
             </Link>
             <Button
@@ -279,10 +294,10 @@ export const Header = () => {
                 </span>
               </div>
             </div>
-            {/* Mobile Menu Button */}
+            {/* Mobile/Tablet Menu Button */}
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
+                <Button variant="ghost" size="icon" className="xl:hidden">
                   <MenuIcon className="h-6 w-6" />
                   <span className="sr-only">Toggle navigation</span>
                 </Button>
@@ -388,11 +403,11 @@ export const Header = () => {
         </div>
       </div>
 
-      {/* Navigation Bar (Desktop) */}
-      <nav className="bg-white border-t border-gray-200 hidden md:block">
+      {/* Navigation Bar (Desktop & Tablet) */}
+      <nav className="bg-white border-t border-gray-200 hidden xl:block">
         {/* allow horizontal scroll on narrower screens to avoid wrapping/clipping */}
-        <div className="container mx-auto flex justify-center overflow-x-auto px-4">
-          <ul className="flex items-center md:space-x-8 whitespace-nowrap">
+        <div className="container mx-auto flex justify-center overflow-x-auto px-2 sm:px-4">
+          <ul className="flex items-center sm:space-x-2 md:space-x-4 lg:space-x-6 whitespace-nowrap">
             {navItems.map((item) => (
               <li key={item.name} className="flex items-center h-full">
                 {item.dropdown && item.dropdown.length > 0 ? (
@@ -406,12 +421,12 @@ export const Header = () => {
                         <ChevronDown className="ml-1 h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56 shadow-lg rounded-lg border border-gray-200 p-1">
+                    <DropdownMenuContent className="w-48 sm:w-56 shadow-lg rounded-lg border border-gray-200 p-1">
                       {item.dropdown.map((subItem) => (
                         <DropdownMenuItem key={subItem.name} asChild>
                           <Link
                             href={subItem.href}
-                            className="flex items-center gap-2 px-3 py-2 text-sm text-text-dark rounded-md hover:bg-primary-blue/10 hover:text-primary-blue transition-colors"
+                            className="flex items-center gap-2 px-2 sm:px-3 py-2 text-xs sm:text-sm text-text-dark rounded-md hover:bg-primary-blue/10 hover:text-primary-blue transition-colors"
                             {...((subItem as NavSubItem).external && {
                               target: "_blank",
                               rel: "noopener noreferrer",
