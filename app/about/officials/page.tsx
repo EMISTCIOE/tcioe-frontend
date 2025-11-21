@@ -59,18 +59,18 @@ export default function OfficialsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-screen-2xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-12">
         <AnimatedSection className="text-center space-y-4 mb-10">
           <div className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-primary-blue shadow-sm">
             <Users className="h-4 w-4" />
-            Staff Directory
+            Key Officials
           </div>
           <h1 className="text-4xl font-bold text-primary-blue">
             Campus Key Officials
           </h1>
           <p className="text-lg text-text-dark max-w-3xl mx-auto">
-            Meet the team of campus leaders and staff members responsible for
-            keeping Thapathali Campus running smoothly.
+            Meet the team of campus leaders responsible for keeping Thapathali
+            Campus running smoothly.
           </p>
         </AnimatedSection>
 
@@ -115,7 +115,7 @@ export default function OfficialsPage() {
             {buildHierarchyRows(filteredOfficials).map((row) => (
               <div
                 key={row.key}
-                className="flex justify-center gap-5 items-start flex-wrap"
+                className="flex justify-center gap-6 items-start flex-wrap"
               >
                 {row.items.map((official) => {
                   const prefix = formatStaffTitlePrefix(official.titlePrefix);
@@ -129,7 +129,7 @@ export default function OfficialsPage() {
                   return (
                     <article
                       key={official.uuid}
-                      className="group w-full max-w-[12.5rem] basis-[12.5rem] flex-shrink-0 flex-grow rounded-[1.5rem] border border-gray-200 bg-white transition hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(15,23,42,0.15)]"
+                      className="group w-full max-w-[14.5rem] flex-shrink-0 flex-grow rounded-[1.5rem] border border-gray-200 bg-white transition hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(15,23,42,0.15)]"
                     >
                       <div className="flex justify-center pt-6">
                         <div className="relative h-32 w-32 overflow-hidden rounded-[1.4rem] border-2 border-white bg-gray-50 shadow-[0_15px_45px_rgba(15,23,42,0.1)]">
