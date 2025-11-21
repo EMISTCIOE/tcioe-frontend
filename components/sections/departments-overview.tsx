@@ -43,7 +43,10 @@ export const DepartmentsOverview = ({ departments }: DepartmentsOverviewProps) =
                   <CardTitle className="text-lg font-semibold text-text-dark">{dept.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">
-                  <p className="text-text-light text-sm mb-3 line-clamp-4">{dept.description}</p>
+                  <div
+                    className="text-text-light text-sm mb-3 line-clamp-4"
+                    dangerouslySetInnerHTML={{ __html: dept.description || "" }}
+                  />
                 </CardContent>
                 <Link
                   href={dept.href}
