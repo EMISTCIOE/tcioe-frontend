@@ -9,7 +9,6 @@ import {
   formatStaffTitlePrefix,
   useCampusKeyOfficials,
 } from "@/hooks/use-campus-key-officials";
-import { stripHtmlTags, truncateText } from "@/lib/utils";
 
 const DEFAULT_LIMIT = 100;
 
@@ -26,28 +25,41 @@ export default function OfficialsPage() {
   // Without search / filters the list to render is the officials array
   const filteredOfficials = officials;
 
-  const totalRecords = pagination.count || officials.length;
+  type OfficialsRow = {
+    key: string;
+    items: typeof officials;
+  };
 
-  // helper: split officials into rows following the requested pattern
-  const buildHierarchyRows = (items: typeof officials) => {
-    const sizes = [1, 3, 6, 8];
-    const rows: (typeof officials)[] = [];
+  // helper: chunk officials into rows that follow the requested pattern
+  const buildHierarchyRows = (items: typeof officials): OfficialsRow[] => {
+    const rows: OfficialsRow[] = [];
+    const pattern = [1, 3, 5, 1, 5, 3, 3, 4, 5, 2, 2];
     let i = 0;
-    for (const s of sizes) {
+
+    for (const size of pattern) {
       if (i >= items.length) break;
-      rows.push(items.slice(i, i + s));
-      i += s;
+      rows.push({
+        key: `main-${rows.length}`,
+        items: items.slice(i, i + size),
+      });
+      i += size;
     }
+
+    // leftover items, keep stepping by 3
     while (i < items.length) {
-      rows.push(items.slice(i, i + 3));
+      rows.push({
+        key: `main-${rows.length}`,
+        items: items.slice(i, i + 3),
+      });
       i += 3;
     }
+
     return rows;
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-screen-2xl mx-auto px-6 py-12">
         <AnimatedSection className="text-center space-y-4 mb-10">
           <div className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-primary-blue shadow-sm">
             <Users className="h-4 w-4" />
@@ -100,28 +112,24 @@ export default function OfficialsPage() {
 
         {!loading && !error && filteredOfficials.length > 0 && (
           <AnimatedSection delay={0.2} className="space-y-8">
-            {buildHierarchyRows(filteredOfficials).map((row, rowIndex) => (
+            {buildHierarchyRows(filteredOfficials).map((row) => (
               <div
-                key={rowIndex}
-                className="flex justify-center gap-8 flex-wrap items-start"
+                key={row.key}
+                className="flex justify-center gap-5 items-start flex-wrap"
               >
-                {row.map((official) => {
+                {row.items.map((official) => {
                   const prefix = formatStaffTitlePrefix(official.titlePrefix);
                   const displayName = [prefix, official.fullName]
                     .filter(Boolean)
                     .join(" ")
                     .trim();
-                  const messagePreview = truncateText(
-                    stripHtmlTags(official.message),
-                    140
-                  );
                   const photoSrc =
                     official.photo || "/placeholder.svg?height=160&width=160";
 
                   return (
                     <article
                       key={official.uuid}
-                      className="group w-full max-w-[18rem] flex-shrink-0 rounded-[1.5rem] border border-gray-200 bg-white transition hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(15,23,42,0.15)]"
+                      className="group w-full max-w-[12.5rem] basis-[12.5rem] flex-shrink-0 flex-grow rounded-[1.5rem] border border-gray-200 bg-white transition hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(15,23,42,0.15)]"
                     >
                       <div className="flex justify-center pt-6">
                         <div className="relative h-32 w-32 overflow-hidden rounded-[1.4rem] border-2 border-white bg-gray-50 shadow-[0_15px_45px_rgba(15,23,42,0.1)]">
@@ -144,11 +152,6 @@ export default function OfficialsPage() {
                         <h3 className="text-lg font-semibold text-gray-900">
                           {displayName || official.fullName}
                         </h3>
-                        {messagePreview && (
-                          <p className="text-sm leading-relaxed text-gray-600">
-                            {messagePreview}
-                          </p>
-                        )}
                         {official.email && (
                           <a
                             href={`mailto:${official.email}`}
