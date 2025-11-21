@@ -48,9 +48,27 @@ export function useNotices(initialParams?: NoticesQueryParams) {
         return;
       }
 
-      setNotices(response.results);
+      const shouldFilterCampus = params?.is_approved_by_campus === true;
+      const shouldFilterDepartment = params?.is_approved_by_department === true;
+
+      const filteredNotices = response.results.filter((notice) => {
+        const campusApproved =
+          notice.isApprovedByCampus ?? notice.is_approved_by_campus;
+        const departmentApproved =
+          notice.isApprovedByDepartment ?? notice.is_approved_by_department;
+
+        if (shouldFilterCampus && !campusApproved) {
+          return false;
+        }
+        if (shouldFilterDepartment && !departmentApproved) {
+          return false;
+        }
+        return true;
+      });
+
+      setNotices(filteredNotices);
       setPagination({
-        count: response.count,
+        count: filteredNotices.length,
         next: response.next,
         previous: response.previous,
       });

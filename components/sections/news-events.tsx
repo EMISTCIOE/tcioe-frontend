@@ -53,7 +53,7 @@ export const NewsEvents = ({ notices }: NewsEventsProps) => {
       <div className="container mx-auto px-4 lg:px-6">
         <AnimatedSection>
           <h2 className="text-xl md:text-3xl font-bold text-center text-[#1A1A2E] mb-10">
-            Latest News & Updates
+            Latest Notices
           </h2>
         </AnimatedSection>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

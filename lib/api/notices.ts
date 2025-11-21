@@ -13,6 +13,8 @@ export interface NoticesQueryParams {
   category?: string;
   department?: string;
   is_featured?: boolean;
+  is_approved_by_department?: boolean;
+  is_approved_by_campus?: boolean;
   start_date?: string;
   end_date?: string;
   ordering?: string;
@@ -38,6 +40,12 @@ export class NoticesService {
     if (params?.department) queryParams.department = params.department;
     if (params?.is_featured !== undefined)
       queryParams.is_featured = params.is_featured;
+    if (params?.is_approved_by_department !== undefined) {
+      queryParams.is_approved_by_department = params.is_approved_by_department;
+    }
+    if (params?.is_approved_by_campus !== undefined) {
+      queryParams.is_approved_by_campus = params.is_approved_by_campus;
+    }
     if (params?.start_date) queryParams.start_date = params.start_date;
     if (params?.end_date) queryParams.end_date = params.end_date;
     if (params?.ordering) queryParams.ordering = params.ordering;

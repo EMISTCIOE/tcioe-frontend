@@ -303,6 +303,27 @@ export const Header = () => {
                         onClick={() => setIsSheetOpen(false)}
                         className="block py-2 text-base text-text-dark hover:text-primary-blue transition-colors"
                       >
+                        Students
+                      </Link>
+                      <Link
+                        href="#"
+                        onClick={() => setIsSheetOpen(false)}
+                        className="block py-2 text-base text-text-dark hover:text-primary-blue transition-colors"
+                      >
+                        Faculty & Staff
+                      </Link>
+                      <Link
+                        href="#"
+                        onClick={() => setIsSheetOpen(false)}
+                        className="block py-2 text-base text-text-dark hover:text-primary-blue transition-colors"
+                      >
+                        Alumni
+                      </Link>
+                      <Link
+                        href="#"
+                        onClick={() => setIsSheetOpen(false)}
+                        className="block py-2 text-base text-text-dark hover:text-primary-blue transition-colors"
+                      >
                         Library
                       </Link>
                       <Link
@@ -369,8 +390,9 @@ export const Header = () => {
 
       {/* Navigation Bar (Desktop) */}
       <nav className="bg-white border-t border-gray-200 hidden md:block">
-        <div className="container mx-auto flex justify-center">
-          <ul className="flex items-center md:space-x-8">
+        {/* allow horizontal scroll on narrower screens to avoid wrapping/clipping */}
+        <div className="container mx-auto flex justify-center overflow-x-auto px-4">
+          <ul className="flex items-center md:space-x-8 whitespace-nowrap">
             {navItems.map((item) => (
               <li key={item.name} className="flex items-center h-full">
                 {item.dropdown && item.dropdown.length > 0 ? (

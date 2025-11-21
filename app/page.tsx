@@ -2,7 +2,6 @@
 
 import { HeroSection } from "@/components/sections/hero-section";
 import { CampusChiefHeroMessage } from "@/components/sections/campus-chief-hero-message";
-import { QuickStats } from "@/components/sections/quick-stats";
 import { NewsEvents } from "@/components/sections/news-events";
 import { DepartmentsOverview } from "@/components/sections/departments-overview";
 import { GallerySection } from "@/components/sections/gallery-section";
@@ -11,20 +10,32 @@ import { UpcomingEventsSection } from "@/components/sections/upcoming-events-sec
 import { useCollegeData } from "@/hooks/use-college-data";
 import { useDepartments as useDeptList } from "@/hooks/use-departments";
 import { useNotices } from "@/hooks/use-notices";
-import { campusChiefData } from "@/data/mock-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FeaturedNoticePopup } from "@/components/FeaturedNoticePopup";
 import { useFeaturedNoticePopup } from "@/hooks/use-featured-notice-popup";
 import { useGlobalGallery } from "@/hooks/use-global-gallery";
+import {
+  formatStaffTitlePrefix,
+  useCampusKeyOfficials,
+} from "@/hooks/use-campus-key-officials";
+import { stripHtmlTags } from "@/lib/utils";
 
 export default function HomePage() {
-  const { data, loading, error } = useCollegeData();
+  const { data, loading: collegeLoading, error } = useCollegeData();
   const { departments: deptList } = useDeptList({ limit: 6, ordering: "name" });
   const { notices, loading: noticesLoading } = useNotices({
     page: 1,
     limit: 6,
     ordering: "-published_at",
+    is_approved_by_campus: true,
   });
+  const { officials: campusKeyOfficials, loading: officialsLoading } =
+    useCampusKeyOfficials({
+      limit: 1,
+      ordering: "display_order",
+      isKeyOfficial: true,
+      designation: "CHIEF",
+    });
   const {
     notice: featuredNotice,
     isOpen: isPopupOpen,
@@ -37,7 +48,7 @@ export default function HomePage() {
     sourceType: "college",
   });
 
-  if (loading || noticesLoading) {
+  if (collegeLoading || noticesLoading || officialsLoading) {
     return (
       <div className="flex flex-col min-h-screen">
         <div className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden">
@@ -125,7 +136,19 @@ export default function HomePage() {
     return <div className="text-center py-20 text-red-500">Error: {error}</div>;
   }
 
-  const campusChiefMessage = campusChiefData;
+  const campusChief = campusKeyOfficials?.[0];
+  const campusChiefMessage = campusChief
+    ? {
+        name: [formatStaffTitlePrefix(campusChief.titlePrefix), campusChief.fullName]
+          .filter(Boolean)
+          .join(" ")
+          .trim(),
+        title: campusChief.designationDisplay || campusChief.designation,
+        image: campusChief.photo || "/placeholder.svg",
+        message: stripHtmlTags(campusChief.message || ""),
+        fullMessage: stripHtmlTags(campusChief.message || ""),
+      }
+    : null;
 
   const quickLinks = [
     { label: "Admissions", href: "/admissions", icon: "UserPlus" },

@@ -46,6 +46,10 @@ export interface Notice {
   description: string;
   thumbnail: string | null;
   isFeatured: boolean;
+  isApprovedByDepartment?: boolean;
+  isApprovedByCampus?: boolean;
+  is_approved_by_department?: boolean;
+  is_approved_by_campus?: boolean;
   department: NoticeDepartment | null;
   category: NoticeCategory;
   publishedAt: string;

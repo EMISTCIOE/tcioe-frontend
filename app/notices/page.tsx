@@ -54,6 +54,7 @@ export default function NoticesPage() {
       start_date: startDate || undefined,
       end_date: endDate || undefined,
       ordering: "-published_at",
+      is_approved_by_campus: true,
     }),
     [
       currentPage,
