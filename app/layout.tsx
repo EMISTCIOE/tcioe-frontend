@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { createSEOConfig, generateOrganizationSchema } from "@/lib/seo";
 import { PostHogProvider } from "@/components/PostHogProvider";
+import { ReactQueryProvider } from "@/components/providers/ReactQueryProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -104,12 +105,14 @@ export default function RootLayout({
         <meta name="referrer" content="strict-origin-when-cross-origin" />
       </head>
       <body className={inter.className}>
-        <PostHogProvider />
-        <Header />
-        <main role="main" id="main-content">
-          {children}
-        </main>
-        <Footer />
+        <ReactQueryProvider>
+          <PostHogProvider />
+          <Header />
+          <main role="main" id="main-content">
+            {children}
+          </main>
+          <Footer />
+        </ReactQueryProvider>
       </body>
     </html>
   );

@@ -1,44 +1,68 @@
 "use client";
 import { AnimatedSection } from "@/components/animated-section";
 import Image from "next/image";
-import { useState, useMemo, useEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useMemo, useState } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useQuery } from "@tanstack/react-query";
 import type { GlobalGalleryItem } from "@/types";
+
+const SOURCE_LABELS: Record<string, string> = {
+  college: "Campus",
+  department: "Departments",
+  events: "Events",
+  event: "Events",
+  club: "Clubs",
+  clubs: "Clubs",
+};
+
+const formatSourceLabel = (value: string) => {
+  const safe = value?.toLowerCase();
+  if (!safe) return "";
+  if (SOURCE_LABELS[safe]) {
+    return SOURCE_LABELS[safe];
+  }
+
+  return safe
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
 
 export default function GalleryPage() {
   const [selectedSourceType, setSelectedSourceType] = useState("");
-  const [items, setItems] = useState<GlobalGalleryItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<GlobalGalleryItem | null>(
+    null
+  );
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+  const [lightboxSize, setLightboxSize] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
 
-  const fetchGallery = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
+    queryKey: ["global-gallery", selectedSourceType],
+    queryFn: async ({ signal }) => {
       const params = new URLSearchParams({ limit: "100" });
 
       if (selectedSourceType) {
         params.append("source_type", selectedSourceType);
       }
 
-      const response = await fetch(`/api/global-gallery?${params.toString()}`);
+      const response = await fetch(`/api/global-gallery?${params.toString()}`, {
+        signal,
+      });
       if (!response.ok) {
         throw new Error(`Failed to fetch gallery (${response.status})`);
       }
-      const data = await response.json();
-      setItems(data?.results ?? []);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unexpected error occurred"
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedSourceType]);
+      return response.json() as Promise<{ results: GlobalGalleryItem[] }>;
+    },
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+    retry: 2,
+  });
 
-  useEffect(() => {
-    fetchGallery();
-  }, [fetchGallery]);
+  const items = data?.results ?? [];
 
   // Get unique source types from items for additional filtering
   const sourceTypes = useMemo(() => {
@@ -46,7 +70,83 @@ export default function GalleryPage() {
     return Array.from(types).sort();
   }, [items]);
 
-  if (loading) {
+  const hasFilters = sourceTypes.length > 0;
+  const filterChips = hasFilters
+    ? sourceTypes.map((type) => ({
+        value: type,
+        label: formatSourceLabel(type),
+      }))
+    : [];
+
+  useEffect(() => {
+    const updateViewport = () => {
+      setViewportSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
+
+  useEffect(() => {
+    setLightboxSize(null);
+  }, [selectedItem]);
+
+  const lightboxStyle = useMemo(() => {
+    const fallbackWidth =
+      viewportSize.width > 0
+        ? Math.min(viewportSize.width * 0.8, 900)
+        : 800;
+    const fallbackHeight =
+      viewportSize.height > 0
+        ? Math.min(viewportSize.height * 0.7, 700)
+        : 600;
+
+    if (!lightboxSize) {
+      return { width: fallbackWidth, height: fallbackHeight };
+    }
+
+    const maxWidth =
+      viewportSize.width > 0
+        ? viewportSize.width * 0.9
+        : lightboxSize.width;
+    const maxHeight =
+      viewportSize.height > 0
+        ? viewportSize.height * 0.85
+        : lightboxSize.height;
+    const scale = Math.min(
+      maxWidth / lightboxSize.width,
+      maxHeight / lightboxSize.height,
+      1
+    );
+
+    return {
+      width: lightboxSize.width * scale,
+      height: lightboxSize.height * scale,
+    };
+  }, [lightboxSize, viewportSize.height, viewportSize.width]);
+
+  useEffect(() => {
+    const updateViewport = () => {
+      setViewportSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
+
+  useEffect(() => {
+    setLightboxSize(null);
+  }, [selectedItem]);
+
+  if (isLoading || isFetching) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background-light to-wheat-light">
         <div className="text-center py-20">
@@ -57,14 +157,16 @@ export default function GalleryPage() {
     );
   }
 
-  if (error) {
+  if (isError) {
+    const message =
+      error instanceof Error ? error.message : "Unexpected error occurred";
     return (
       <div className="min-h-screen bg-gradient-to-br from-background-light to-wheat-light">
         <div className="text-center py-20 text-red-500 space-y-4">
-          <p>Error loading gallery: {error}</p>
+          <p>Error loading gallery: {message}</p>
           <button
             type="button"
-            onClick={fetchGallery}
+            onClick={() => refetch()}
             className="text-primary-blue underline text-sm hover:text-secondary-blue"
           >
             Try again
@@ -77,79 +179,63 @@ export default function GalleryPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background-light to-wheat-light">
       {/* Hero Section */}
-      <AnimatedSection className="relative bg-gradient-to-r from-primary-blue to-secondary-blue text-white py-16 px-4">
-        <div className="container mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+      <AnimatedSection className="relative overflow-hidden bg-gradient-to-br from-primary-blue to-secondary-blue text-white py-12 px-4">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
+        <div className="container relative mx-auto flex flex-col items-center text-center gap-4">
+          <p className="text-xs uppercase tracking-[0.3em] text-white/70">
             Campus Gallery
+          </p>
+          <h1 className="text-3xl md:text-4xl font-semibold leading-tight text-balance">
+            Explore life around Thapathali Engineering Campus
           </h1>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto opacity-90">
-            Explore our vibrant campus life, events, and memorable moments
+          <p className="text-base md:text-lg max-w-3xl mx-auto text-white/90">
+            Curated glimpses of classrooms, labs, events, and the people who
+            make this community memorable.
           </p>
         </div>
-        <div className="absolute inset-0 bg-black/10"></div>
       </AnimatedSection>
 
       {/* Filters Section */}
-      <AnimatedSection className="py-8 px-4 bg-white shadow-md" delay={0.1}>
+      <AnimatedSection className="py-8 px-4" delay={0.1}>
         <div className="container mx-auto">
-          <div className="flex flex-col space-y-4">
-            {/* Source Type Filters */}
-            {sourceTypes.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                  Filter by Source:
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    onClick={() => setSelectedSourceType("")}
-                    variant={selectedSourceType === "" ? "default" : "outline"}
-                    size="sm"
-                    className={`rounded-full transition-all ${
-                      selectedSourceType === ""
-                        ? "bg-primary-blue text-white shadow-lg scale-105"
-                        : "hover:bg-gray-100"
+          {hasFilters ? (
+            <div className="rounded-3xl border border-black/5 bg-white/95 px-5 py-6 shadow-lg shadow-primary-blue/10 backdrop-blur">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSelectedSourceType("")}
+                  aria-pressed={selectedSourceType === ""}
+                  className={`rounded-full border px-5 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
+                    selectedSourceType === ""
+                      ? "border-primary-blue bg-primary-blue text-white shadow-md"
+                      : "border-gray-200 text-gray-700 hover:border-primary-blue/40 hover:text-primary-blue"
+                  }`}
+                >
+                  All
+                </button>
+                {filterChips.map((chip) => (
+                  <button
+                    key={chip.value}
+                    type="button"
+                    onClick={() => setSelectedSourceType(chip.value)}
+                    aria-pressed={selectedSourceType === chip.value}
+                    className={`rounded-full border px-5 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
+                      selectedSourceType === chip.value
+                        ? "border-primary-blue bg-primary-blue text-white shadow-md"
+                        : "border-gray-200 text-gray-700 hover:border-primary-blue/40 hover:text-primary-blue"
                     }`}
                   >
-                    All Sources
-                  </Button>
-                  {sourceTypes.map((type) => (
-                    <Button
-                      key={type}
-                      onClick={() => setSelectedSourceType(type)}
-                      variant={
-                        selectedSourceType === type ? "default" : "outline"
-                      }
-                      size="sm"
-                      className={`rounded-full transition-all ${
-                        selectedSourceType === type
-                          ? "bg-primary-blue text-white shadow-lg scale-105"
-                          : "hover:bg-gray-100"
-                      }`}
-                    >
-                      {type}
-                    </Button>
-                  ))}
-                </div>
+                    {chip.label}
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
-
-          {/* Results count and reset */}
-          <div className="mt-4 flex items-center justify-between flex-wrap gap-2">
-            <div className="text-sm text-gray-600">
-              Showing {items.length} {items.length === 1 ? "photo" : "photos"}
             </div>
-            {selectedSourceType && (
-              <Button
-                onClick={() => setSelectedSourceType("")}
-                variant="ghost"
-                size="sm"
-                className="text-primary-blue hover:text-secondary-blue hover:underline"
-              >
-                Reset Filter
-              </Button>
-            )}
-          </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-gray-300 bg-white/80 px-6 py-8 text-center text-sm text-gray-500">
+              Currently showcasing campus-wide photos. More categories will
+              appear as fresh collections come in.
+            </div>
+          )}
         </div>
       </AnimatedSection>
 
@@ -185,39 +271,90 @@ export default function GalleryPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {items.map((item, index) => (
                 <AnimatedSection key={item.uuid} delay={0.05 * (index % 12)}>
-                  <div className="relative w-full h-64 overflow-hidden rounded-xl shadow-lg group hover:shadow-2xl transition-all duration-300">
-                    <Image
-                      src={item.image || "/placeholder.svg"}
-                      alt={item.caption || item.sourceName}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="absolute inset-x-0 bottom-0 p-4 text-white">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedItem(item)}
+                    className="group relative block w-full overflow-hidden rounded-2xl shadow-lg ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2"
+                  >
+                    <div className="relative h-64 w-full">
+                      <Image
+                        src={item.image || "/placeholder.svg"}
+                        alt={item.caption || item.sourceName}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 25vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-left text-white">
                         {item.caption && (
-                          <p className="font-semibold text-base mb-1">
+                          <p className="text-base font-semibold">
                             {item.caption}
                           </p>
                         )}
-                        <p className="text-sm opacity-90">{item.sourceName}</p>
+                        <p className="text-sm text-white/80">
+                          {item.sourceName}
+                        </p>
                         {item.sourceContext && (
-                          <p className="text-xs opacity-75 mt-1">
+                          <p className="text-xs text-white/70 mt-1">
                             {item.sourceContext}
                           </p>
                         )}
                       </div>
+                      <div className="absolute top-3 right-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-700 shadow-sm">
+                        {item.sourceType}
+                      </div>
                     </div>
-                    {/* Source type badge */}
-                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      {item.sourceType}
-                    </div>
-                  </div>
+                  </button>
                 </AnimatedSection>
               ))}
             </div>
           )}
         </div>
       </AnimatedSection>
+
+      <Dialog
+        open={Boolean(selectedItem)}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setSelectedItem(null);
+            setLightboxSize(null);
+          }
+        }}
+      >
+        <DialogContent className="w-[96vw] max-w-6xl border-none bg-transparent p-0 shadow-none">
+          {selectedItem && (
+            <div
+              className="relative mx-auto overflow-hidden rounded-[32px] bg-white/95 p-2 shadow-2xl"
+              style={{
+                ...lightboxStyle,
+                maxWidth: "90vw",
+                maxHeight: "85vh",
+              }}
+            >
+              <Image
+                src={selectedItem.image || "/placeholder.svg"}
+                alt={selectedItem.caption || selectedItem.sourceName}
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 75vw"
+                priority
+                onLoadingComplete={({ naturalWidth, naturalHeight }) => {
+                  setLightboxSize((prev) => {
+                    if (
+                      prev &&
+                      prev.width === naturalWidth &&
+                      prev.height === naturalHeight
+                    ) {
+                      return prev;
+                    }
+                    return { width: naturalWidth, height: naturalHeight };
+                  });
+                }}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
