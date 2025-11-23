@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
     const allowed = [
       "department_slug",
       "project_type",
+      "status",
       "ordering",
       "search",
       "is_featured",

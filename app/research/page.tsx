@@ -1,568 +1,525 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import env from "@/lib/env";
+import type { PaginatedResponse, ResearchItem } from "@/types";
+import { Badge } from "@/components/ui/badge";
 import {
-  Search,
-  Github,
-  ExternalLink,
-  Users,
-  Calendar,
-  BookOpen,
-  Award,
-  Database,
-  Globe,
-} from "lucide-react";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { BookOpen, Building2, Calendar, Search } from "lucide-react";
 
-interface Research {
-  id: string;
-  title: string;
-  abstract: string;
-  description: string;
-  research_type: string;
-  status: string;
-  field_of_study: string;
-  keywords: string;
-  methodology: string;
-  start_date: string;
-  end_date: string;
-  duration_months: number;
-  funding_agency: string;
-  funding_amount: number;
-  funding_currency: string;
-  expected_outcomes: string;
-  is_collaborative: boolean;
-  collaboration_details: string;
-  github_url: string;
-  dataset_url: string;
-  website_url: string;
-  is_featured: boolean;
-  citation_count: number;
-  participants: Array<{
-    full_name: string;
-    participant_type: string;
-    role: string;
-    affiliation: string;
-  }>;
-  publications: Array<{
-    title: string;
-    authors: string;
-    journal_name: string;
-    conference_name: string;
-    publication_date: string;
-    doi: string;
-    url: string;
-    citation_count: number;
-  }>;
-  tags: Array<{
-    name: string;
-    color: string;
-  }>;
-  created_at: string;
+type DepartmentOption = {
+  slug: string;
+  name: string;
+  shortName?: string | null;
+};
+
+const API_BASE = env.API_BASE_URL || "https://cdn.tcioe.edu.np";
+const PAGE_SIZE = 12;
+
+const RESEARCH_TYPES = [
+  { value: "all", label: "All types" },
+  { value: "applied", label: "Applied" },
+  { value: "basic", label: "Basic" },
+  { value: "development", label: "Development" },
+  { value: "interdisciplinary", label: "Interdisciplinary" },
+  { value: "collaborative", label: "Collaborative" },
+];
+
+const RESEARCH_STATUSES = [
+  { value: "all", label: "All status" },
+  { value: "published", label: "Published" },
+  { value: "ongoing", label: "Ongoing" },
+  { value: "proposal", label: "Proposal" },
+  { value: "completed", label: "Completed" },
+];
+
+const asSingleValue = (value?: string | string[]) =>
+  Array.isArray(value) ? value[0] ?? "" : value ?? "";
+
+const titleize = (value?: string | null) =>
+  value
+    ? value
+        .split(/[_\s]+/)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ")
+    : "";
+
+const formatDate = (value?: string | null) => {
+  if (!value) return "";
+  try {
+    return new Date(value).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
+  } catch {
+    return value;
+  }
+};
+
+const formatCurrency = (value?: number | string | null) => {
+  if (value === undefined || value === null || value === "") return "";
+  const amount = typeof value === "string" ? Number(value) : value;
+  if (Number.isNaN(amount)) return `${value}`;
+  try {
+    return new Intl.NumberFormat("en-NP", {
+      style: "currency",
+      currency: "NPR",
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${amount}`;
+  }
+};
+
+// Keep thumbnails working when the API returns relative or localhost URLs
+const normalizeImageUrl = (image?: string | null) => {
+  if (!image) return "";
+  try {
+    const parsed = new URL(image);
+    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
+      return env.getApiUrl(parsed.pathname + parsed.search + parsed.hash);
+    }
+    return parsed.toString();
+  } catch {
+    const path = image.startsWith("/") ? image : `/${image}`;
+    return env.getApiUrl(path);
+  }
+};
+
+const buildPageHref = (
+  page: number,
+  params: {
+    searchTerm?: string;
+    department?: string;
+    type?: string;
+    status?: string;
+  }
+) => {
+  const query = new URLSearchParams();
+  if (params.searchTerm) query.set("q", params.searchTerm);
+  if (params.department) query.set("department", params.department);
+  if (params.type && params.type !== "all") query.set("type", params.type);
+  if (params.status && params.status !== "all") query.set("status", params.status);
+  query.set("page", page.toString());
+  const qs = query.toString();
+  return qs ? `/research?${qs}` : "/research";
+};
+
+const buildPageNumbers = (current: number, total: number): Array<number | "ellipsis"> => {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, idx) => idx + 1);
+  }
+
+  const pages: Array<number | "ellipsis"> = [];
+  const start = Math.max(1, current - 2);
+  const end = Math.min(total, current + 2);
+
+  if (start > 1) {
+    pages.push(1);
+    if (start > 2) pages.push("ellipsis");
+  }
+
+  for (let i = start; i <= end; i += 1) {
+    pages.push(i);
+  }
+
+  if (end < total) {
+    if (end < total - 1) pages.push("ellipsis");
+    pages.push(total);
+  }
+
+  return pages;
+};
+
+async function fetchDepartments(): Promise<DepartmentOption[]> {
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/v1/public/department-mod/departments?limit=200`,
+      { next: { revalidate: 3600 } }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch departments (${response.status})`);
+    }
+
+    const data = await response.json();
+    return (data?.results || []).map((dept: any) => ({
+      slug: dept.slug || dept.shortName || dept.short_name,
+      name: dept.name,
+      shortName: dept.shortName || dept.short_name,
+    }));
+  } catch (error) {
+    console.warn("departments fetch failed:", error);
+    return [];
+  }
 }
 
-export default function ResearchPage() {
-  const [research, setResearch] = useState<Research[]>([]);
-  const [filteredResearch, setFilteredResearch] = useState<Research[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedType, setSelectedType] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedField, setSelectedField] = useState("all");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+async function fetchResearchList(params: {
+  searchTerm?: string;
+  department?: string;
+  page: number;
+  type?: string;
+  status?: string;
+}): Promise<PaginatedResponse<ResearchItem>> {
+  const query = new URLSearchParams();
+  query.set("limit", PAGE_SIZE.toString());
+  query.set("page", params.page.toString());
+  query.set("ordering", "-start_date");
+  if (params.searchTerm) query.set("search", params.searchTerm);
+  if (params.department) query.set("department_slug", params.department);
+  if (params.type && params.type !== "all") query.set("research_type", params.type);
+  if (params.status && params.status !== "all") query.set("status", params.status);
 
-  useEffect(() => {
-    fetchResearch();
-  }, []);
+  const response = await fetch(
+    `${API_BASE}/api/v1/public/research-mod/research?${query.toString()}`,
+    { cache: "no-store" }
+  );
 
-  useEffect(() => {
-    filterResearch();
-  }, [research, searchTerm, selectedType, selectedStatus, selectedField]);
-
-  const fetchResearch = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
-        }/api/public/research/`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch research");
-      }
-
-      const data = await response.json();
-      setResearch(data.results || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load research");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filterResearch = () => {
-    let filtered = research;
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (item) =>
-          item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.abstract.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.field_of_study
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          item.keywords.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.participants.some((p) =>
-            p.full_name.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-      );
-    }
-
-    // Type filter
-    if (selectedType !== "all") {
-      filtered = filtered.filter((item) => item.research_type === selectedType);
-    }
-
-    // Status filter
-    if (selectedStatus !== "all") {
-      filtered = filtered.filter((item) => item.status === selectedStatus);
-    }
-
-    // Field filter
-    if (selectedField !== "all") {
-      filtered = filtered.filter((item) =>
-        item.field_of_study.toLowerCase().includes(selectedField.toLowerCase())
-      );
-    }
-
-    setFilteredResearch(filtered);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "ongoing":
-        return "bg-blue-100 text-blue-800";
-      case "published":
-        return "bg-purple-100 text-purple-800";
-      case "proposal":
-        return "bg-yellow-100 text-yellow-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "basic":
-        return "bg-blue-100 text-blue-800";
-      case "applied":
-        return "bg-green-100 text-green-800";
-      case "development":
-        return "bg-orange-100 text-orange-800";
-      case "interdisciplinary":
-        return "bg-purple-100 text-purple-800";
-      case "collaborative":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const formatCurrency = (amount: number, currency: string) => {
-    const symbols: { [key: string]: string } = {
-      INR: "₹",
-      USD: "$",
-      EUR: "€",
-      GBP: "£",
-    };
-    return `${symbols[currency] || currency} ${new Intl.NumberFormat(
-      "en-IN"
-    ).format(amount)}`;
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-lg p-6 space-y-4">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-full"></div>
-                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch research (${response.status})`);
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Error Loading Research
-          </h2>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <button
-            onClick={fetchResearch}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const data = (await response.json()) as PaginatedResponse<ResearchItem>;
+  return data;
+}
+
+export default async function ResearchPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
+  const searchTerm = asSingleValue(searchParams?.q);
+  const selectedDepartment = asSingleValue(searchParams?.department);
+  const selectedType = asSingleValue(searchParams?.type) || "all";
+  const selectedStatus = asSingleValue(searchParams?.status) || "all";
+  const rawPage = parseInt(asSingleValue(searchParams?.page) || "1", 10);
+  const currentPage = Number.isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+
+  const [departments, researchResultOrError] = await Promise.all([
+    fetchDepartments(),
+    fetchResearchList({
+      searchTerm,
+      department: selectedDepartment,
+      page: currentPage,
+      type: selectedType,
+      status: selectedStatus,
+    }).catch((error: Error) => error),
+  ]);
+
+  const researchError =
+    researchResultOrError instanceof Error ? researchResultOrError.message : null;
+  const researchResult =
+    researchResultOrError instanceof Error ? null : researchResultOrError;
+
+  const researchItems = researchResult?.results ?? [];
+  const totalCount = researchResult?.count ?? 0;
+  const totalPages = researchResult ? Math.max(1, Math.ceil(totalCount / PAGE_SIZE)) : 1;
+  const showPagination = researchResult ? totalPages > 1 : false;
+  const rangeStart =
+    researchResult && researchItems.length > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0;
+  const rangeEnd =
+    researchResult && researchItems.length > 0
+      ? (currentPage - 1) * PAGE_SIZE + researchItems.length
+      : 0;
+
+  const selectedDepartmentName =
+    departments.find((dept) => dept.slug === selectedDepartment)?.name || "";
+
+  const filterSummary = [
+    searchTerm ? `“${searchTerm}”` : null,
+    selectedDepartmentName || selectedDepartment
+      ? `Dept: ${selectedDepartmentName || selectedDepartment}`
+      : null,
+    selectedType !== "all" ? titleize(selectedType) : null,
+    selectedStatus !== "all" ? titleize(selectedStatus) : null,
+  ]
+    .filter(Boolean)
+    .join(" • ");
+
+  const pageNumbers = showPagination
+    ? buildPageNumbers(currentPage, totalPages)
+    : ([] as Array<number | "ellipsis">);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-white border-b">
-        <div className="container mx-auto px-4 py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center max-w-3xl mx-auto"
-          >
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Research Projects
-            </h1>
-            <p className="text-xl text-gray-600 mb-8">
-              Discover cutting-edge research initiatives and scholarly work from
-              our institution
+    <div className="bg-background py-12 md:py-16">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 space-y-10">
+        <header className="space-y-3 text-center">
+          <p className="text-xs uppercase tracking-[0.35em] text-primary font-semibold">
+            Research & Projects
+          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+            College-wide research showcase
+          </h1>
+          <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
+            Browse funded initiatives, applied research, and student-led projects across every
+            department. Use the filters to jump to a department or refine by status.
+          </p>
+        </header>
+
+        <section className="space-y-4">
+          <form className="grid gap-3 md:grid-cols-[1.6fr,1fr,1fr,auto] items-center rounded-lg border border-border/60 bg-muted/40 p-4">
+            <input type="hidden" name="page" value="1" />
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                name="q"
+                defaultValue={searchTerm}
+                placeholder="Search by title, abstract, or investigator"
+                className="pl-9"
+              />
+            </div>
+
+            <div className="w-full">
+              <label className="sr-only" htmlFor="department">
+                Department
+              </label>
+              <select
+                id="department"
+                name="department"
+                defaultValue={selectedDepartment}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="">All departments</option>
+                {departments.map((dept) => (
+                  <option key={dept.slug} value={dept.slug}>
+                    {dept.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="w-full">
+              <label className="sr-only" htmlFor="type">
+                Research type
+              </label>
+              <select
+                id="type"
+                name="type"
+                defaultValue={selectedType}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                {RESEARCH_TYPES.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex w-full items-center gap-2">
+              <div className="flex-1">
+                <label className="sr-only" htmlFor="status">
+                  Status
+                </label>
+                <select
+                  id="status"
+                  name="status"
+                  defaultValue={selectedStatus}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  {RESEARCH_STATUSES.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+              >
+                Apply
+              </button>
+            </div>
+          </form>
+
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
+                <BookOpen className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold">Research library</h2>
+                <p className="text-sm text-muted-foreground">
+                  {researchResult
+                    ? `Showing ${rangeStart || 0}–${rangeEnd || 0} of ${totalCount} items`
+                    : "Search and filter to explore research output across departments."}
+                </p>
+              </div>
+            </div>
+            {filterSummary && (
+              <p className="text-xs text-muted-foreground">Filters: {filterSummary}</p>
+            )}
+          </div>
+
+          {researchError && (
+            <p className="text-sm text-red-600">Unable to load research: {researchError}</p>
+          )}
+
+          {!researchError && researchItems.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              No research matched your filters yet. Try a different search or department.
             </p>
-          </motion.div>
-        </div>
-      </section>
+          )}
 
-      {/* Filters Section */}
-      <section className="bg-white border-b">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-            {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search research..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-wrap gap-4">
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Types</option>
-                <option value="basic">Basic Research</option>
-                <option value="applied">Applied Research</option>
-                <option value="development">Development</option>
-                <option value="interdisciplinary">Interdisciplinary</option>
-                <option value="collaborative">Collaborative</option>
-              </select>
-
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Status</option>
-                <option value="proposal">Proposal</option>
-                <option value="ongoing">Ongoing</option>
-                <option value="completed">Completed</option>
-                <option value="published">Published</option>
-              </select>
-
-              <input
-                type="text"
-                placeholder="Field of study..."
-                value={selectedField === "all" ? "" : selectedField}
-                onChange={(e) => setSelectedField(e.target.value || "all")}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Results Count */}
-          <div className="mt-4 text-sm text-gray-600">
-            Showing {filteredResearch.length} of {research.length} research
-            projects
-          </div>
-        </div>
-      </section>
-
-      {/* Research Grid */}
-      <section className="container mx-auto px-4 py-8">
-        {filteredResearch.length === 0 ? (
-          <div className="text-center py-12">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No research found
-            </h3>
-            <p className="text-gray-600">Try adjusting your search criteria</p>
-          </div>
-        ) : (
-          <div className="grid lg:grid-cols-2 gap-6">
-            {filteredResearch.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
-              >
-                <div className="p-6">
-                  {/* Research Type & Status */}
-                  <div className="flex items-center justify-between mb-3">
-                    <span
-                      className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(
-                        item.research_type
-                      )}`}
-                    >
-                      {item.research_type.replace("_", " ").toUpperCase()}
-                    </span>
-                    <span
-                      className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        item.status
-                      )}`}
-                    >
-                      {item.status.toUpperCase()}
-                    </span>
-                  </div>
-
-                  {/* Research Title */}
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
-                    {item.title}
-                  </h3>
-
-                  {/* Field of Study */}
-                  <div className="text-sm text-blue-600 font-medium mb-3">
-                    {item.field_of_study}
-                  </div>
-
-                  {/* Abstract */}
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {item.abstract}
-                  </p>
-
-                  {/* Keywords */}
-                  {item.keywords && (
-                    <div className="mb-4">
-                      <div className="flex flex-wrap gap-1">
-                        {item.keywords
-                          .split(",")
-                          .slice(0, 4)
-                          .map((keyword, i) => (
-                            <span
-                              key={i}
-                              className="inline-flex px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
-                            >
-                              {keyword.trim()}
-                            </span>
-                          ))}
-                        {item.keywords.split(",").length > 4 && (
-                          <span className="inline-flex px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                            +{item.keywords.split(",").length - 4} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Research Info */}
-                  <div className="grid grid-cols-2 gap-4 mb-4 text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <Users className="w-4 h-4 mr-1" />
-                      <span>
-                        {item.participants.length} participant
-                        {item.participants.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-
-                    {item.duration_months && (
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        <span>{item.duration_months} months</span>
+          {researchItems.length > 0 && (
+            <div className="grid gap-6 md:grid-cols-2">
+              {researchItems.map((item) => (
+                <Card key={item.id} className="h-full border border-border/70 shadow-sm">
+                  <div className="aspect-video w-full overflow-hidden rounded-t-lg bg-muted">
+                    {item.thumbnail ? (
+                      <img
+                        src={normalizeImageUrl(item.thumbnail)}
+                        alt={item.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+                        Thumbnail coming soon
                       </div>
                     )}
-
-                    {item.publications.length > 0 && (
-                      <div className="flex items-center">
-                        <BookOpen className="w-4 h-4 mr-1" />
-                        <span>
-                          {item.publications.length} publication
-                          {item.publications.length !== 1 ? "s" : ""}
+                  </div>
+                  <CardHeader className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <Badge variant="secondary">{titleize(item.researchType)}</Badge>
+                      <Badge variant="outline">{titleize(item.status)}</Badge>
+                      {item.startDate && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {formatDate(item.startDate)}
+                          {item.endDate ? ` – ${formatDate(item.endDate)}` : ""}
                         </span>
-                      </div>
-                    )}
-
-                    {item.citation_count > 0 && (
-                      <div className="flex items-center">
-                        <Award className="w-4 h-4 mr-1" />
-                        <span>
-                          {item.citation_count} citation
-                          {item.citation_count !== 1 ? "s" : ""}
+                      )}
+                      {item.departmentName && (
+                        <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1">
+                          <Building2 className="h-3.5 w-3.5" />
+                          {item.departmentName}
                         </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Funding Info */}
-                  {item.funding_agency && (
-                    <div className="mb-4 p-3 bg-green-50 rounded-lg">
-                      <div className="text-sm">
-                        <strong className="text-green-800">Funded by:</strong>{" "}
-                        {item.funding_agency}
-                        {item.funding_amount && (
-                          <span className="ml-2 text-green-600 font-medium">
-                            {formatCurrency(
-                              item.funding_amount,
-                              item.funding_currency
-                            )}
-                          </span>
-                        )}
-                      </div>
+                      )}
                     </div>
-                  )}
-
-                  {/* Collaboration Badge */}
-                  {item.is_collaborative && (
-                    <div className="mb-4">
-                      <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                        <Users className="w-3 h-3 mr-1" />
-                        Collaborative Research
-                      </span>
+                    <div className="space-y-1">
+                      <CardTitle className="text-xl leading-snug">{item.title}</CardTitle>
+                      <CardDescription className="line-clamp-3">
+                        {item.abstract || "Abstract coming soon."}
+                      </CardDescription>
                     </div>
-                  )}
-
-                  {/* Tags */}
-                  {item.tags && item.tags.length > 0 && (
-                    <div className="mb-4">
-                      <div className="flex flex-wrap gap-1">
-                        {item.tags.slice(0, 3).map((tag, i) => (
+                    {item.categories.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {item.categories.map((cat) => (
                           <span
-                            key={i}
-                            className="inline-flex px-2 py-1 rounded text-xs font-medium text-white"
-                            style={{ backgroundColor: tag.color }}
+                            key={cat.id}
+                            className="text-xs px-2 py-1 rounded-full bg-muted"
+                            style={
+                              cat.color
+                                ? { border: `1px solid ${cat.color}`, color: cat.color }
+                                : {}
+                            }
                           >
-                            {tag.name}
+                            {cat.name}
                           </span>
                         ))}
-                        {item.tags.length > 3 && (
-                          <span className="inline-flex px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded">
-                            +{item.tags.length - 3} more
-                          </span>
-                        )}
+                      </div>
+                    )}
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <div>
+                        <span className="font-semibold text-foreground">PI: </span>
+                        {item.principalInvestigatorShort || "Not listed"}
+                      </div>
+                      {item.fundingAgency && (
+                        <div className="flex flex-wrap items-center gap-1">
+                          <span className="font-semibold text-foreground">Funding:</span>
+                          <span>{item.fundingAgency}</span>
+                          {item.fundingAmount && <span>{formatCurrency(item.fundingAmount)}</span>}
+                        </div>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <BookOpen className="h-4 w-4" />
+                        <span>{item.viewsCount ?? 0} views</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="h-2 w-2 rounded-full bg-primary" />
+                        <span>{item.participantsCount ?? 0} participants</span>
                       </div>
                     </div>
-                  )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
-                  {/* Principal Investigator */}
-                  {item.participants.find((p) =>
-                    p.role.toLowerCase().includes("principal")
-                  ) && (
-                    <div className="mb-4 text-sm text-gray-600">
-                      <strong>Principal Investigator:</strong>{" "}
-                      {
-                        item.participants.find((p) =>
-                          p.role.toLowerCase().includes("principal")
-                        )?.full_name
-                      }
-                    </div>
-                  )}
+          {showPagination && (
+            <Pagination className="pt-2">
+              <PaginationContent>
+                {currentPage > 1 && (
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href={buildPageHref(currentPage - 1, {
+                        searchTerm,
+                        department: selectedDepartment,
+                        type: selectedType,
+                        status: selectedStatus,
+                      })}
+                    />
+                  </PaginationItem>
+                )}
 
-                  {/* Action Links */}
-                  <div className="flex flex-wrap gap-2">
-                    {item.github_url && (
-                      <a
-                        href={item.github_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors"
+                {pageNumbers.map((page, idx) =>
+                  page === "ellipsis" ? (
+                    <PaginationItem key={`ellipsis-${idx}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        href={buildPageHref(page, {
+                          searchTerm,
+                          department: selectedDepartment,
+                          type: selectedType,
+                          status: selectedStatus,
+                        })}
+                        isActive={page === currentPage}
                       >
-                        <Github className="w-4 h-4 mr-1" />
-                        Code
-                      </a>
-                    )}
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )
+                )}
 
-                    {item.dataset_url && (
-                      <a
-                        href={item.dataset_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
-                      >
-                        <Database className="w-4 h-4 mr-1" />
-                        Dataset
-                      </a>
-                    )}
-
-                    {item.website_url && (
-                      <a
-                        href={item.website_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        <Globe className="w-4 h-4 mr-1" />
-                        Website
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Publications Preview */}
-                  {item.publications.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">
-                        Recent Publications
-                      </h4>
-                      <div className="space-y-2">
-                        {item.publications.slice(0, 2).map((pub, i) => (
-                          <div key={i} className="text-xs text-gray-600">
-                            <div className="font-medium">{pub.title}</div>
-                            <div>{pub.authors}</div>
-                            {pub.journal_name && (
-                              <div className="italic">{pub.journal_name}</div>
-                            )}
-                            {pub.conference_name && (
-                              <div className="italic">
-                                {pub.conference_name}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                        {item.publications.length > 2 && (
-                          <div className="text-xs text-gray-500">
-                            +{item.publications.length - 2} more publications
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </section>
+                {currentPage < totalPages && (
+                  <PaginationItem>
+                    <PaginationNext
+                      href={buildPageHref(currentPage + 1, {
+                        searchTerm,
+                        department: selectedDepartment,
+                        type: selectedType,
+                        status: selectedStatus,
+                      })}
+                    />
+                  </PaginationItem>
+                )}
+              </PaginationContent>
+            </Pagination>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
