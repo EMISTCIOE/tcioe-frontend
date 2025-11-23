@@ -171,7 +171,7 @@ export default function CampusEventDetailPage({
           {/* Hero Image */}
           <div className="relative h-64 md:h-80 bg-gray-200">
             <Image
-              src={campusEvent.thumbnail || "/logo.jpg"}
+              src={campusEvent.thumbnail || "/logo.png"}
               alt={campusEvent.title}
               fill
               className="object-cover"

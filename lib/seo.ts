@@ -267,7 +267,7 @@ export function generateOrganizationSchema() {
     name: siteConfig.name,
     alternateName: ["Thapathali Campus", "IOE Thapathali", "TCIOE"],
     url: siteConfig.url,
-    logo: `${siteConfig.url}/images/logo.jpg`,
+    logo: `${siteConfig.url}/images/logo.png`,
     image: `${siteConfig.url}/images/campus.jpg`,
     description: siteConfig.description,
     foundingDate: "1972",

@@ -15,8 +15,8 @@ const makeId = (seed: string) => `uuid-${seed}`;
 // Thumbnails and photos are taken from existing public assets where possible
 const deptThumb = (slug: string) =>
   slug === "applied-science"
-    ? "/placeholder-logo.jpg"
-    : "/placeholder-logo.jpg";
+    ? "/placeholder-logo.png"
+    : "/placeholder-logo.png";
 
 export const mockDepartmentsList: DepartmentsResponse = {
   count: 6,
@@ -30,7 +30,7 @@ export const mockDepartmentsList: DepartmentsResponse = {
       shortName: "DAS",
       briefDescription:
         "Foundational sciences supporting all engineering disciplines.",
-      thumbnail: "/data/logo.jpg",
+      thumbnail: "/data/logo.png",
     },
     {
       uuid: makeId("doarch"),
@@ -38,7 +38,7 @@ export const mockDepartmentsList: DepartmentsResponse = {
       slug: "architecture",
       shortName: "DOArch",
       briefDescription: "Architecture, planning, design, and research.",
-      thumbnail: "/data/logo.jpg",
+      thumbnail: "/data/logo.png",
     },
     {
       uuid: makeId("doame"),
@@ -46,7 +46,7 @@ export const mockDepartmentsList: DepartmentsResponse = {
       slug: "automobile-mechanical",
       shortName: "DOAME",
       briefDescription: "Mechanical systems and automotive technologies.",
-      thumbnail: "/data/logo.jpg",
+      thumbnail: "/data/logo.png",
     },
     {
       uuid: makeId("doce"),
@@ -54,7 +54,7 @@ export const mockDepartmentsList: DepartmentsResponse = {
       slug: "civil",
       shortName: "DOCE",
       briefDescription: "Infrastructure, structures and environment.",
-      thumbnail: "/data/logo.jpg",
+      thumbnail: "/data/logo.png",
     },
     {
       uuid: makeId("doece"),
@@ -62,7 +62,7 @@ export const mockDepartmentsList: DepartmentsResponse = {
       slug: "electronics-computer",
       shortName: "DOECE",
       briefDescription: "Electronics, communication and computing.",
-      thumbnail: "/data/logo.jpg",
+      thumbnail: "/data/logo.png",
     },
     {
       uuid: makeId("doie"),
@@ -70,7 +70,7 @@ export const mockDepartmentsList: DepartmentsResponse = {
       slug: "industrial",
       shortName: "DOIE",
       briefDescription: "Optimization of systems and processes.",
-      thumbnail: "/data/logo.jpg",
+      thumbnail: "/data/logo.png",
     },
   ],
 };

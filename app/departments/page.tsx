@@ -56,7 +56,7 @@ export default function DepartmentsPage() {
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-3">
                     <Image
-                      src={d.thumbnail || "/placeholder-logo.jpg"}
+                      src={d.thumbnail || "/placeholder-logo.png"}
                       alt={d.name}
                       width={56}
                       height={56}

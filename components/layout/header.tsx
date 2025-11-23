@@ -257,7 +257,7 @@ export const Header = () => {
         <div className="container mx-auto flex items-center justify-between px-4 lg:px-6">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/data/logo.jpg?height=60&width=60" // Placeholder for college logo
+              src="/data/logo.png?height=60&width=60" // Placeholder for college logo
               width={60}
               height={60}
               alt="Tribhuvan University Institute of Engineering Thapathali Campus Logo"
