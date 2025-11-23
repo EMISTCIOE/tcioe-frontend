@@ -553,6 +553,82 @@ export interface SearchableQueryParams extends PaginatedQueryParams {
   search?: string;
 }
 
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+// Research/Project API Types
+export interface ResearchCategory {
+  id: number;
+  name: string;
+  slug?: string | null;
+  color?: string | null;
+}
+
+export interface ResearchItem {
+  id: number;
+  title: string;
+  abstract: string;
+  researchType: string;
+  status: string;
+  department: number | null;
+  departmentName: string;
+  academicProgram?: number | null;
+  academicProgramName?: string | null;
+  academicProgramShortName?: string | null;
+  principalInvestigatorShort?: string | null;
+  fundingAgency?: string | null;
+  fundingAmount?: number | string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  thumbnail?: string | null;
+  isFeatured: boolean;
+  isPublished: boolean;
+  viewsCount: number;
+  participantsCount: number;
+  categories: ResearchCategory[];
+  createdAt: string;
+  updatedAt: string;
+  slug?: string | null;
+}
+
+export interface ProjectTag {
+  id: number;
+  name: string;
+  slug?: string | null;
+  color?: string | null;
+}
+
+export interface ProjectItem {
+  id: number;
+  title: string;
+  abstract: string;
+  projectType: string;
+  status: string;
+  department: number | null;
+  departmentName: string;
+  academicProgram?: number | null;
+  academicProgramName?: string | null;
+  academicProgramShortName?: string | null;
+  supervisorName?: string | null;
+  academicYear?: string | null;
+  thumbnail?: string | null;
+  demoUrl?: string | null;
+  githubUrl?: string | null;
+  description?: string | null;
+  slug?: string | null;
+  isFeatured: boolean;
+  isPublished: boolean;
+  viewsCount: number;
+  membersCount: number;
+  tags: ProjectTag[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Event API Types
 export interface CampusEventGallery {
   uuid: string;
